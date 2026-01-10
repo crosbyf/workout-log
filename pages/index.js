@@ -613,51 +613,79 @@ export default function Home() {
                 </div>
               </div>
 
-              {current.exercises.map((ex, ei) => (
-                <div key={ei} className="bg-gray-800 rounded-lg p-3 space-y-2">
-                  <select
-                    value={ex.name}
-                    onChange={(e) => updateEx(ei, 'name', e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm font-medium"
-                  >
-                    <option value="">Select</option>
-                    {exercises.map((e, i) => (
-                      <option key={i} value={e}>{e}</option>
-                    ))}
-                  </select>
-                  
-                  <div className="space-y-1.5">
-                    {ex.sets.map((s, si) => (
-                      <div key={si} className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400 w-12">Set {si + 1}</span>
+              {/* Table Header */}
+              <div className="overflow-x-auto">
+                <div className="text-xs text-gray-400 mb-1 grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_2fr_auto] gap-1 px-1">
+                  <div>Exercise</div>
+                  <div className="text-center">1</div>
+                  <div className="text-center">2</div>
+                  <div className="text-center">3</div>
+                  <div className="text-center">4</div>
+                  <div className="text-center">Tot</div>
+                  <div>Notes</div>
+                  <div className="w-8"></div>
+                </div>
+
+                {/* Exercise Rows */}
+                {current.exercises.map((ex, ei) => {
+                  const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                  return (
+                    <div key={ei} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_2fr_auto] gap-1 mb-1.5">
+                      <select
+                        value={ex.name}
+                        onChange={(e) => updateEx(ei, 'name', e.target.value)}
+                        className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs"
+                      >
+                        <option value="">Select</option>
+                        {exercises.map((e, i) => (
+                          <option key={i} value={e}>{e}</option>
+                        ))}
+                      </select>
+                      
+                      {[0, 1, 2, 3].map((si) => (
                         <input
+                          key={si}
                           type="number"
                           inputMode="numeric"
-                          value={s.reps || ''}
-                          onChange={(e) => updateSet(ei, si, 'reps', e.target.value)}
-                          placeholder="Reps"
-                          className="w-16 bg-gray-700 border border-gray-600 rounded px-2 py-2 text-sm text-center"
+                          value={ex.sets[si]?.reps || ''}
+                          onChange={(e) => {
+                            const u = [...current.exercises];
+                            if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
+                            u[ei].sets[si].reps = parseInt(e.target.value) || 0;
+                            setCurrent({ ...current, exercises: u });
+                          }}
+                          placeholder="0"
+                          className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-center"
                         />
-                        <button onClick={() => removeSet(ei, si)} className="text-red-400 px-2 text-lg">
-                          ×
-                        </button>
+                      ))}
+                      
+                      <div className="bg-gray-900 border border-gray-700 rounded px-2 py-1.5 text-xs text-center font-bold">
+                        {total}
                       </div>
-                    ))}
-                  </div>
-                  
-                  <button onClick={() => addSet(ei)} className="text-xs text-blue-400">
-                    + Add Set
-                  </button>
-                  
-                  <input
-                    type="text"
-                    value={ex.notes}
-                    onChange={(e) => updateEx(ei, 'notes', e.target.value)}
-                    placeholder="Notes"
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-xs"
-                  />
-                </div>
-              ))}
+                      
+                      <input
+                        type="text"
+                        value={ex.notes}
+                        onChange={(e) => updateEx(ei, 'notes', e.target.value)}
+                        placeholder="Notes"
+                        className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs"
+                      />
+                      
+                      <button
+                        onClick={() => {
+                          const u = [...current.exercises];
+                          u.splice(ei, 1);
+                          setCurrent({ ...current, exercises: u });
+                        }}
+                        className="text-red-400 hover:text-red-300 text-sm"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
 
               <button
                 onClick={addEx}
