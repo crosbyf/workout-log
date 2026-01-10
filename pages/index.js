@@ -69,6 +69,7 @@ const Icons = {
     </svg>
   ),
 };
+
 export default function Home() {
   const [workouts, setWorkouts] = useState([]);
   const [presets, setPresets] = useState([]);
@@ -126,18 +127,13 @@ export default function Home() {
   };
 
   const parseDate = (str) => {
-    if (str.includes(',')) {
-      const d = new Date(str);
-      if (!isNaN(d.getTime())) 
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    }
-    if (str.includes('-')) {
-      const p = str.split('-');
-      if (p.length >= 3) {
-        const m = p[0].padStart(2, '0'), d = p[1].padStart(2, '0');
-        const y = p.find(x => x.length === 4 && !isNaN(x)) || '2025';
-        return `${y}-${m}-${d}`;
-      }
+    // Handle MM-DD-YYYY format
+    const parts = str.split('-');
+    if (parts.length === 3) {
+      const month = parts[0].padStart(2, '0');
+      const day = parts[1].padStart(2, '0');
+      const year = parts[2].length === 4 ? parts[2] : '2026';
+      return `${year}-${month}-${day}`;
     }
     return str;
   };
@@ -147,46 +143,88 @@ export default function Home() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const lines = ev.target.result.split('\n');
+      const lines = ev.target.result.split('\n').map(l => l.trim()).filter(l => l);
       const imp = [];
-      let date = '', exs = [], notes = '', loc = '';
-      
+      let currentWorkout = null;
+      let workoutLocation = '';
+
+      // First line is the location (e.g., "Garage BW")
+      if (lines.length > 0 && !lines[0].toLowerCase().includes('date')) {
+        workoutLocation = lines[0].split(',')[0].trim();
+      }
+
       for (let i = 0; i < lines.length; i++) {
-        const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-        if (cols[0] && (cols[0] === 'Date' || cols[0].includes('Exercise'))) continue;
-        
-        if (cols[0] && (cols[0].match(/^\d+-\d+/) || cols[0].includes(','))) {
-          if (date && exs.length) 
-            imp.push({ date: parseDate(date), exercises: exs, notes, location: loc });
-          date = cols[0];
-          exs = [{
-            name: cols[1],
-            sets: [cols[2], cols[3], cols[4], cols[5]]
-              .filter(s => s).map(s => ({ reps: parseInt(s) || 0, weight: null })),
-            notes: cols[7] || ''
-          }];
-          notes = ''; loc = '';
-        } else if (!cols[0] && !cols[1] && cols[2]) {
-          if (cols[2].includes('Garage') || cols[2].includes('BW') || cols[2].includes('Manual')) {
-            loc = cols[2]; notes = cols[7] || '';
+        const line = lines[i];
+        const cols = line.split(',').map(c => c.trim());
+
+        // Skip header rows
+        if (cols[0] && (cols[0].toLowerCase() === 'date' || cols[1] && cols[1].toLowerCase() === 'exercise')) {
+          continue;
+        }
+
+        // Skip the first location line
+        if (i === 0 && !cols[0].match(/^\d/)) {
+          continue;
+        }
+
+        // Check if this is a new workout (has a date)
+        if (cols[0] && cols[0].match(/^\d+-\d+/)) {
+          // Save previous workout if exists
+          if (currentWorkout && currentWorkout.exercises.length > 0) {
+            imp.push(currentWorkout);
           }
-        } else if (cols[1] && !cols[0]) {
-          if (cols[1].includes('Garage') || cols[1].includes('BW') || cols[1].includes('Manual')) {
-            loc = cols[1]; 
-            notes = [cols[6], cols[7], cols[8]].filter(n => n).join(' ');
-          } else if (cols[1] !== 'Day Off') {
-            exs.push({
+
+          // Start new workout
+          currentWorkout = {
+            date: parseDate(cols[0]),
+            exercises: [],
+            notes: '',
+            location: workoutLocation
+          };
+
+          // Add first exercise if present
+          if (cols[1] && cols[1] !== 'Day Off') {
+            const sets = [cols[2], cols[3], cols[4], cols[5]]
+              .filter(s => s && s.trim())
+              .map(s => ({ reps: parseInt(s) || 0, weight: null }));
+            
+            currentWorkout.exercises.push({
               name: cols[1],
-              sets: [cols[2], cols[3], cols[4], cols[5]]
-                .filter(s => s).map(s => ({ reps: parseInt(s) || 0, weight: null })),
+              sets: sets,
               notes: cols[7] || ''
             });
           }
         }
+        // Check if this is an additional exercise (no date, but has exercise name)
+        else if (currentWorkout && cols[1] && cols[1].trim() && cols[1] !== 'Day Off') {
+          const sets = [cols[2], cols[3], cols[4], cols[5]]
+            .filter(s => s && s.trim())
+            .map(s => ({ reps: parseInt(s) || 0, weight: null }));
+          
+          currentWorkout.exercises.push({
+            name: cols[1],
+            sets: sets,
+            notes: cols[7] || ''
+          });
+        }
+        // Check if this is workout notes (has location info in col 2)
+        else if (currentWorkout && cols[2] && (cols[2].includes('Garage') || cols[2].includes('BW') || cols[2].includes('Manual'))) {
+          currentWorkout.location = cols[2];
+          const noteParts = [cols[7], cols[8], cols[9], cols[10]].filter(n => n && n.trim());
+          if (noteParts.length > 0) {
+            currentWorkout.notes = noteParts.join(' ');
+          }
+        }
       }
-      if (date && exs.length) 
-        imp.push({ date: parseDate(date), exercises: exs, notes, location: loc });
-      save(imp.reverse(), 'workouts', setWorkouts);
+
+      // Don't forget the last workout
+      if (currentWorkout && currentWorkout.exercises.length > 0) {
+        imp.push(currentWorkout);
+      }
+
+      // Merge with existing workouts and save
+      const merged = [...imp, ...workouts];
+      save(merged, 'workouts', setWorkouts);
       e.target.value = '';
     };
     reader.readAsText(file);
@@ -344,6 +382,7 @@ export default function Home() {
       </div>
     );
   }
+
   return (
     <>
       <Head>
@@ -596,6 +635,162 @@ export default function Home() {
               >
                 {editing !== null ? 'Update' : 'Save'}
               </button>
+            </div>
+          )}
+
+          {view === 'history' && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search workouts..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 pl-9"
+                  />
+                  <div className="absolute left-3 top-3 text-gray-400">
+                    <Icons.Search />
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                  className="bg-gray-800 px-3 py-2 rounded-lg border border-gray-700"
+                >
+                  <Icons.ArrowUpDown />
+                </button>
+              </div>
+
+              {filtered().map((w, i) => (
+                <div key={i} className="bg-gray-800 rounded-lg p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="font-semibold">{new Date(w.date).toLocaleDateString()}</div>
+                      {w.location && <div className="text-sm text-gray-400">{w.location}</div>}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => copyToSheets(w)}
+                        className="text-blue-400 hover:text-blue-300"
+                        title="Copy to clipboard"
+                      >
+                        <Icons.Copy />
+                      </button>
+                      <button
+                        onClick={() => editWorkout(i)}
+                        className="text-green-400 hover:text-green-300"
+                      >
+                        <Icons.Edit />
+                      </button>
+                      <button
+                        onClick={() => deleteWorkout(i)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Icons.Trash />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {w.exercises.map((ex, ei) => (
+                      <div key={ei} className="border-l-2 border-gray-700 pl-3">
+                        <div className="font-medium text-sm">{ex.name}</div>
+                        <div className="text-sm text-gray-400">
+                          {ex.sets.map((s, si) => (
+                            <span key={si}>
+                              {s.reps}
+                              {s.weight && ` @ ${s.weight}`}
+                              {si < ex.sets.length - 1 && ', '}
+                            </span>
+                          ))}
+                        </div>
+                        {ex.notes && <div className="text-xs text-gray-500">{ex.notes}</div>}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {w.notes && (
+                    <div className="mt-3 text-sm text-gray-400 italic">{w.notes}</div>
+                  )}
+                </div>
+              ))}
+
+              {filtered().length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  {search ? 'No workouts found' : 'No workouts yet'}
+                </div>
+              )}
+            </div>
+          )}
+
+          {view === 'trends' && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold mb-4">Trends</h2>
+              {Object.keys(trends()).length === 0 ? (
+                <div className="text-center text-gray-500 py-8">
+                  No data yet. Start logging workouts!
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {Object.entries(trends()).map(([exercise, data]) => (
+                    <div key={exercise} className="bg-gray-800 rounded-lg p-4">
+                      <h3 className="font-semibold mb-3">{exercise}</h3>
+                      
+                      <div className="mb-4">
+                        <div className="text-sm text-gray-400 mb-2">Weekly Volume</div>
+                        <div className="space-y-1">
+                          {Object.entries(data.weekly)
+                            .sort(([a], [b]) => b.localeCompare(a))
+                            .slice(0, 4)
+                            .map(([week, reps]) => (
+                              <div key={week} className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500 w-24">
+                                  {new Date(week).toLocaleDateString()}
+                                </span>
+                                <div className="flex-1 bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                                  <div
+                                    className="bg-blue-500 h-full rounded-full"
+                                    style={{
+                                      width: `${(reps / Math.max(...Object.values(data.weekly))) * 100}%`
+                                    }}
+                                  />
+                                  <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
+                                    {reps} reps
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm text-gray-400 mb-2">Monthly Volume</div>
+                        <div className="space-y-1">
+                          {Object.entries(data.monthly)
+                            .sort(([a], [b]) => b.localeCompare(a))
+                            .slice(0, 3)
+                            .map(([month, reps]) => (
+                              <div key={month} className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500 w-24">{month}</span>
+                                <div className="flex-1 bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                                  <div
+                                    className="bg-green-500 h-full rounded-full"
+                                    style={{
+                                      width: `${(reps / Math.max(...Object.values(data.monthly))) * 100}%`
+                                    }}
+                                  />
+                                  <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
+                                    {reps} reps
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
