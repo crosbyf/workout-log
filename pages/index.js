@@ -75,6 +75,11 @@ const Icons = {
       <line x1="12" y1="15" x2="12" y2="3"/>
     </svg>
   ),
+  ChevronDown: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  ),
 };
 
 export default function Home() {
@@ -89,6 +94,7 @@ export default function Home() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [search, setSearch] = useState('');
   const [showClear, setShowClear] = useState(false);
+  const [expandedTrends, setExpandedTrends] = useState({});
   const [current, setCurrent] = useState({
     date: new Date().toISOString().split('T')[0],
     exercises: [],
@@ -581,7 +587,7 @@ export default function Home() {
                 </button>
               </div>
               
-              <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
                 <div>
                   <label className="block text-xs text-gray-400 mb-1">Date</label>
                   <input
@@ -621,23 +627,16 @@ export default function Home() {
                   
                   <div className="space-y-1.5">
                     {ex.sets.map((s, si) => (
-                      <div key={si} className="flex items-center gap-1.5">
-                        <span className="text-xs text-gray-400 w-10">S{si + 1}</span>
+                      <div key={si} className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400 w-12">Set {si + 1}</span>
                         <input
                           type="number"
                           value={s.reps || ''}
                           onChange={(e) => updateSet(ei, si, 'reps', e.target.value)}
                           placeholder="Reps"
-                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm"
+                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
                         />
-                        <input
-                          type="text"
-                          value={s.weight || ''}
-                          onChange={(e) => updateSet(ei, si, 'weight', e.target.value)}
-                          placeholder="Weight"
-                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm"
-                        />
-                        <button onClick={() => removeSet(ei, si)} className="text-red-400 px-1 text-lg">
+                        <button onClick={() => removeSet(ei, si)} className="text-red-400 px-2 text-lg">
                           ×
                         </button>
                       </div>
@@ -783,20 +782,35 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {Object.entries(trends()).map(([exercise, data]) => (
-                    <div key={exercise} className="bg-gray-800 rounded-lg p-3">
-                      <h3 className="font-medium text-sm mb-2">{exercise}</h3>
-                      
-                      <div className="mb-3">
-                        <div className="text-xs text-gray-400 mb-1.5">Weekly Volume</div>
-                        <div className="space-y-1">
-                          {Object.entries(data.weekly)
-                            .sort(([a], [b]) => b.localeCompare(a))
-                            .map(([week, reps]) => (
-                              <div key={week} className="flex items-center gap-1.5">
-                                <span className="text-xs text-gray-500 w-20 text-right">
-                                  {new Date(week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
-                                </span>
+                  {Object.entries(trends()).map(([exercise, data]) => {
+                    const isExpanded = expandedTrends[exercise];
+                    return (
+                      <div key={exercise} className="bg-gray-800 rounded-lg">
+                        <button
+                          onClick={() => setExpandedTrends({
+                            ...expandedTrends,
+                            [exercise]: !isExpanded
+                          })}
+                          className="w-full p-3 flex items-center justify-between text-left"
+                        >
+                          <h3 className="font-medium text-sm">{exercise}</h3>
+                          <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                            <Icons.ChevronDown />
+                          </div>
+                        </button>
+                        
+                        {isExpanded && (
+                          <div className="px-3 pb-3">
+                            <div className="mb-3">
+                              <div className="text-xs text-gray-400 mb-1.5">Weekly Volume</div>
+                              <div className="space-y-1">
+                                {Object.entries(data.weekly)
+                                  .sort(([a], [b]) => b.localeCompare(a))
+                                  .map(([week, reps]) => (
+                                    <div key={week} className="flex items-center gap-1.5">
+                                      <span className="text-xs text-gray-500 w-20 text-right">
+                                        {new Date(week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
+                                      </span>
                                 <div className="flex-1 bg-gray-700 rounded-full h-5 relative overflow-hidden">
                                   <div
                                     className="bg-blue-500 h-full rounded-full"
@@ -837,7 +851,10 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
