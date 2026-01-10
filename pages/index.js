@@ -35,7 +35,7 @@ const Icons = {
     </svg>
   ),
   Copy: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
     </svg>
@@ -47,7 +47,7 @@ const Icons = {
     </svg>
   ),
   Edit: () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
     </svg>
@@ -636,7 +636,7 @@ export default function Home() {
                           value={s.reps || ''}
                           onChange={(e) => updateSet(ei, si, 'reps', e.target.value)}
                           placeholder="Reps"
-                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
+                          className="w-12 bg-gray-700 border border-gray-600 rounded px-2 py-2 text-sm text-center"
                         />
                         <button onClick={() => removeSet(ei, si)} className="text-red-400 px-2 text-lg">
                           ×
@@ -708,64 +708,77 @@ export default function Home() {
                 </button>
               </div>
 
-              {filtered().map((w, i) => (
-                <div key={i} className="bg-gray-800 rounded-lg p-3">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <div className="font-medium text-sm">
-                        {(() => {
-                          const [year, month, day] = w.date.split('-');
-                          return `${month}/${day}/${year}`;
-                        })()}
-                      </div>
-                      {w.location && <div className="text-xs text-gray-400">{w.location}</div>}
-                    </div>
-                    <div className="flex gap-4">
-                      <button
-                        onClick={() => copyToSheets(w)}
-                        className="text-blue-400 hover:text-blue-300"
-                        title="Copy to clipboard"
-                      >
-                        <Icons.Copy />
-                      </button>
-                      <button
-                        onClick={() => editWorkout(i)}
-                        className="text-green-400 hover:text-green-300"
-                      >
-                        <Icons.Edit />
-                      </button>
-                      <button
-                        onClick={() => deleteWorkout(i)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <Icons.Trash />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-1.5">
-                    {w.exercises.map((ex, ei) => (
-                      <div key={ei} className="border-l-2 border-gray-700 pl-2">
-                        <div className="font-medium text-xs">{ex.name}</div>
-                        <div className="text-xs text-gray-400">
-                          {ex.sets.map((s, si) => (
-                            <span key={si}>
-                              {s.reps}
-                              {s.weight && ` @ ${s.weight}`}
-                              {si < ex.sets.length - 1 && ', '}
-                            </span>
-                          ))}
+              {filtered().map((w, i) => {
+                const workoutDate = new Date(w.date);
+                const dayOfWeek = workoutDate.toLocaleDateString('en-US', { weekday: 'short' });
+                const [year, month, day] = w.date.split('-');
+                
+                // Color-code by workout location
+                const locationColors = {
+                  'Garage BW': 'border-blue-500',
+                  'Manual': 'border-green-500',
+                  'Garage 10': 'border-purple-500',
+                };
+                const borderColor = locationColors[w.location] || 'border-gray-600';
+                
+                return (
+                  <div key={i} className={`bg-gray-800 rounded-lg p-3 border-l-4 ${borderColor}`}>
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-bold text-base">
+                          {dayOfWeek} {month}/{day}
                         </div>
-                        {ex.notes && <div className="text-xs text-gray-500">{ex.notes}</div>}
+                        {w.location && <div className="text-xs text-gray-400 font-medium">{w.location}</div>}
                       </div>
-                    ))}
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => copyToSheets(w)}
+                          className="text-blue-400 hover:text-blue-300 p-1"
+                          title="Copy to clipboard"
+                        >
+                          <Icons.Copy />
+                        </button>
+                        <button
+                          onClick={() => editWorkout(i)}
+                          className="text-green-400 hover:text-green-300 p-1"
+                        >
+                          <Icons.Edit />
+                        </button>
+                        <button
+                          onClick={() => deleteWorkout(i)}
+                          className="text-red-400 hover:text-red-300 p-1"
+                        >
+                          <Icons.Trash />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      {w.exercises.map((ex, ei) => {
+                        const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                        return (
+                          <div key={ei} className="flex items-start text-xs">
+                            <div className="w-32 font-medium truncate">{ex.name}</div>
+                            <div className="flex-1 flex items-center gap-1">
+                              {ex.sets.map((s, si) => (
+                                <span key={si} className="text-gray-400">
+                                  {s.reps}
+                                  {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
+                                </span>
+                              ))}
+                              <span className="ml-1 font-bold text-white">({totalReps})</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {w.notes && (
+                      <div className="mt-2 text-xs text-gray-400 italic border-t border-gray-700 pt-1.5">{w.notes}</div>
+                    )}
                   </div>
-                  
-                  {w.notes && (
-                    <div className="mt-2 text-xs text-gray-400 italic">{w.notes}</div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
 
               {filtered().length === 0 && (
                 <div className="text-center text-gray-500 py-8">
