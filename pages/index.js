@@ -665,7 +665,12 @@ export default function Home() {
                 <div key={i} className="bg-gray-800 rounded-lg p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <div className="font-semibold">{new Date(w.date).toLocaleDateString()}</div>
+                      <div className="font-semibold">
+                        {(() => {
+                          const [year, month, day] = w.date.split('-');
+                          return `${month}/${day}/${year}`;
+                        })()}
+                      </div>
                       {w.location && <div className="text-sm text-gray-400">{w.location}</div>}
                     </div>
                     <div className="flex gap-2">
