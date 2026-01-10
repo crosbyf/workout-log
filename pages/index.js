@@ -591,10 +591,11 @@ export default function Home() {
                 <div>
                   <label className="block text-xs text-gray-400 mb-1">Date</label>
                   <input
-                    type="date"
+                    type="text"
                     value={current.date}
                     onChange={(e) => setCurrent({ ...current, date: e.target.value })}
-                    className="w-full max-w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm overflow-hidden"
+                    placeholder="YYYY-MM-DD"
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
                   />
                 </div>
                 <div>
@@ -631,6 +632,7 @@ export default function Home() {
                         <span className="text-xs text-gray-400 w-12">Set {si + 1}</span>
                         <input
                           type="number"
+                          inputMode="numeric"
                           value={s.reps || ''}
                           onChange={(e) => updateSet(ei, si, 'reps', e.target.value)}
                           placeholder="Reps"
