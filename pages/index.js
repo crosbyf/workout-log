@@ -636,7 +636,7 @@ export default function Home() {
                           value={s.reps || ''}
                           onChange={(e) => updateSet(ei, si, 'reps', e.target.value)}
                           placeholder="Reps"
-                          className="w-14 bg-gray-700 border border-gray-600 rounded px-3 py-3 text-sm text-center"
+                          className="w-16 bg-gray-700 border border-gray-600 rounded px-2 py-2 text-sm text-center"
                         />
                         <button onClick={() => removeSet(ei, si)} className="text-red-400 px-2 text-lg">
                           ×
