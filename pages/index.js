@@ -68,6 +68,13 @@ const Icons = {
       <path d="m21 16-4 4-4-4M17 20V4M3 8l4-4 4 4M7 4v16"/>
     </svg>
   ),
+  Download: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+  ),
 };
 
 export default function Home() {
@@ -338,6 +345,42 @@ export default function Home() {
     setShowClear(false);
   };
 
+  const exportCSV = () => {
+    const rows = [];
+    
+    workouts.sort((a, b) => a.date.localeCompare(b.date)).forEach(w => {
+      const d = new Date(w.date);
+      const dateStr = `${d.getMonth() + 1}-${d.getDate()}-${d.getFullYear()}`;
+      
+      w.exercises.forEach((ex, i) => {
+        const sets = ex.sets.slice(0, 4);
+        const reps = sets.map(s => s.reps || '').concat(Array(4 - sets.length).fill(''));
+        const total = sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+        let notes = ex.notes || '';
+        const weights = sets.filter(s => s.weight).map(s => s.weight);
+        if (weights.length) notes = weights[0] + (notes ? '. ' + notes : '');
+        
+        if (i === 0) {
+          rows.push(`${dateStr},${ex.name},${reps[0]},${reps[1]},${reps[2]},${reps[3]},${total},${notes}`);
+        } else {
+          rows.push(`,${ex.name},${reps[0]},${reps[1]},${reps[2]},${reps[3]},${total},${notes}`);
+        }
+      });
+      
+      const workoutNotes = [w.location, w.notes].filter(x => x).join('. ');
+      rows.push(`,${w.location || ''},,,,,,${workoutNotes}`);
+    });
+    
+    const csv = `Date,Exercise,1,2,3,4,Tot,Notes\n${rows.join('\n')}`;
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workouts-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const filtered = () => {
     let f = workouts;
     if (search.trim()) {
@@ -386,7 +429,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Workout Log</title>
+        <title>Gors Log</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       
@@ -410,12 +453,9 @@ export default function Home() {
 
         <div className="bg-gray-800 border-b border-gray-700 p-4">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Icons.Dumbbell />
-              Workout Log
-            </h1>
-            <button onClick={() => setShowSettings(!showSettings)} className="bg-gray-700 px-3 py-2 rounded-lg">
-              <Icons.Settings />
+            <h1 className="text-2xl font-bold">Gors Log</h1>
+            <button onClick={() => setShowSettings(!showSettings)} className="bg-gray-700 px-3 py-2 rounded-lg text-sm">
+              Settings
             </button>
           </div>
         </div>
@@ -423,19 +463,25 @@ export default function Home() {
         {showSettings && (
           <div className="bg-gray-800 border-b p-4">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2>Settings</h2>
-                <button onClick={() => setShowClear(true)} className="bg-red-600 px-3 py-2 rounded text-sm">
-                  Clear All
-                </button>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold">Settings</h2>
+                <div className="flex gap-2">
+                  <button onClick={exportCSV} className="bg-blue-600 px-2 py-1 rounded text-xs flex items-center gap-1">
+                    <Icons.Download />
+                    Export
+                  </button>
+                  <button onClick={() => setShowClear(true)} className="bg-red-600 px-2 py-1 rounded text-xs">
+                    Clear All
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-2 mb-4">
-                <label className="cursor-pointer bg-blue-600 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+              <div className="flex gap-2 mb-3">
+                <label className="cursor-pointer bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
                   <Icons.Upload />
                   Presets
                   <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
                 </label>
-                <label className="cursor-pointer bg-green-600 px-4 py-2 rounded-lg text-sm flex items-center gap-2">
+                <label className="cursor-pointer bg-green-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
                   <Icons.Upload />
                   Workouts
                   <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
@@ -493,10 +539,10 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto p-4">
+        <div className="max-w-4xl mx-auto p-3">
           {view === 'log' && !showNew && (
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold mb-3">Select Workout</h2>
+            <div className="space-y-1.5">
+              <h2 className="text-base font-semibold mb-2">Select Workout</h2>
               {presets.map((p, i) => (
                 <button
                   key={i}
@@ -504,11 +550,11 @@ export default function Home() {
                     setShowNew(true);
                     p.name === 'Manual' ? setCurrent({ ...current, location: p.name }) : loadPreset(p);
                   }}
-                  className="w-full bg-gray-800 hover:bg-gray-700 p-4 rounded-lg text-left"
+                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg text-left"
                 >
-                  <div className="font-semibold">{p.name}</div>
+                  <div className="font-medium text-sm">{p.name}</div>
                   {p.exercises.length > 0 && (
-                    <div className="text-sm text-gray-400">{p.exercises.length} exercises</div>
+                    <div className="text-xs text-gray-400">{p.exercises.length} exercises</div>
                   )}
                 </button>
               ))}
@@ -516,9 +562,9 @@ export default function Home() {
           )}
 
           {view === 'log' && showNew && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold">{editing !== null ? 'Edit' : 'New'}</h2>
+                <h2 className="text-lg font-semibold">{editing !== null ? 'Edit' : 'New'}</h2>
                 <button
                   onClick={() => {
                     setShowNew(false);
@@ -535,22 +581,22 @@ export default function Home() {
                 </button>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Date</label>
+                  <label className="block text-xs text-gray-400 mb-1">Date</label>
                   <input
                     type="date"
                     value={current.date}
                     onChange={(e) => setCurrent({ ...current, date: e.target.value })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2"
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-1">Workout</label>
+                  <label className="block text-xs text-gray-400 mb-1">Workout</label>
                   <select
                     value={current.location}
                     onChange={(e) => setCurrent({ ...current, location: e.target.value })}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2"
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
                   >
                     <option value="">Select</option>
                     {presets.map((p, i) => (
@@ -561,11 +607,11 @@ export default function Home() {
               </div>
 
               {current.exercises.map((ex, ei) => (
-                <div key={ei} className="bg-gray-800 rounded-lg p-4 space-y-3">
+                <div key={ei} className="bg-gray-800 rounded-lg p-3 space-y-2">
                   <select
                     value={ex.name}
                     onChange={(e) => updateEx(ei, 'name', e.target.value)}
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 font-semibold"
+                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm font-medium"
                   >
                     <option value="">Select</option>
                     {exercises.map((e, i) => (
@@ -573,32 +619,32 @@ export default function Home() {
                     ))}
                   </select>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {ex.sets.map((s, si) => (
-                      <div key={si} className="flex items-center gap-2">
-                        <span className="text-sm text-gray-400 w-12">Set {si + 1}</span>
+                      <div key={si} className="flex items-center gap-1.5">
+                        <span className="text-xs text-gray-400 w-10">S{si + 1}</span>
                         <input
                           type="number"
                           value={s.reps || ''}
                           onChange={(e) => updateSet(ei, si, 'reps', e.target.value)}
                           placeholder="Reps"
-                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm"
                         />
                         <input
                           type="text"
                           value={s.weight || ''}
                           onChange={(e) => updateSet(ei, si, 'weight', e.target.value)}
                           placeholder="Weight"
-                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2"
+                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-sm"
                         />
-                        <button onClick={() => removeSet(ei, si)} className="text-red-400 px-2">
+                        <button onClick={() => removeSet(ei, si)} className="text-red-400 px-1 text-lg">
                           ×
                         </button>
                       </div>
                     ))}
                   </div>
                   
-                  <button onClick={() => addSet(ei)} className="text-sm text-blue-400">
+                  <button onClick={() => addSet(ei)} className="text-xs text-blue-400">
                     + Add Set
                   </button>
                   
@@ -607,31 +653,31 @@ export default function Home() {
                     value={ex.notes}
                     onChange={(e) => updateEx(ei, 'notes', e.target.value)}
                     placeholder="Notes"
-                    className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm"
+                    className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1.5 text-xs"
                   />
                 </div>
               ))}
 
               <button
                 onClick={addEx}
-                className="w-full bg-gray-800 hover:bg-gray-700 py-3 rounded-lg border-2 border-dashed border-gray-600"
+                className="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded-lg border-2 border-dashed border-gray-600 text-sm"
               >
                 + Add Exercise
               </button>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Workout Notes</label>
+                <label className="block text-xs text-gray-400 mb-1">Workout Notes</label>
                 <textarea
                   value={current.notes}
                   onChange={(e) => setCurrent({ ...current, notes: e.target.value })}
                   placeholder="How did it go?"
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 h-24"
+                  className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 h-20 text-sm"
                 />
               </div>
 
               <button
                 onClick={saveWorkout}
-                className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                className="w-full bg-blue-600 hover:bg-blue-700 py-2.5 rounded-lg font-semibold text-sm"
               >
                 {editing !== null ? 'Update' : 'Save'}
               </button>
@@ -639,39 +685,39 @@ export default function Home() {
           )}
 
           {view === 'history' && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2 mb-3">
                 <div className="relative flex-1">
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search workouts..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 pl-9"
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 pl-8 text-sm"
                   />
-                  <div className="absolute left-3 top-3 text-gray-400">
+                  <div className="absolute left-2 top-2 text-gray-400">
                     <Icons.Search />
                   </div>
                 </div>
                 <button
                   onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                  className="bg-gray-800 px-3 py-2 rounded-lg border border-gray-700"
+                  className="bg-gray-800 px-2 py-1.5 rounded-lg border border-gray-700"
                 >
                   <Icons.ArrowUpDown />
                 </button>
               </div>
 
               {filtered().map((w, i) => (
-                <div key={i} className="bg-gray-800 rounded-lg p-4">
-                  <div className="flex items-start justify-between mb-3">
+                <div key={i} className="bg-gray-800 rounded-lg p-3">
+                  <div className="flex items-start justify-between mb-2">
                     <div>
-                      <div className="font-semibold">
+                      <div className="font-medium text-sm">
                         {(() => {
                           const [year, month, day] = w.date.split('-');
                           return `${month}/${day}/${year}`;
                         })()}
                       </div>
-                      {w.location && <div className="text-sm text-gray-400">{w.location}</div>}
+                      {w.location && <div className="text-xs text-gray-400">{w.location}</div>}
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -696,11 +742,11 @@ export default function Home() {
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {w.exercises.map((ex, ei) => (
-                      <div key={ei} className="border-l-2 border-gray-700 pl-3">
-                        <div className="font-medium text-sm">{ex.name}</div>
-                        <div className="text-sm text-gray-400">
+                      <div key={ei} className="border-l-2 border-gray-700 pl-2">
+                        <div className="font-medium text-xs">{ex.name}</div>
+                        <div className="text-xs text-gray-400">
                           {ex.sets.map((s, si) => (
                             <span key={si}>
                               {s.reps}
@@ -715,7 +761,7 @@ export default function Home() {
                   </div>
                   
                   {w.notes && (
-                    <div className="mt-3 text-sm text-gray-400 italic">{w.notes}</div>
+                    <div className="mt-2 text-xs text-gray-400 italic">{w.notes}</div>
                   )}
                 </div>
               ))}
@@ -729,30 +775,29 @@ export default function Home() {
           )}
 
           {view === 'trends' && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-bold mb-4">Trends</h2>
+            <div className="space-y-3">
+              <h2 className="text-base font-semibold mb-2">Trends</h2>
               {Object.keys(trends()).length === 0 ? (
-                <div className="text-center text-gray-500 py-8">
+                <div className="text-center text-gray-500 py-8 text-sm">
                   No data yet. Start logging workouts!
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-3">
                   {Object.entries(trends()).map(([exercise, data]) => (
-                    <div key={exercise} className="bg-gray-800 rounded-lg p-4">
-                      <h3 className="font-semibold mb-3">{exercise}</h3>
+                    <div key={exercise} className="bg-gray-800 rounded-lg p-3">
+                      <h3 className="font-medium text-sm mb-2">{exercise}</h3>
                       
-                      <div className="mb-4">
-                        <div className="text-sm text-gray-400 mb-2">Weekly Volume</div>
+                      <div className="mb-3">
+                        <div className="text-xs text-gray-400 mb-1.5">Weekly Volume</div>
                         <div className="space-y-1">
                           {Object.entries(data.weekly)
                             .sort(([a], [b]) => b.localeCompare(a))
-                            .slice(0, 4)
                             .map(([week, reps]) => (
-                              <div key={week} className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500 w-24">
-                                  {new Date(week).toLocaleDateString()}
+                              <div key={week} className="flex items-center gap-1.5">
+                                <span className="text-xs text-gray-500 w-20 text-right">
+                                  {new Date(week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
                                 </span>
-                                <div className="flex-1 bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                                <div className="flex-1 bg-gray-700 rounded-full h-5 relative overflow-hidden">
                                   <div
                                     className="bg-blue-500 h-full rounded-full"
                                     style={{
@@ -760,7 +805,7 @@ export default function Home() {
                                     }}
                                   />
                                   <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                                    {reps} reps
+                                    {reps}
                                   </span>
                                 </div>
                               </div>
@@ -769,15 +814,14 @@ export default function Home() {
                       </div>
 
                       <div>
-                        <div className="text-sm text-gray-400 mb-2">Monthly Volume</div>
+                        <div className="text-xs text-gray-400 mb-1.5">Monthly Volume</div>
                         <div className="space-y-1">
                           {Object.entries(data.monthly)
                             .sort(([a], [b]) => b.localeCompare(a))
-                            .slice(0, 3)
                             .map(([month, reps]) => (
-                              <div key={month} className="flex items-center gap-2">
-                                <span className="text-xs text-gray-500 w-24">{month}</span>
-                                <div className="flex-1 bg-gray-700 rounded-full h-6 relative overflow-hidden">
+                              <div key={month} className="flex items-center gap-1.5">
+                                <span className="text-xs text-gray-500 w-20 text-right">{month}</span>
+                                <div className="flex-1 bg-gray-700 rounded-full h-5 relative overflow-hidden">
                                   <div
                                     className="bg-green-500 h-full rounded-full"
                                     style={{
@@ -785,7 +829,7 @@ export default function Home() {
                                     }}
                                   />
                                   <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                                    {reps} reps
+                                    {reps}
                                   </span>
                                 </div>
                               </div>
