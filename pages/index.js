@@ -757,17 +757,22 @@ export default function Home() {
                       {w.exercises.map((ex, ei) => {
                         const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                         return (
-                          <div key={ei} className="flex items-start text-xs">
-                            <div className="w-32 font-medium truncate">{ex.name}</div>
-                            <div className="flex-1 flex items-center gap-1">
-                              {ex.sets.map((s, si) => (
-                                <span key={si} className="text-gray-400">
-                                  {s.reps}
-                                  {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
-                                </span>
-                              ))}
-                              <span className="ml-1 font-bold text-white">({totalReps})</span>
+                          <div key={ei}>
+                            <div className="flex items-start text-xs">
+                              <div className="w-32 font-medium truncate">{ex.name}</div>
+                              <div className="flex-1 flex items-center gap-1">
+                                {ex.sets.map((s, si) => (
+                                  <span key={si} className="text-gray-400">
+                                    {s.reps}
+                                    {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
+                                  </span>
+                                ))}
+                                <span className="ml-1 font-bold text-white">({totalReps})</span>
+                              </div>
                             </div>
+                            {ex.notes && (
+                              <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
+                            )}
                           </div>
                         );
                       })}
