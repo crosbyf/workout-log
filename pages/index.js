@@ -641,8 +641,9 @@ export default function Home() {
         <div className="bg-gray-800 border-b border-gray-700 p-4">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <h1 className="text-2xl font-bold">Gors Log</h1>
-            <button onClick={() => setShowSettings(!showSettings)} className="bg-gray-700 px-3 py-2 rounded-lg text-sm">
-              Settings
+            <button onClick={() => setShowSettings(!showSettings)} className="bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-1">
+              {showSettings ? <Icons.X /> : <Icons.Settings />}
+              {showSettings ? 'Close' : 'Settings'}
             </button>
           </div>
         </div>
@@ -697,6 +698,14 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
           {view === 'log' && !showNew && (
             <div className="space-y-1.5">
+              <button
+                onClick={() => setShowPresetSelector(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700 rounded-lg p-4 mb-3 flex items-center justify-center gap-2 text-lg font-semibold"
+              >
+                <Icons.Plus />
+                New Workout
+              </button>
+              
               <h2 className="text-base font-semibold mb-2">Select Workout</h2>
               {presets.map((p, i) => (
                 <button
@@ -708,7 +717,9 @@ export default function Home() {
                   className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg text-left"
                 >
                   <div className="font-medium text-sm">{p.name}</div>
-                  {p.exercises.length > 0 && (
+                  {p.name === 'Manual' ? (
+                    <div className="text-xs text-gray-400">Build your own</div>
+                  ) : p.exercises.length > 0 && (
                     <div className="text-xs text-gray-400">{p.exercises.length} exercises</div>
                   )}
                 </button>
@@ -1011,13 +1022,13 @@ export default function Home() {
 
           {view === 'calendar' && (
             <div className="space-y-3">
-              {/* Start Workout Button */}
+              {/* New Workout Button */}
               <button
                 onClick={() => setShowPresetSelector(true)}
                 className="w-full bg-blue-600 hover:bg-blue-700 rounded-lg p-4 mb-3 flex items-center justify-center gap-2 text-lg font-semibold"
               >
                 <Icons.Plus />
-                Start Workout
+                New Workout
               </button>
               
               {/* Recent Workouts */}
@@ -1129,6 +1140,9 @@ export default function Home() {
                   );
                 })}
               </div>
+              
+              {/* Calendar Header */}
+              <h3 className="text-sm font-semibold text-gray-400 mt-4 mb-2">Calendar</h3>
               
               {/* Month navigation */}
               <div className="flex items-center justify-between mb-3">
@@ -1785,7 +1799,9 @@ export default function Home() {
                     className="w-full bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-left"
                   >
                     <div className="font-medium text-base mb-1">{p.name}</div>
-                    {p.exercises.length > 0 && (
+                    {p.name === 'Manual' ? (
+                      <div className="text-xs text-gray-400">Build your own</div>
+                    ) : p.exercises.length > 0 && (
                       <div className="text-xs text-gray-400">{p.exercises.length} exercises</div>
                     )}
                   </button>
