@@ -749,96 +749,84 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Table Header - Dynamic based on max sets */}
-              <div className="overflow-x-auto -mx-3 px-3">
-                <div className="min-w-max">
-                  {(() => {
-                    const maxSets = Math.max(4, ...current.exercises.map(ex => ex.sets.length));
-                    const setCols = Array.from({ length: maxSets }, (_, i) => '40px').join('_');
-                    const gridCols = `100px_${setCols}_35px_80px_24px_36px`;
-                    
-                    return (
-                      <>
-                        <div className={`text-[10px] text-gray-400 mb-1 grid gap-0.5`} style={{ gridTemplateColumns: gridCols.replace(/_/g, ' ') }}>
-                          <div>Exercise</div>
-                          {Array.from({ length: maxSets }, (_, i) => (
-                            <div key={i} className="text-center">{i + 1}</div>
-                          ))}
-                          <div className="text-center">Tot</div>
-                          <div>Notes</div>
-                          <div></div>
-                          <div></div>
-                        </div>
-
-                        {/* Exercise Rows */}
-                        {current.exercises.map((ex, ei) => {
-                          const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                          return (
-                            <div key={ei} className="grid gap-0.5 mb-1" style={{ gridTemplateColumns: gridCols.replace(/_/g, ' ') }}>
-                        <select
-                          value={ex.name}
-                          onChange={(e) => updateEx(ei, 'name', e.target.value)}
-                          className="bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] truncate"
-                        >
-                          <option value="">Select</option>
-                          {exercises.map((e, i) => (
-                            <option key={i} value={e}>{e}</option>
-                          ))}
-                        </select>
-                        
-                        {Array.from({ length: maxSets }, (_, si) => (
-                          <input
-                            key={si}
-                            type="number"
-                            inputMode="numeric"
-                            value={ex.sets[si]?.reps || ''}
-                            onChange={(e) => {
-                              const u = [...current.exercises];
-                              if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
-                              u[ei].sets[si].reps = parseInt(e.target.value) || 0;
-                              setCurrent({ ...current, exercises: u });
-                            }}
-                            placeholder="0"
-                            className="bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center"
-                          />
+              {/* Exercise entry - flexible rows */}
+              <div className="space-y-2">
+                {current.exercises.map((ex, ei) => {
+                  const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                  return (
+                    <div key={ei} className="bg-gray-800 rounded-lg p-2">
+                      {/* Exercise name */}
+                      <select
+                        value={ex.name}
+                        onChange={(e) => updateEx(ei, 'name', e.target.value)}
+                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs font-medium mb-2"
+                      >
+                        <option value="">Select Exercise</option>
+                        {exercises.map((e, i) => (
+                          <option key={i} value={e}>{e}</option>
+                        ))}
+                      </select>
+                      
+                      {/* Sets row */}
+                      <div className="flex items-center gap-1 mb-2 overflow-x-auto">
+                        {ex.sets.map((s, si) => (
+                          <div key={si} className="flex flex-col items-center">
+                            <div className="text-[10px] text-gray-400 mb-0.5">S{si + 1}</div>
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              value={s.reps || ''}
+                              onChange={(e) => {
+                                const u = [...current.exercises];
+                                u[ei].sets[si].reps = parseInt(e.target.value) || 0;
+                                setCurrent({ ...current, exercises: u });
+                              }}
+                              placeholder="0"
+                              className="w-12 bg-gray-700 border border-gray-600 rounded px-1 py-1 text-[11px] text-center"
+                            />
+                          </div>
                         ))}
                         
-                        <div className="bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold flex items-center justify-center">
-                          {total}
+                        {/* Total */}
+                        <div className="flex flex-col items-center">
+                          <div className="text-[10px] text-gray-400 mb-0.5">Tot</div>
+                          <div className="w-12 bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold">
+                            {total}
+                          </div>
                         </div>
                         
-                        <input
-                          type="text"
-                          value={ex.notes}
-                          onChange={(e) => updateEx(ei, 'notes', e.target.value)}
-                          placeholder="..."
-                          className="bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
-                        />
-                        
-                        <button
-                          onClick={() => setDeleteExercise(ei)}
-                          className="text-red-400 hover:text-red-300 text-lg flex items-center justify-center"
-                        >
-                          ×
-                        </button>
-                        
+                        {/* Add Set button */}
                         <button
                           onClick={() => {
                             const u = [...current.exercises];
                             u[ei].sets.push({ reps: 0, weight: null });
                             setCurrent({ ...current, exercises: u });
                           }}
-                          className="text-blue-400 hover:text-blue-300 text-xs flex items-center justify-center px-1"
+                          className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-700 rounded"
                         >
-                          +Set
+                          +
                         </button>
                       </div>
-                    );
-                  })}
-                      </>
-                    );
-                  })()}
-                </div>
+                      
+                      {/* Notes and delete */}
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={ex.notes}
+                          onChange={(e) => updateEx(ei, 'notes', e.target.value)}
+                          placeholder="Notes..."
+                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-[11px]"
+                        />
+                        <button
+                          onClick={() => setDeleteExercise(ei)}
+                          className="text-red-400 hover:text-red-300 px-2 py-1"
+                        >
+                          <Icons.Trash />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
 
