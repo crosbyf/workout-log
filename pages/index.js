@@ -584,6 +584,7 @@ export default function Home() {
                 <button
                   onClick={() => {
                     setShowNew(false);
+                    setShowWorkoutModal(false);
                     setEditing(null);
                     setCurrent({
                       date: getTodayDate(),
@@ -1795,7 +1796,16 @@ export default function Home() {
         
         {/* Workout Modal */}
         {showWorkoutModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+            onClick={() => {
+              if (current.exercises.length > 0) {
+                setShowCloseConfirm(true);
+              } else {
+                setShowWorkoutModal(false);
+              }
+            }}
+          >
             <div 
               className="bg-gray-900 rounded-t-2xl w-full h-[90vh] overflow-y-auto flex flex-col" 
               onClick={(e) => e.stopPropagation()}
