@@ -98,6 +98,8 @@ export default function Home() {
   const [deleteWorkout, setDeleteWorkout] = useState(null);
   const [deletePreset, setDeletePreset] = useState(null);
   const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'day', 'week', 'month'
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(null);
   
   // Helper to get today's date in YYYY-MM-DD format without timezone issues
   const getTodayDate = () => {
@@ -620,12 +622,21 @@ export default function Home() {
               </div>
             </button>
             <button
+              onClick={() => setView('calendar')}
+              className={`flex-1 py-3 ${view === 'calendar' ? 'bg-gray-700 border-b-2 border-blue-500' : ''}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.Calendar />
+                <span className="text-sm mt-1">Cal</span>
+              </div>
+            </button>
+            <button
               onClick={() => setView('history')}
               className={`flex-1 py-3 ${view === 'history' ? 'bg-gray-700 border-b-2 border-blue-500' : ''}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.Calendar />
-                <span className="text-sm mt-1">History</span>
+                <span className="text-sm mt-1">List</span>
               </div>
             </button>
             <button
@@ -711,7 +722,7 @@ export default function Home() {
               {/* Table Header */}
               <div className="overflow-x-auto -mx-3 px-3">
                 <div className="min-w-max">
-                  <div className="text-[10px] text-gray-400 mb-1 grid grid-cols-[100px_40px_40px_40px_40px_35px_80px_24px] gap-0.5">
+                  <div className="text-[10px] text-gray-400 mb-1 grid grid-cols-[100px_40px_40px_40px_40px_35px_80px_24px_36px] gap-0.5">
                     <div>Exercise</div>
                     <div className="text-center">1</div>
                     <div className="text-center">2</div>
@@ -720,13 +731,14 @@ export default function Home() {
                     <div className="text-center">Tot</div>
                     <div>Notes</div>
                     <div></div>
+                    <div></div>
                   </div>
 
                   {/* Exercise Rows */}
                   {current.exercises.map((ex, ei) => {
                     const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                     return (
-                      <div key={ei} className="grid grid-cols-[100px_40px_40px_40px_40px_35px_80px_24px] gap-0.5 mb-1">
+                      <div key={ei} className="grid grid-cols-[100px_40px_40px_40px_40px_35px_80px_24px_36px] gap-0.5 mb-1">
                         <select
                           value={ex.name}
                           onChange={(e) => updateEx(ei, 'name', e.target.value)}
@@ -777,6 +789,17 @@ export default function Home() {
                         >
                           ×
                         </button>
+                        
+                        <button
+                          onClick={() => {
+                            const u = [...current.exercises];
+                            u[ei].sets.push({ reps: 0, weight: null });
+                            setCurrent({ ...current, exercises: u });
+                          }}
+                          className="text-blue-400 hover:text-blue-300 text-xs flex items-center justify-center px-1"
+                        >
+                          +Set
+                        </button>
                       </div>
                     );
                   })}
@@ -810,25 +833,162 @@ export default function Home() {
             </div>
           )}
 
+          {view === 'calendar' && (
+            <div className="space-y-3">
+              {/* Month navigation */}
+              <div className="flex items-center justify-between mb-3">
+                <button
+                  onClick={() => {
+                    const newDate = new Date(calendarDate);
+                    newDate.setMonth(newDate.getMonth() - 1);
+                    setCalendarDate(newDate);
+                  }}
+                  className="bg-gray-800 px-3 py-2 rounded text-sm"
+                >
+                  ← Prev
+                </button>
+                <h2 className="text-lg font-semibold">
+                  {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                </h2>
+                <button
+                  onClick={() => {
+                    const newDate = new Date(calendarDate);
+                    newDate.setMonth(newDate.getMonth() + 1);
+                    setCalendarDate(newDate);
+                  }}
+                  className="bg-gray-800 px-3 py-2 rounded text-sm"
+                >
+                  Next →
+                </button>
+              </div>
+
+              {/* Calendar grid */}
+              <div className="bg-gray-800 rounded-lg p-3">
+                {/* Day headers */}
+                <div className="grid grid-cols-7 gap-1 mb-2">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="text-center text-xs text-gray-400 font-medium">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Calendar days */}
+                <div className="grid grid-cols-7 gap-1">
+                  {(() => {
+                    const year = calendarDate.getFullYear();
+                    const month = calendarDate.getMonth();
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const days = [];
+
+                    // Empty cells for days before month starts
+                    for (let i = 0; i < firstDay; i++) {
+                      days.push(<div key={`empty-${i}`} className="aspect-square" />);
+                    }
+
+                    // Days of the month
+                    for (let day = 1; day <= daysInMonth; day++) {
+                      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                      const dayWorkouts = workouts.filter(w => w.date === dateStr);
+                      const hasWorkout = dayWorkouts.length > 0;
+                      const isToday = dateStr === getTodayDate();
+                      
+                      // Get workout type color
+                      let borderColor = 'border-gray-700';
+                      if (hasWorkout && dayWorkouts[0].location) {
+                        const locationColors = {
+                          'Garage BW': 'border-blue-500',
+                          'Manual': 'border-green-500',
+                          'Garage 10': 'border-purple-500',
+                        };
+                        borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
+                      }
+
+                      days.push(
+                        <button
+                          key={day}
+                          onClick={() => setSelectedDay(hasWorkout ? dateStr : null)}
+                          className={`aspect-square rounded border-2 flex items-center justify-center text-sm
+                            ${hasWorkout ? `${borderColor} bg-gray-700 font-bold` : 'border-gray-700 bg-gray-800'}
+                            ${isToday ? 'ring-2 ring-blue-400' : ''}
+                            ${selectedDay === dateStr ? 'ring-2 ring-white' : ''}
+                          `}
+                        >
+                          {day}
+                        </button>
+                      );
+                    }
+
+                    return days;
+                  })()}
+                </div>
+              </div>
+
+              {/* Selected day details */}
+              {selectedDay && (() => {
+                const workout = workouts.find(w => w.date === selectedDay);
+                if (!workout) return null;
+
+                const [year, month, day] = selectedDay.split('-');
+                const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+
+                return (
+                  <div className="bg-gray-800 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="font-bold text-lg">
+                          {dayOfWeek}, {month}/{day}/{year}
+                        </h3>
+                        {workout.location && <div className="text-sm text-gray-400">{workout.location}</div>}
+                      </div>
+                      <button
+                        onClick={() => setSelectedDay(null)}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <Icons.X />
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {workout.exercises.map((ex, ei) => {
+                        const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                        return (
+                          <div key={ei}>
+                            <div className="flex items-start text-sm">
+                              <div className="w-32 font-medium">{ex.name}</div>
+                              <div className="flex-1 flex items-center gap-1">
+                                {ex.sets.map((s, si) => (
+                                  <span key={si} className="text-gray-400">
+                                    {s.reps}
+                                    {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
+                                  </span>
+                                ))}
+                                <span className="ml-1 font-bold text-white">({totalReps})</span>
+                              </div>
+                            </div>
+                            {ex.notes && (
+                              <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {workout.notes && (
+                      <div className="mt-3 text-sm text-gray-400 italic border-t border-gray-700 pt-2">
+                        {workout.notes}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
           {view === 'history' && (
             <div className="space-y-2.5">
-              {/* Filter buttons */}
-              <div className="flex gap-1 mb-2">
-                {['all', 'day', 'week', 'month'].map(filter => (
-                  <button
-                    key={filter}
-                    onClick={() => setHistoryFilter(filter)}
-                    className={`px-3 py-1 rounded text-xs font-medium ${
-                      historyFilter === filter
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-800 text-gray-400'
-                    }`}
-                  >
-                    {filter === 'all' ? 'All' : filter === 'day' ? 'Today' : filter === 'week' ? 'Week' : 'Month'}
-                  </button>
-                ))}
-              </div>
-              
               <div className="flex items-center gap-2 mb-3">
                 <div className="relative flex-1">
                   <input
