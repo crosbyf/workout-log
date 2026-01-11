@@ -1007,7 +1007,7 @@ export default function Home() {
                   const bgColors = {
                     'Garage BW': 'bg-blue-900/20',
                     'Manual': 'bg-green-900/20',
-                    'Garage 10': 'bg-purple-900/20',
+                    'Garage 10': 'bg-purple-900/30',
                     'BW-only': 'bg-yellow-900/20',
                   };
                   const borderColor = locationColors[w.location] || 'border-gray-600';
@@ -1712,7 +1712,7 @@ export default function Home() {
               </div>
               
               <div className="p-4 space-y-2">
-                {workouts.slice().reverse().map((w, i) => {
+                {[...workouts].sort((a, b) => b.date.localeCompare(a.date)).map((w, i) => {
                   const [year, month, day] = w.date.split('-');
                   const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
                   const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
@@ -1723,10 +1723,17 @@ export default function Home() {
                     'Garage 10': 'border-purple-500',
                     'BW-only': 'border-yellow-500',
                   };
+                  const bgColors = {
+                    'Garage BW': 'bg-blue-900/30',
+                    'Manual': 'bg-green-900/30',
+                    'Garage 10': 'bg-purple-900/30',
+                    'BW-only': 'bg-yellow-900/30',
+                  };
                   const borderColor = locationColors[w.location] || 'border-gray-600';
+                  const bgColor = bgColors[w.location] || 'bg-gray-700';
                   
                   return (
-                    <div key={i} className={`bg-gray-700 rounded-lg p-3 border-l-4 ${borderColor}`}>
+                    <div key={i} className={`${bgColor} rounded-lg p-3 border-l-4 ${borderColor}`}>
                       <div className="font-bold text-sm mb-2">
                         {dayOfWeek} {month}/{day}
                         {w.location && <span className="ml-2 text-xs font-normal text-gray-400">· {w.location}</span>}
