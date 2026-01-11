@@ -97,6 +97,7 @@ export default function Home() {
   const [expandedTrends, setExpandedTrends] = useState({});
   const [deleteWorkout, setDeleteWorkout] = useState(null);
   const [deletePreset, setDeletePreset] = useState(null);
+  const [deleteExercise, setDeleteExercise] = useState(null);
   const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'day', 'week', 'month'
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
@@ -554,6 +555,35 @@ export default function Home() {
           </div>
         )}
 
+        {/* Delete Exercise Confirmation */}
+        {deleteExercise !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+              <h3 className="text-xl font-bold mb-4 text-red-400">Delete Exercise?</h3>
+              <p className="mb-6">Remove this exercise from your workout?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    const u = [...current.exercises];
+                    u.splice(deleteExercise, 1);
+                    setCurrent({ ...current, exercises: u });
+                    setDeleteExercise(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeleteExercise(null)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-gray-800 border-b border-gray-700 p-4">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
             <h1 className="text-2xl font-bold">Gors Log</h1>
@@ -719,26 +749,32 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Table Header */}
+              {/* Table Header - Dynamic based on max sets */}
               <div className="overflow-x-auto -mx-3 px-3">
                 <div className="min-w-max">
-                  <div className="text-[10px] text-gray-400 mb-1 grid grid-cols-[100px_40px_40px_40px_40px_35px_80px_24px_36px] gap-0.5">
-                    <div>Exercise</div>
-                    <div className="text-center">1</div>
-                    <div className="text-center">2</div>
-                    <div className="text-center">3</div>
-                    <div className="text-center">4</div>
-                    <div className="text-center">Tot</div>
-                    <div>Notes</div>
-                    <div></div>
-                    <div></div>
-                  </div>
-
-                  {/* Exercise Rows */}
-                  {current.exercises.map((ex, ei) => {
-                    const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                  {(() => {
+                    const maxSets = Math.max(4, ...current.exercises.map(ex => ex.sets.length));
+                    const setCols = Array.from({ length: maxSets }, (_, i) => '40px').join('_');
+                    const gridCols = `100px_${setCols}_35px_80px_24px_36px`;
+                    
                     return (
-                      <div key={ei} className="grid grid-cols-[100px_40px_40px_40px_40px_35px_80px_24px_36px] gap-0.5 mb-1">
+                      <>
+                        <div className={`text-[10px] text-gray-400 mb-1 grid gap-0.5`} style={{ gridTemplateColumns: gridCols.replace(/_/g, ' ') }}>
+                          <div>Exercise</div>
+                          {Array.from({ length: maxSets }, (_, i) => (
+                            <div key={i} className="text-center">{i + 1}</div>
+                          ))}
+                          <div className="text-center">Tot</div>
+                          <div>Notes</div>
+                          <div></div>
+                          <div></div>
+                        </div>
+
+                        {/* Exercise Rows */}
+                        {current.exercises.map((ex, ei) => {
+                          const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                          return (
+                            <div key={ei} className="grid gap-0.5 mb-1" style={{ gridTemplateColumns: gridCols.replace(/_/g, ' ') }}>
                         <select
                           value={ex.name}
                           onChange={(e) => updateEx(ei, 'name', e.target.value)}
@@ -750,7 +786,7 @@ export default function Home() {
                           ))}
                         </select>
                         
-                        {[0, 1, 2, 3].map((si) => (
+                        {Array.from({ length: maxSets }, (_, si) => (
                           <input
                             key={si}
                             type="number"
@@ -780,11 +816,7 @@ export default function Home() {
                         />
                         
                         <button
-                          onClick={() => {
-                            const u = [...current.exercises];
-                            u.splice(ei, 1);
-                            setCurrent({ ...current, exercises: u });
-                          }}
+                          onClick={() => setDeleteExercise(ei)}
                           className="text-red-400 hover:text-red-300 text-lg flex items-center justify-center"
                         >
                           ×
@@ -803,6 +835,9 @@ export default function Home() {
                       </div>
                     );
                   })}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -901,6 +936,7 @@ export default function Home() {
                           'Garage BW': 'border-blue-500',
                           'Manual': 'border-green-500',
                           'Garage 10': 'border-purple-500',
+                          'BW-only': 'border-yellow-500',    // Add this line
                         };
                         borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
                       }
@@ -1018,10 +1054,11 @@ export default function Home() {
                 
                 // Color-code by workout location
                 const locationColors = {
-                  'Garage BW': 'border-blue-500',
-                  'Manual': 'border-green-500',
-                  'Garage 10': 'border-purple-500',
-                };
+                    'Garage BW': 'border-blue-500',
+                    'Manual': 'border-green-500',
+                    'Garage 10': 'border-purple-500',
+                    'BW-only': 'border-yellow-500',    // Add this line
+                  };
                 const borderColor = locationColors[w.location] || 'border-gray-600';
                 
                 return (
