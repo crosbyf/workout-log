@@ -805,20 +805,41 @@ export default function Home() {
                         
                         {/* Sets */}
                         {Array.from({ length: maxSets }, (_, si) => (
-                          <input
-                            key={si}
-                            type="number"
-                            inputMode="numeric"
-                            value={ex.sets[si]?.reps || ''}
-                            onChange={(e) => {
-                              const u = [...current.exercises];
-                              if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
-                              u[ei].sets[si].reps = parseInt(e.target.value) || 0;
-                              setCurrent({ ...current, exercises: u });
-                            }}
-                            placeholder="0"
-                            className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center flex-shrink-0"
-                          />
+                          <div key={si} className="relative">
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              value={ex.sets[si]?.reps || ''}
+                              onChange={(e) => {
+                                const u = [...current.exercises];
+                                if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
+                                u[ei].sets[si].reps = parseInt(e.target.value) || 0;
+                                setCurrent({ ...current, exercises: u });
+                              }}
+                              onFocus={(e) => {
+                                e.target.nextElementSibling?.classList.remove('hidden');
+                              }}
+                              onBlur={(e) => {
+                                setTimeout(() => {
+                                  e.target.nextElementSibling?.classList.add('hidden');
+                                }, 200);
+                              }}
+                              placeholder="0"
+                              className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center flex-shrink-0"
+                            />
+                            {ex.sets[si] && (
+                              <button
+                                onClick={() => {
+                                  const u = [...current.exercises];
+                                  u[ei].sets.splice(si, 1);
+                                  setCurrent({ ...current, exercises: u });
+                                }}
+                                className="hidden absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10"
+                              >
+                                ×
+                              </button>
+                            )}
+                          </div>
                         ))}
                         
                         {/* Total */}
@@ -971,7 +992,7 @@ export default function Home() {
               {/* Recent Workouts */}
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-gray-400">Recent Workouts</h3>
-                {workouts.slice(0, 3).map((w, i) => {
+                {[...workouts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3).map((w, i) => {
                   const [year, month, day] = w.date.split('-');
                   const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
                   const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
@@ -1071,7 +1092,31 @@ export default function Home() {
               </div>
 
               {/* Calendar grid */}
-              <div className="bg-gray-800 rounded-lg p-3">
+              <div 
+                className="bg-gray-800 rounded-lg p-3"
+                onTouchStart={(e) => {
+                  e.currentTarget.dataset.startX = e.touches[0].clientX;
+                }}
+                onTouchEnd={(e) => {
+                  const startX = parseFloat(e.currentTarget.dataset.startX);
+                  const endX = e.changedTouches[0].clientX;
+                  const diff = endX - startX;
+                  
+                  if (Math.abs(diff) > 50) {
+                    if (diff > 0) {
+                      // Swiped right - go to previous month
+                      const newDate = new Date(calendarDate);
+                      newDate.setMonth(newDate.getMonth() - 1);
+                      setCalendarDate(newDate);
+                    } else {
+                      // Swiped left - go to next month
+                      const newDate = new Date(calendarDate);
+                      newDate.setMonth(newDate.getMonth() + 1);
+                      setCalendarDate(newDate);
+                    }
+                  }
+                }}
+              >
                 {/* Day headers */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -1156,8 +1201,8 @@ export default function Home() {
                     <span className="text-xs">Garage 10</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded border-2 border-gray-600"></div>
-                    <span className="text-xs">Other</span>
+                    <div className="w-4 h-4 rounded border-2 border-yellow-500"></div>
+                    <span className="text-xs">BW-only</span>
                   </div>
                 </div>
               </div>
@@ -1308,23 +1353,31 @@ export default function Home() {
                                 {Object.entries(data.weekly)
                                   .sort(([a], [b]) => b.localeCompare(a))
                                   .map(([week, reps]) => (
-                                    <div key={week} className="flex items-center gap-1.5">
+                                    <button
+                                      key={week}
+                                      onClick={() => {
+                                        const weekDate = new Date(week);
+                                        setCalendarDate(weekDate);
+                                        setView('calendar');
+                                      }}
+                                      className="flex items-center gap-1.5 w-full hover:bg-gray-700 rounded px-1 -mx-1"
+                                    >
                                       <span className="text-xs text-gray-500 w-20 text-right">
                                         {new Date(week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
                                       </span>
-                                <div className="flex-1 bg-gray-700 rounded-full h-5 relative overflow-hidden">
-                                  <div
-                                    className="bg-blue-500 h-full rounded-full"
-                                    style={{
-                                      width: `${(reps / Math.max(...Object.values(data.weekly))) * 100}%`
-                                    }}
-                                  />
-                                  <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                                    {reps}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
+                                      <div className="flex-1 bg-gray-700 rounded-full h-5 relative overflow-hidden">
+                                        <div
+                                          className="bg-blue-500 h-full rounded-full"
+                                          style={{
+                                            width: `${(reps / Math.max(...Object.values(data.weekly))) * 100}%`
+                                          }}
+                                        />
+                                        <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
+                                          {reps}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  ))}
                         </div>
                       </div>
 
@@ -1663,7 +1716,7 @@ export default function Home() {
             >
               <div className="flex flex-col items-center">
                 <Icons.Plus />
-                <span className="text-xs mt-1">Log</span>
+                <span className="text-xs mt-1">Workout</span>
               </div>
             </button>
             <button
