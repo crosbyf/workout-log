@@ -616,6 +616,10 @@ export default function Home() {
                       location: ''
                     });
                     setShowCloseConfirm(false);
+                    // Reset timer
+                    setWorkoutStarted(false);
+                    setWorkoutTimer(0);
+                    setTimerRunning(false);
                   }}
                   className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
                 >
@@ -1206,18 +1210,27 @@ export default function Home() {
                 </button>
                 
                 {showLogCalendar && (
-                  <div className="mt-3 bg-gray-800 rounded-xl p-3 shadow-md max-h-[400px] overflow-y-auto">
-                    {/* Day headers */}
-                    <div className="grid grid-cols-7 gap-1 mb-2 sticky top-0 bg-gray-800 pb-2">
-                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                        <div key={day} className="text-center text-xs text-gray-500 font-bold uppercase tracking-wider">
-                          {day}
-                        </div>
-                      ))}
+                  <div className="mt-3 bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    {/* Month/Year header - sticky */}
+                    <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-4 py-3 z-10">
+                      <h3 className="text-center font-bold text-lg">
+                        {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                      </h3>
                     </div>
+                    
+                    {/* Scrollable calendar content */}
+                    <div className="p-3 max-h-[350px] overflow-y-auto">
+                      {/* Day headers */}
+                      <div className="grid grid-cols-7 gap-1 mb-2">
+                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                          <div key={day} className="text-center text-xs text-gray-500 font-bold uppercase tracking-wider">
+                            {day}
+                          </div>
+                        ))}
+                      </div>
 
-                    {/* Calendar days */}
-                    <div className="grid grid-cols-7 gap-1">
+                      {/* Calendar days */}
+                      <div className="grid grid-cols-7 gap-1">
                       {(() => {
                         const now = new Date();
                         const year = now.getFullYear();
@@ -1256,8 +1269,7 @@ export default function Home() {
                               key={day}
                               onClick={() => {
                                 if (hasWorkout) {
-                                  setShowLogCalendar(false);
-                                  // Scroll to workout in list
+                                  // Scroll to workout in list (keep calendar open)
                                   setTimeout(() => {
                                     const workoutIndex = filtered().findIndex(w => w.date === dateStr);
                                     if (workoutIndex >= 0) {
@@ -1590,6 +1602,10 @@ export default function Home() {
                       setShowPresetSelector(false);
                       setShowWorkoutModal(true);
                       setEditing(null);
+                      // Reset timer for new workout
+                      setWorkoutStarted(false);
+                      setWorkoutTimer(0);
+                      setTimerRunning(false);
                     }}
                     className="w-full bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-left"
                   >
@@ -1873,9 +1889,12 @@ export default function Home() {
                                 u[ei].sets.push({ reps: 0, weight: null });
                                 setCurrent({ ...current, exercises: u });
                               }}
-                              className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-700 rounded"
+                              className="flex flex-col items-center justify-end"
                             >
-                              +
+                              <div className="text-[10px] text-transparent mb-0.5">.</div>
+                              <div className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-700 rounded">
+                                +
+                              </div>
                             </button>
                           </div>
                           
