@@ -1029,7 +1029,35 @@ export default function Home() {
                       </button>
                       
                       {isExpanded && (
-                        <div className="px-3 pb-3 space-y-2 border-t border-gray-700 pt-2">
+                        <div 
+                          className="px-3 pb-3 space-y-2 border-t border-gray-700 pt-2"
+                          onTouchStart={(e) => {
+                            e.currentTarget.dataset.startY = e.touches[0].clientY;
+                            e.currentTarget.dataset.startScrollTop = e.currentTarget.scrollTop || 0;
+                          }}
+                          onTouchMove={(e) => {
+                            const startY = parseFloat(e.currentTarget.dataset.startY);
+                            const scrollTop = parseFloat(e.currentTarget.dataset.startScrollTop);
+                            const currentY = e.touches[0].clientY;
+                            const diff = currentY - startY;
+                            
+                            // Only trigger swipe if we're at the top and swiping down
+                            if (scrollTop === 0 && diff > 0) {
+                              e.preventDefault();
+                            }
+                          }}
+                          onTouchEnd={(e) => {
+                            const startY = parseFloat(e.currentTarget.dataset.startY);
+                            const scrollTop = parseFloat(e.currentTarget.dataset.startScrollTop);
+                            const currentY = e.changedTouches[0].clientY;
+                            const diff = currentY - startY;
+                            
+                            // Swipe down to collapse
+                            if (scrollTop === 0 && diff > 50) {
+                              setExpandedRecent(null);
+                            }
+                          }}
+                        >
                           {w.exercises.map((ex, ei) => {
                             const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                             return (
@@ -1536,31 +1564,45 @@ export default function Home() {
           
           let startY = 0;
           let currentY = 0;
+          let scrollTop = 0;
           
           const handleTouchStart = (e) => {
             startY = e.touches[0].clientY;
+            scrollTop = e.currentTarget.scrollTop;
           };
           
           const handleTouchMove = (e) => {
             currentY = e.touches[0].clientY;
             const diff = currentY - startY;
-            if (diff > 0) {
+            
+            // Only allow swipe down if at top of scroll
+            if (scrollTop === 0 && diff > 0) {
+              e.preventDefault();
               e.currentTarget.style.transform = `translateY(${diff}px)`;
+              e.currentTarget.style.transition = 'none';
             }
           };
           
           const handleTouchEnd = (e) => {
             const diff = currentY - startY;
-            if (diff > 100) {
-              setShowDayModal(false);
+            e.currentTarget.style.transition = 'transform 0.2s ease-out';
+            
+            if (scrollTop === 0 && diff > 100) {
+              e.currentTarget.style.transform = 'translateY(100%)';
+              setTimeout(() => setShowDayModal(false), 200);
+            } else {
+              e.currentTarget.style.transform = '';
             }
-            e.currentTarget.style.transform = '';
           };
 
           return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowDayModal(false)}>
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" 
+              onClick={() => setShowDayModal(false)}
+              style={{ touchAction: 'none' }}
+            >
               <div 
-                className="bg-gray-800 rounded-t-2xl w-full max-h-[80vh] overflow-y-auto pb-8 transition-transform" 
+                className="bg-gray-800 rounded-t-2xl w-full max-h-[80vh] overflow-y-auto pb-8" 
                 onClick={(e) => e.stopPropagation()}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
