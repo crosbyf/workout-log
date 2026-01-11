@@ -641,7 +641,7 @@ export default function Home() {
 
         {/* Delete Exercise Confirmation */}
         {deleteExercise !== null && (
-          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[70] p-4">
             <div className="bg-gray-800 rounded-lg p-6 max-w-md">
               <h3 className="text-xl font-bold mb-4 text-red-400">Delete Exercise?</h3>
               <p className="mb-6">Remove this exercise from your workout?</p>
@@ -779,9 +779,8 @@ export default function Home() {
                                   </div>
                                   <div className="text-right font-bold">({totalReps})</div>
                                 </div>
-                                </div>
                                 {ex.notes && (
-                                  <div className="text-[10px] text-gray-500 ml-28 -mt-0.5">{ex.notes}</div>
+                                  <div className="text-[10px] text-gray-400 mt-1 pl-2">{ex.notes}</div>
                                 )}
                               </div>
                             );
