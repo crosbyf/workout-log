@@ -106,6 +106,8 @@ export default function Home() {
   const [showDayModal, setShowDayModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [expandedRecent, setExpandedRecent] = useState(null);
+  const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+  const [showPresetSelector, setShowPresetSelector] = useState(false);
   
   // Helper to get today's date in YYYY-MM-DD format without timezone issues
   const getTodayDate = () => {
@@ -134,6 +136,18 @@ export default function Home() {
       setLoading(false);
     }
   }, []);
+  
+  // Disable background scroll when modals are open
+  useEffect(() => {
+    if (showDayModal || showHistoryModal || showSettings || showClear || deleteWorkout !== null || deletePreset !== null || deleteExercise !== null || showCloseConfirm || showPresetSelector || showWorkoutModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showDayModal, showHistoryModal, showSettings, showClear, deleteWorkout, deletePreset, deleteExercise, showCloseConfirm, showPresetSelector, showWorkoutModal]);
 
   const save = (data, key, setter) => {
     localStorage.setItem(key, JSON.stringify(data));
@@ -989,6 +1003,15 @@ export default function Home() {
 
           {view === 'calendar' && (
             <div className="space-y-3">
+              {/* Start Workout Button */}
+              <button
+                onClick={() => setShowPresetSelector(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700 rounded-lg p-4 mb-3 flex items-center justify-center gap-2 text-lg font-semibold"
+              >
+                <Icons.Plus />
+                Start Workout
+              </button>
+              
               {/* Recent Workouts */}
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-gray-400">Recent Workouts</h3>
@@ -1171,7 +1194,7 @@ export default function Home() {
               >
                 {/* Day headers */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                     <div key={day} className="text-center text-xs text-gray-400 font-medium">
                       {day}
                     </div>
@@ -1183,7 +1206,9 @@ export default function Home() {
                   {(() => {
                     const year = calendarDate.getFullYear();
                     const month = calendarDate.getMonth();
-                    const firstDay = new Date(year, month, 1).getDay();
+                    let firstDay = new Date(year, month, 1).getDay();
+                    // Convert Sunday (0) to 7, then subtract 1 to make Monday = 0
+                    firstDay = firstDay === 0 ? 6 : firstDay - 1;
                     const daysInMonth = new Date(year, month + 1, 0).getDate();
                     const days = [];
 
@@ -1689,12 +1714,425 @@ export default function Home() {
           );
         })()}
         
+        {/* Preset Selector Modal */}
+        {showPresetSelector && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowPresetSelector(false)}>
+            <div 
+              className="bg-gray-800 rounded-t-2xl w-full max-h-[60vh] overflow-y-auto pb-8" 
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => {
+                e.currentTarget.dataset.startY = e.touches[0].clientY;
+              }}
+              onTouchMove={(e) => {
+                const startY = parseFloat(e.currentTarget.dataset.startY);
+                const currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                
+                if (diff > 0) {
+                  e.preventDefault();
+                  e.currentTarget.style.transform = `translateY(${diff}px)`;
+                  e.currentTarget.style.transition = 'none';
+                }
+              }}
+              onTouchEnd={(e) => {
+                const startY = parseFloat(e.currentTarget.dataset.startY);
+                const currentY = e.changedTouches[0].clientY;
+                const diff = currentY - startY;
+                
+                e.currentTarget.style.transition = 'transform 0.2s ease-out';
+                
+                if (diff > 100) {
+                  e.currentTarget.style.transform = 'translateY(100%)';
+                  setTimeout(() => setShowPresetSelector(false), 200);
+                } else {
+                  e.currentTarget.style.transform = '';
+                }
+              }}
+            >
+              <div className="sticky top-0 bg-gray-800 z-10 pt-3 pb-2 border-b border-gray-700">
+                <div className="flex justify-center pb-2">
+                  <div className="w-10 h-1 bg-gray-600 rounded-full"></div>
+                </div>
+                <div className="flex items-center justify-between px-4">
+                  <h3 className="font-bold text-lg">Choose Workout</h3>
+                  <button
+                    onClick={() => setShowPresetSelector(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 space-y-2">
+                {presets.map((p, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      loadPreset(p);
+                      setShowPresetSelector(false);
+                      setShowWorkoutModal(true);
+                      setEditing(null);
+                    }}
+                    className="w-full bg-gray-700 hover:bg-gray-600 p-4 rounded-lg text-left"
+                  >
+                    <div className="font-medium text-base mb-1">{p.name}</div>
+                    {p.exercises.length > 0 && (
+                      <div className="text-xs text-gray-400">{p.exercises.length} exercises</div>
+                    )}
+                  </button>
+                ))}
+                
+                {presets.length === 0 && (
+                  <div className="text-center text-gray-500 py-8 text-sm">
+                    No presets yet. Add some in Settings!
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Workout Modal */}
+        {showWorkoutModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
+            <div 
+              className="bg-gray-900 rounded-t-2xl w-full h-[90vh] overflow-y-auto flex flex-col" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="sticky top-0 bg-gray-900 z-10 border-b border-gray-700 px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowHistoryModal(true)}
+                      className="text-blue-400 hover:text-blue-300"
+                    >
+                      <Icons.Calendar />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (current.exercises.length > 0) {
+                          setShowCloseConfirm(true);
+                        } else {
+                          setShowWorkoutModal(false);
+                          setCurrent({
+                            date: getTodayDate(),
+                            exercises: [],
+                            notes: '',
+                            location: ''
+                          });
+                        }
+                      }}
+                    >
+                      <Icons.X />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Content - reuse workout form */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {/* View mode toggle */}
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setWorkoutViewMode('table')}
+                    className={`flex-1 px-3 py-1.5 rounded text-xs font-medium ${
+                      workoutViewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
+                    }`}
+                  >
+                    Table View
+                  </button>
+                  <button
+                    onClick={() => setWorkoutViewMode('cards')}
+                    className={`flex-1 px-3 py-1.5 rounded text-xs font-medium ${
+                      workoutViewMode === 'cards' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
+                    }`}
+                  >
+                    Card View
+                  </button>
+                </div>
+                
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Date</label>
+                    <input
+                      type="text"
+                      value={current.date}
+                      onChange={(e) => setCurrent({ ...current, date: e.target.value })}
+                      placeholder="YYYY-MM-DD"
+                      className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Workout</label>
+                    <select
+                      value={current.location}
+                      onChange={(e) => setCurrent({ ...current, location: e.target.value })}
+                      className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
+                    >
+                      <option value="">Select</option>
+                      {presets.map((p, i) => (
+                        <option key={i} value={p.name}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Workout Form */}
+                {workoutViewMode === 'table' ? (
+                  // Table View
+                  <div className="overflow-x-auto -mx-3 px-3">
+                    {current.exercises.map((ex, ei) => {
+                      const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      const maxSets = Math.max(4, ex.sets.length);
+                      
+                      return (
+                        <div key={ei} className="flex gap-0.5 mb-1 overflow-x-auto pb-1">
+                          {/* Frozen exercise name */}
+                          <div className="sticky left-0 bg-gray-900 z-10 pr-0.5">
+                            <select
+                              value={ex.name}
+                              onChange={(e) => updateEx(ei, 'name', e.target.value)}
+                              className="w-[100px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
+                            >
+                              <option value="">Select</option>
+                              {exercises.map((e, i) => (
+                                <option key={i} value={e}>{e}</option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          {/* Sets */}
+                          {Array.from({ length: maxSets }, (_, si) => (
+                            <div key={si} className="relative">
+                              <input
+                                type="number"
+                                inputMode="numeric"
+                                value={ex.sets[si]?.reps || ''}
+                                onChange={(e) => {
+                                  const u = [...current.exercises];
+                                  if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
+                                  u[ei].sets[si].reps = parseInt(e.target.value) || 0;
+                                  setCurrent({ ...current, exercises: u });
+                                }}
+                                onFocus={(e) => {
+                                  e.target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                                onBlur={(e) => {
+                                  setTimeout(() => {
+                                    e.target.nextElementSibling?.classList.add('hidden');
+                                  }, 200);
+                                }}
+                                placeholder="0"
+                                className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center flex-shrink-0"
+                              />
+                              {ex.sets[si] && (
+                                <button
+                                  onClick={() => {
+                                    const u = [...current.exercises];
+                                    u[ei].sets.splice(si, 1);
+                                    setCurrent({ ...current, exercises: u });
+                                  }}
+                                  className="hidden absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10"
+                                >
+                                  ×
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          
+                          {/* Total */}
+                          <div className="w-[35px] bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold flex-shrink-0">
+                            {total}
+                          </div>
+                          
+                          {/* Notes */}
+                          <input
+                            type="text"
+                            value={ex.notes}
+                            onChange={(e) => updateEx(ei, 'notes', e.target.value)}
+                            placeholder="..."
+                            className="w-[80px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] flex-shrink-0"
+                          />
+                          
+                          {/* Delete */}
+                          <button
+                            onClick={() => setDeleteExercise(ei)}
+                            className="w-[24px] text-red-400 hover:text-red-300 text-lg flex-shrink-0"
+                          >
+                            ×
+                          </button>
+                          
+                          {/* Add Set */}
+                          <button
+                            onClick={() => {
+                              const u = [...current.exercises];
+                              u[ei].sets.push({ reps: 0, weight: null });
+                              setCurrent({ ...current, exercises: u });
+                            }}
+                            className="w-[36px] text-blue-400 hover:text-blue-300 text-xs bg-gray-700 rounded flex-shrink-0"
+                          >
+                            +
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  // Card View
+                  <div className="space-y-2">
+                    {current.exercises.map((ex, ei) => {
+                      const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      return (
+                        <div key={ei} className="bg-gray-800 rounded-lg p-2">
+                          {/* Exercise name */}
+                          <select
+                            value={ex.name}
+                            onChange={(e) => updateEx(ei, 'name', e.target.value)}
+                            className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs font-medium mb-2"
+                          >
+                            <option value="">Select Exercise</option>
+                            {exercises.map((e, i) => (
+                              <option key={i} value={e}>{e}</option>
+                            ))}
+                          </select>
+                          
+                          {/* Sets row */}
+                          <div className="flex items-center gap-1 mb-2 overflow-x-auto">
+                            {ex.sets.map((s, si) => (
+                              <div key={si} className="flex flex-col items-center">
+                                <div className="text-[10px] text-gray-400 mb-0.5">S{si + 1}</div>
+                                <input
+                                  type="number"
+                                  inputMode="numeric"
+                                  value={s.reps || ''}
+                                  onChange={(e) => {
+                                    const u = [...current.exercises];
+                                    u[ei].sets[si].reps = parseInt(e.target.value) || 0;
+                                    setCurrent({ ...current, exercises: u });
+                                  }}
+                                  placeholder="0"
+                                  className="w-12 bg-gray-700 border border-gray-600 rounded px-1 py-1 text-[11px] text-center"
+                                />
+                              </div>
+                            ))}
+                            
+                            {/* Total */}
+                            <div className="flex flex-col items-center">
+                              <div className="text-[10px] text-gray-400 mb-0.5">Tot</div>
+                              <div className="w-12 bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold">
+                                {total}
+                              </div>
+                            </div>
+                            
+                            {/* Add Set button */}
+                            <button
+                              onClick={() => {
+                                const u = [...current.exercises];
+                                u[ei].sets.push({ reps: 0, weight: null });
+                                setCurrent({ ...current, exercises: u });
+                              }}
+                              className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-700 rounded"
+                            >
+                              +
+                            </button>
+                          </div>
+                          
+                          {/* Notes and delete */}
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={ex.notes}
+                              onChange={(e) => updateEx(ei, 'notes', e.target.value)}
+                              placeholder="Notes..."
+                              className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-[11px]"
+                            />
+                            <button
+                              onClick={() => setDeleteExercise(ei)}
+                              className="text-red-400 hover:text-red-300 px-2 py-1"
+                            >
+                              <Icons.Trash />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <button
+                  onClick={addEx}
+                  className="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded-lg border-2 border-dashed border-gray-600 text-sm"
+                >
+                  + Add Exercise
+                </button>
+
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Workout Notes</label>
+                  <textarea
+                    value={current.notes}
+                    onChange={(e) => setCurrent({ ...current, notes: e.target.value })}
+                    placeholder="How did it go?"
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 h-20 text-sm"
+                  />
+                </div>
+              </div>
+              
+              {/* Footer with Finish button */}
+              <div className="sticky bottom-0 bg-gray-900 border-t border-gray-700 p-4">
+                <button
+                  onClick={() => {
+                    saveWorkout();
+                    setShowWorkoutModal(false);
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold text-base"
+                >
+                  Finish Workout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* History Modal - For workout reference */}
         {showHistoryModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowHistoryModal(false)}>
             <div 
               className="bg-gray-800 rounded-t-2xl w-full max-h-[75vh] overflow-y-auto pb-8" 
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => {
+                e.currentTarget.dataset.startY = e.touches[0].clientY;
+                e.currentTarget.dataset.scrollTop = e.currentTarget.scrollTop;
+              }}
+              onTouchMove={(e) => {
+                const startY = parseFloat(e.currentTarget.dataset.startY);
+                const scrollTop = parseFloat(e.currentTarget.dataset.scrollTop);
+                const currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                
+                if (scrollTop === 0 && diff > 0) {
+                  e.preventDefault();
+                  e.currentTarget.style.transform = `translateY(${diff}px)`;
+                  e.currentTarget.style.transition = 'none';
+                }
+              }}
+              onTouchEnd={(e) => {
+                const startY = parseFloat(e.currentTarget.dataset.startY);
+                const scrollTop = parseFloat(e.currentTarget.dataset.scrollTop);
+                const currentY = e.changedTouches[0].clientY;
+                const diff = currentY - startY;
+                
+                e.currentTarget.style.transition = 'transform 0.2s ease-out';
+                
+                if (scrollTop === 0 && diff > 100) {
+                  e.currentTarget.style.transform = 'translateY(100%)';
+                  setTimeout(() => setShowHistoryModal(false), 200);
+                } else {
+                  e.currentTarget.style.transform = '';
+                }
+              }}
             >
               <div className="sticky top-0 bg-gray-800 z-10 pt-3 pb-2 border-b border-gray-700">
                 <div className="flex justify-center pb-2">
