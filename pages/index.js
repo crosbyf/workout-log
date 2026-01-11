@@ -314,8 +314,6 @@ export default function Home() {
     setShowNew(false);
   };
 
-  const deleteWorkout = (i) => save(workouts.filter((_, idx) => idx !== i), 'workouts', setWorkouts);
-  
   const editWorkout = (i) => {
     setCurrent(JSON.parse(JSON.stringify(workouts[i])));
     setEditing(i);
