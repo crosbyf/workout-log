@@ -98,6 +98,8 @@ export default function Home() {
   const [deleteWorkout, setDeleteWorkout] = useState(null);
   const [deletePreset, setDeletePreset] = useState(null);
   const [deleteExercise, setDeleteExercise] = useState(null);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [workoutViewMode, setWorkoutViewMode] = useState('table'); // 'table' or 'cards'
   const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'day', 'week', 'month'
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
@@ -555,6 +557,40 @@ export default function Home() {
           </div>
         )}
 
+        {/* Close Workout Confirmation */}
+        {showCloseConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+              <h3 className="text-xl font-bold mb-4 text-yellow-400">Discard Workout?</h3>
+              <p className="mb-6">You have unsaved changes. Are you sure you want to close?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowNew(false);
+                    setEditing(null);
+                    setCurrent({
+                      date: getTodayDate(),
+                      exercises: [],
+                      notes: '',
+                      location: ''
+                    });
+                    setShowCloseConfirm(false);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Discard
+                </button>
+                <button
+                  onClick={() => setShowCloseConfirm(false)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Keep Editing
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Delete Exercise Confirmation */}
         {deleteExercise !== null && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -705,21 +741,45 @@ export default function Home() {
 
           {view === 'log' && showNew && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-2">
                 <h2 className="text-lg font-semibold">{editing !== null ? 'Edit' : 'New'}</h2>
                 <button
                   onClick={() => {
-                    setShowNew(false);
-                    setEditing(null);
-                    setCurrent({
-                      date: getTodayDate(),
-                      exercises: [],
-                      notes: '',
-                      location: ''
-                    });
+                    if (current.exercises.length > 0) {
+                      setShowCloseConfirm(true);
+                    } else {
+                      setShowNew(false);
+                      setEditing(null);
+                      setCurrent({
+                        date: getTodayDate(),
+                        exercises: [],
+                        notes: '',
+                        location: ''
+                      });
+                    }
                   }}
                 >
                   <Icons.X />
+                </button>
+              </div>
+              
+              {/* View mode toggle */}
+              <div className="flex gap-1 mb-2">
+                <button
+                  onClick={() => setWorkoutViewMode('table')}
+                  className={`flex-1 px-3 py-1.5 rounded text-xs font-medium ${
+                    workoutViewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
+                  }`}
+                >
+                  Table View
+                </button>
+                <button
+                  onClick={() => setWorkoutViewMode('cards')}
+                  className={`flex-1 px-3 py-1.5 rounded text-xs font-medium ${
+                    workoutViewMode === 'cards' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
+                  }`}
+                >
+                  Card View
                 </button>
               </div>
               
@@ -749,8 +809,92 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Exercise entry - flexible rows */}
-              <div className="space-y-2">
+              
+              {workoutViewMode === 'table' ? (
+                // Table View
+                <div className="overflow-x-auto -mx-3 px-3">
+                  <div className="sticky left-0">
+                    {current.exercises.map((ex, ei) => {
+                      const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      const maxSets = Math.max(4, ex.sets.length);
+                      
+                      return (
+                        <div key={ei} className="flex gap-0.5 mb-1 min-w-max">
+                          {/* Frozen exercise name */}
+                          <div className="sticky left-0 bg-gray-900 z-10">
+                            <select
+                              value={ex.name}
+                              onChange={(e) => updateEx(ei, 'name', e.target.value)}
+                              className="w-[100px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
+                            >
+                              <option value="">Select</option>
+                              {exercises.map((e, i) => (
+                                <option key={i} value={e}>{e}</option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          {/* Sets */}
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: maxSets }, (_, si) => (
+                              <input
+                                key={si}
+                                type="number"
+                                inputMode="numeric"
+                                value={ex.sets[si]?.reps || ''}
+                                onChange={(e) => {
+                                  const u = [...current.exercises];
+                                  if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
+                                  u[ei].sets[si].reps = parseInt(e.target.value) || 0;
+                                  setCurrent({ ...current, exercises: u });
+                                }}
+                                placeholder="0"
+                                className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center"
+                              />
+                            ))}
+                          </div>
+                          
+                          {/* Total */}
+                          <div className="w-[35px] bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold">
+                            {total}
+                          </div>
+                          
+                          {/* Notes */}
+                          <input
+                            type="text"
+                            value={ex.notes}
+                            onChange={(e) => updateEx(ei, 'notes', e.target.value)}
+                            placeholder="..."
+                            className="w-[80px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
+                          />
+                          
+                          {/* Delete */}
+                          <button
+                            onClick={() => setDeleteExercise(ei)}
+                            className="w-[24px] text-red-400 hover:text-red-300 text-lg"
+                          >
+                            ×
+                          </button>
+                          
+                          {/* Add Set */}
+                          <button
+                            onClick={() => {
+                              const u = [...current.exercises];
+                              u[ei].sets.push({ reps: 0, weight: null });
+                              setCurrent({ ...current, exercises: u });
+                            }}
+                            className="w-[36px] text-blue-400 hover:text-blue-300 text-xs bg-gray-700 rounded"
+                          >
+                            +
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                // Card View
+                <div className="space-y-2">
                 {current.exercises.map((ex, ei) => {
                   const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                   return (
@@ -828,7 +972,7 @@ export default function Home() {
                   );
                 })}
               </div>
-
+              )}
 
               <button
                 onClick={addEx}
