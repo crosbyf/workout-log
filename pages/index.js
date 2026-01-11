@@ -108,6 +108,7 @@ export default function Home() {
   const [expandedRecent, setExpandedRecent] = useState(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
+  const [showLogCalendar, setShowLogCalendar] = useState(false);
   
   // Helper to get today's date in YYYY-MM-DD format without timezone issues
   const getTodayDate = () => {
@@ -639,16 +640,9 @@ export default function Home() {
         )}
 
         <div className="bg-gradient-to-b from-gray-800 to-gray-900 border-b border-gray-700/50 p-4 shadow-lg">
-          <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-700 to-amber-900 rounded-xl flex items-center justify-center shadow-md">
-                <span className="text-3xl">🥢</span>
-              </div>
-              <div className="text-center">
-                <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">GORS LOG</h1>
-                <p className="text-xs text-gray-400 -mt-0.5 font-medium">Get Stronger</p>
-              </div>
-            </div>
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">GORS LOG</h1>
+            <p className="text-xs text-gray-400 -mt-0.5 font-medium">Get Stronger</p>
           </div>
         </div>
 
@@ -1150,13 +1144,13 @@ export default function Home() {
           {view === 'list' && (
             <div className="space-y-2.5">
               <div className="flex items-center gap-2 mb-3">
-                <div className="relative flex-1">
+                <div className="relative flex-1 max-w-md">
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search workouts..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 pl-8 text-sm"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 pl-8 text-sm"
                   />
                   <div className="absolute left-2 top-2 text-gray-400">
                     <Icons.Search />
@@ -1164,10 +1158,107 @@ export default function Home() {
                 </div>
                 <button
                   onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                  className="bg-gray-800 px-2 py-1.5 rounded text-xs"
+                  className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors"
                 >
-                  {sortOrder === 'desc' ? '↓' : '↑'}
+                  <span>Sort</span>
+                  <div className="flex flex-col text-[10px] leading-none">
+                    <span>↑</span>
+                    <span>↓</span>
+                  </div>
                 </button>
+              </div>
+              
+              {/* Collapsible Calendar */}
+              <div className="mb-3">
+                <button
+                  onClick={() => setShowLogCalendar(!showLogCalendar)}
+                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg flex items-center justify-between transition-colors"
+                >
+                  <span className="text-sm font-medium">Calendar</span>
+                  <div className={`transform transition-transform ${showLogCalendar ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
+                </button>
+                
+                {showLogCalendar && (
+                  <div className="mt-2 bg-gray-800 rounded-xl p-3 shadow-md">
+                    {/* Day headers */}
+                    <div className="grid grid-cols-7 gap-1 mb-2">
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                        <div key={day} className="text-center text-xs text-gray-500 font-bold uppercase tracking-wider">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Calendar days */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {(() => {
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const month = now.getMonth();
+                        let firstDay = new Date(year, month, 1).getDay();
+                        firstDay = firstDay === 0 ? 6 : firstDay - 1;
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const days = [];
+
+                        // Empty cells
+                        for (let i = 0; i < firstDay; i++) {
+                          days.push(<div key={`empty-${i}`} className="aspect-square" />);
+                        }
+
+                        // Days
+                        for (let day = 1; day <= daysInMonth; day++) {
+                          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const dayWorkouts = workouts.filter(w => w.date === dateStr);
+                          const hasWorkout = dayWorkouts.length > 0;
+                          
+                          const locationColors = {
+                            'Garage BW': 'border-blue-500',
+                            'Manual': 'border-green-500',
+                            'Garage 10': 'border-purple-500',
+                            'BW-only': 'border-yellow-500',
+                          };
+                          let borderColor = 'border-gray-600';
+                          if (hasWorkout) {
+                            borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
+                          }
+
+                          const isToday = day === now.getDate();
+
+                          days.push(
+                            <button
+                              key={day}
+                              onClick={() => {
+                                if (hasWorkout) {
+                                  setShowLogCalendar(false);
+                                  // Scroll to workout in list
+                                  setTimeout(() => {
+                                    const workoutIndex = filtered().findIndex(w => w.date === dateStr);
+                                    if (workoutIndex >= 0) {
+                                      const element = document.querySelector(`[data-workout-date="${dateStr}"]`);
+                                      element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }
+                                  }, 100);
+                                }
+                              }}
+                              className={`aspect-square rounded border-2 flex items-center justify-center text-sm
+                                ${hasWorkout ? `${borderColor} font-bold bg-gray-700` : 'border-gray-700 bg-gray-800/50'}
+                                ${isToday ? 'ring-2 ring-blue-400' : ''}
+                                ${hasWorkout ? 'hover:bg-gray-600' : ''}
+                                transition-colors
+                              `}
+                            >
+                              {day}
+                            </button>
+                          );
+                        }
+
+                        return days;
+                      })()}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {filtered().map((w, i) => {
@@ -1186,7 +1277,7 @@ export default function Home() {
                 const borderColor = locationColors[w.location] || 'border-gray-600';
                 
                 return (
-                  <div key={i} className={`bg-gray-800 rounded-lg p-3 border-l-4 ${borderColor}`}>
+                  <div key={i} data-workout-date={w.date} className={`bg-gray-800 rounded-lg p-3 border-l-4 ${borderColor}`}>
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <div className="font-bold text-base">
@@ -1941,21 +2032,21 @@ export default function Home() {
               </div>
             </button>
             <button
+              onClick={() => setView('list')}
+              className={`flex-1 py-3 transition-colors ${view === 'list' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.Calendar className={view === 'list' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'list' ? 'font-bold' : ''}`}>Log</span>
+              </div>
+            </button>
+            <button
               onClick={() => setView('stats')}
               className={`flex-1 py-3 transition-colors ${view === 'stats' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.TrendingUp className={view === 'stats' ? 'scale-110' : ''} />
                 <span className={`text-xs mt-1 font-medium ${view === 'stats' ? 'font-bold' : ''}`}>Stats</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setView('list')}
-              className={`flex-1 py-3 transition-colors ${view === 'list' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-              <div className="flex flex-col items-center">
-                <Icons.Calendar className={view === 'list' ? 'scale-110' : ''} />
-                <span className={`text-xs mt-1 font-medium ${view === 'list' ? 'font-bold' : ''}`}>List</span>
               </div>
             </button>
             <button
