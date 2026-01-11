@@ -528,14 +528,15 @@ export default function Home() {
       <div className="min-h-screen bg-gray-900 text-white">
         {showClear && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
-              <h3 className="text-xl font-bold mb-4 text-red-400">Delete All?</h3>
-              <p className="mb-6">Delete all workouts?</p>
+            <div className="bg-gray-800 rounded-xl p-6 max-w-md border-2 border-red-500/50">
+              <h3 className="text-2xl font-bold mb-3 text-red-400">⚠️ Delete All Workouts?</h3>
+              <p className="mb-2 text-base">This will permanently delete <strong>all {workouts.length} workout{workouts.length !== 1 ? 's' : ''}</strong> from your history.</p>
+              <p className="mb-6 text-sm text-gray-400">Your workout presets will NOT be deleted. This action cannot be undone!</p>
               <div className="flex gap-3">
-                <button onClick={clearAll} className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold">
-                  Delete
+                <button onClick={clearAll} className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 py-3 rounded-xl font-bold shadow-lg transition-all">
+                  Yes, Delete All
                 </button>
-                <button onClick={() => setShowClear(false)} className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold">
+                <button onClick={() => setShowClear(false)} className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 py-3 rounded-xl font-semibold shadow-md transition-all">
                   Cancel
                 </button>
               </div>
@@ -695,22 +696,22 @@ export default function Home() {
                   const isExpanded = expandedRecent === i;
                   
                   const locationColors = {
-                    'Garage BW': 'border-blue-500',
-                    'Manual': 'border-green-500',
-                    'Garage 10': 'border-purple-500',
-                    'BW-only': 'border-yellow-500',
+                    'Garage BW': 'border-blue-400',
+                    'Manual': 'border-green-400',
+                    'Garage 10': 'border-purple-400',
+                    'BW-only': 'border-yellow-400',
                   };
                   const bgColors = {
-                    'Garage BW': 'bg-blue-900/20',
-                    'Manual': 'bg-green-900/20',
-                    'Garage 10': 'bg-purple-900/30',
-                    'BW-only': 'bg-yellow-900/20',
+                    'Garage BW': 'bg-blue-900/30',
+                    'Manual': 'bg-green-900/30',
+                    'Garage 10': 'bg-purple-900/40',
+                    'BW-only': 'bg-yellow-900/30',
                   };
                   const borderColor = locationColors[w.location] || 'border-gray-600';
                   const bgColor = bgColors[w.location] || 'bg-gray-800';
                   
                   return (
-                    <div key={i} className={`${bgColor} rounded-xl border-l-4 ${borderColor} overflow-hidden shadow-md hover:shadow-lg transition-shadow`}>
+                    <div key={i} className={`${bgColor} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`}>
                       <button
                         onClick={() => setExpandedRecent(isExpanded ? null : i)}
                         className="w-full p-3 text-left transition-colors hover:bg-white/5"
@@ -904,10 +905,10 @@ export default function Home() {
                       let borderColor = 'border-gray-700';
                       if (hasWorkout && dayWorkouts[0].location) {
                         const locationColors = {
-                          'Garage BW': 'border-blue-500',
-                          'Manual': 'border-green-500',
-                          'Garage 10': 'border-purple-500',
-                          'BW-only': 'border-yellow-500',
+                          'Garage BW': 'border-blue-400',
+                          'Manual': 'border-green-400',
+                          'Garage 10': 'border-purple-400',
+                          'BW-only': 'border-yellow-400',
                         };
                         borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
                       }
@@ -938,24 +939,24 @@ export default function Home() {
               </div>
 
               {/* Legend */}
-              <div className="bg-gray-800 rounded-lg p-3">
-                <div className="text-xs text-gray-400 mb-2">Workout Types:</div>
+              <div className="bg-gray-800 rounded-xl p-3 shadow-md">
+                <div className="text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wide">Workout Types:</div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded border-2 border-blue-500"></div>
-                    <span className="text-xs">Garage BW</span>
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm"></div>
+                    <span className="text-xs font-medium">Garage BW</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded border-2 border-green-500"></div>
-                    <span className="text-xs">Manual</span>
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-green-500 to-green-600 shadow-sm"></div>
+                    <span className="text-xs font-medium">Manual</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded border-2 border-purple-500"></div>
-                    <span className="text-xs">Garage 10</span>
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-purple-500 to-purple-600 shadow-sm"></div>
+                    <span className="text-xs font-medium">Garage 10</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded border-2 border-yellow-500"></div>
-                    <span className="text-xs">BW-only</span>
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-sm"></div>
+                    <span className="text-xs font-medium">BW-only</span>
                   </div>
                 </div>
               </div>
@@ -993,10 +994,10 @@ export default function Home() {
                 
                 // Color-code by workout location
                 const locationColors = {
-                  'Garage BW': 'border-blue-500',
-                  'Manual': 'border-green-500',
-                  'Garage 10': 'border-purple-500',
-                  'BW-only': 'border-yellow-500',
+                  'Garage BW': 'border-blue-400',
+                  'Manual': 'border-green-400',
+                  'Garage 10': 'border-purple-400',
+                  'BW-only': 'border-yellow-400',
                 };
                 const borderColor = locationColors[w.location] || 'border-gray-600';
                 
@@ -1120,7 +1121,7 @@ export default function Home() {
                                       </span>
                                       <div className="flex-1 bg-gray-700 rounded-full h-5 relative overflow-hidden">
                                         <div
-                                          className="bg-blue-500 h-full rounded-full"
+                                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full shadow-sm"
                                           style={{
                                             width: `${(reps / Math.max(...Object.values(data.weekly))) * 100}%`
                                           }}
@@ -1252,10 +1253,10 @@ export default function Home() {
                           const hasWorkout = dayWorkouts.length > 0;
                           
                           const locationColors = {
-                            'Garage BW': 'border-blue-500',
-                            'Manual': 'border-green-500',
-                            'Garage 10': 'border-purple-500',
-                            'BW-only': 'border-yellow-500',
+                            'Garage BW': 'border-blue-400',
+                            'Manual': 'border-green-400',
+                            'Garage 10': 'border-purple-400',
+                            'BW-only': 'border-yellow-400',
                           };
                           let borderColor = 'border-gray-600';
                           if (hasWorkout) {
@@ -1306,15 +1307,15 @@ export default function Home() {
                 
                 // Color-code by workout location
                 const locationColors = {
-                  'Garage BW': 'border-blue-500',
-                  'Manual': 'border-green-500',
-                  'Garage 10': 'border-purple-500',
-                  'BW-only': 'border-yellow-500',
+                  'Garage BW': 'border-blue-400',
+                  'Manual': 'border-green-400',
+                  'Garage 10': 'border-purple-400',
+                  'BW-only': 'border-yellow-400',
                 };
                 const borderColor = locationColors[w.location] || 'border-gray-600';
                 
                 return (
-                  <div key={i} data-workout-date={w.date} className={`bg-gray-800 rounded-lg p-3 border-l-4 ${borderColor}`}>
+                  <div key={i} data-workout-date={w.date} className={`bg-gray-800 rounded-xl p-3 border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow`}>
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <div className="font-bold text-base">
@@ -1389,24 +1390,24 @@ export default function Home() {
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
               <div className="flex gap-2 mb-3">
-                <label className="cursor-pointer bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                <label className="cursor-pointer bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
                   <Icons.Upload />
                   Import Presets
                   <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
                 </label>
-                <label className="cursor-pointer bg-green-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                <label className="cursor-pointer bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
                   <Icons.Upload />
                   Import Workouts
                   <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
                 </label>
               </div>
               <div className="flex gap-2 mb-3">
-                <button onClick={exportCSV} className="bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                <button onClick={exportCSV} className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
                   <Icons.Download />
                   Export All Data
                 </button>
-                <button onClick={() => setShowClear(true)} className="bg-red-600 px-3 py-1.5 rounded text-xs">
-                  Clear All Data
+                <button onClick={() => setShowClear(true)} className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all">
+                  Delete All Workouts
                 </button>
               </div>
               
@@ -2057,10 +2058,10 @@ export default function Home() {
                   const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                   
                   const locationColors = {
-                    'Garage BW': 'border-blue-500',
-                    'Manual': 'border-green-500',
-                    'Garage 10': 'border-purple-500',
-                    'BW-only': 'border-yellow-500',
+                    'Garage BW': 'border-blue-400',
+                    'Manual': 'border-green-400',
+                    'Garage 10': 'border-purple-400',
+                    'BW-only': 'border-yellow-400',
                   };
                   const bgColors = {
                     'Garage BW': 'bg-blue-900/30',
