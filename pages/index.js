@@ -774,7 +774,7 @@ export default function Home() {
                                   <div className="text-right">
                                     <div className="font-bold">({totalReps})</div>
                                     {ex.notes && (
-                                      <div className="text-[10px] text-gray-400 mt-1">{ex.notes}</div>
+                                      <div className="text-[10px] text-gray-400 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{ex.notes}</div>
                                     )}
                                   </div>
                                 </div>
@@ -1228,9 +1228,26 @@ export default function Home() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                           </svg>
                         </button>
-                        <h3 className="text-center font-bold text-lg">
-                          {logCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                        </h3>
+                        <div className="flex items-center gap-2 flex-1 justify-center">
+                          <h3 className="font-bold text-lg whitespace-nowrap">
+                            {logCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          </h3>
+                          {(() => {
+                            const now = new Date();
+                            const isCurrentMonth = logCalendarDate.getMonth() === now.getMonth() && 
+                                                  logCalendarDate.getFullYear() === now.getFullYear();
+                            if (!isCurrentMonth) {
+                              return (
+                                <button
+                                  onClick={() => setLogCalendarDate(new Date())}
+                                  className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs font-medium whitespace-nowrap"
+                                >
+                                  Today
+                                </button>
+                              );
+                            }
+                          })()}
+                        </div>
                         <button
                           onClick={() => {
                             const newDate = new Date(logCalendarDate);
@@ -1398,7 +1415,7 @@ export default function Home() {
                               <div className="text-right">
                                 <div className="font-bold">({totalReps})</div>
                                 {ex.notes && (
-                                  <div className="text-[10px] text-gray-400 mt-1">{ex.notes}</div>
+                                  <div className="text-[10px] text-gray-400 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{ex.notes}</div>
                                 )}
                               </div>
                             </div>
