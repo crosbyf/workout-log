@@ -104,6 +104,8 @@ export default function Home() {
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   const [showDayModal, setShowDayModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [expandedRecent, setExpandedRecent] = useState(null);
   
   // Helper to get today's date in YYYY-MM-DD format without timezone issues
   const getTodayDate = () => {
@@ -677,7 +679,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className="max-w-4xl mx-auto p-3 pb-20">
+        <div className="max-w-4xl mx-auto p-3 pb-24">
           {view === 'log' && !showNew && (
             <div className="space-y-1.5">
               <h2 className="text-base font-semibold mb-2">Select Workout</h2>
@@ -703,24 +705,32 @@ export default function Home() {
             <div className="space-y-3">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-lg font-semibold">{editing !== null ? 'Edit' : 'New'}</h2>
-                <button
-                  onClick={() => {
-                    if (current.exercises.length > 0) {
-                      setShowCloseConfirm(true);
-                    } else {
-                      setShowNew(false);
-                      setEditing(null);
-                      setCurrent({
-                        date: getTodayDate(),
-                        exercises: [],
-                        notes: '',
-                        location: ''
-                      });
-                    }
-                  }}
-                >
-                  <Icons.X />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowHistoryModal(true)}
+                    className="text-blue-400 hover:text-blue-300"
+                  >
+                    <Icons.Calendar />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (current.exercises.length > 0) {
+                        setShowCloseConfirm(true);
+                      } else {
+                        setShowNew(false);
+                        setEditing(null);
+                        setCurrent({
+                          date: getTodayDate(),
+                          exercises: [],
+                          notes: '',
+                          location: ''
+                        });
+                      }
+                    }}
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
               </div>
               
               {/* View mode toggle */}
@@ -958,6 +968,81 @@ export default function Home() {
 
           {view === 'calendar' && (
             <div className="space-y-3">
+              {/* Recent Workouts */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-gray-400">Recent Workouts</h3>
+                {workouts.slice(0, 3).map((w, i) => {
+                  const [year, month, day] = w.date.split('-');
+                  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                  const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                  const isExpanded = expandedRecent === i;
+                  
+                  const locationColors = {
+                    'Garage BW': 'border-blue-500',
+                    'Manual': 'border-green-500',
+                    'Garage 10': 'border-purple-500',
+                    'BW-only': 'border-yellow-500',
+                  };
+                  const borderColor = locationColors[w.location] || 'border-gray-600';
+                  
+                  return (
+                    <div key={i} className={`bg-gray-800 rounded-lg border-l-4 ${borderColor} overflow-hidden`}>
+                      <button
+                        onClick={() => setExpandedRecent(isExpanded ? null : i)}
+                        className="w-full p-3 text-left"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-sm">
+                              {dayOfWeek} {month}/{day}
+                              {w.location && <span className="ml-2 text-xs text-gray-400">· {w.location}</span>}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-0.5">
+                              {w.exercises.length} exercises
+                            </div>
+                          </div>
+                          <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                            <Icons.ChevronDown />
+                          </div>
+                        </div>
+                      </button>
+                      
+                      {isExpanded && (
+                        <div className="px-3 pb-3 space-y-2 border-t border-gray-700 pt-2">
+                          {w.exercises.map((ex, ei) => {
+                            const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                            return (
+                              <div key={ei}>
+                                <div className="flex items-start text-xs">
+                                  <div className="w-28 font-medium">{ex.name}</div>
+                                  <div className="flex-1 flex items-center gap-1">
+                                    {ex.sets.map((s, si) => (
+                                      <span key={si} className="text-gray-400">
+                                        {s.reps}
+                                        {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
+                                      </span>
+                                    ))}
+                                    <span className="ml-1 font-bold text-white">({totalReps})</span>
+                                  </div>
+                                </div>
+                                {ex.notes && (
+                                  <div className="text-[10px] text-gray-500 ml-28 -mt-0.5">{ex.notes}</div>
+                                )}
+                              </div>
+                            );
+                          })}
+                          {w.notes && (
+                            <div className="text-xs text-gray-400 italic mt-2 pt-2 border-t border-gray-700">
+                              {w.notes}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              
               {/* Month navigation */}
               <div className="flex items-center justify-between mb-3">
                 <button
@@ -1276,70 +1361,111 @@ export default function Home() {
             </div>
           )}
           
-          {view === 'more' && (
-            <div className="space-y-3">
-              <h2 className="text-base font-semibold mb-2">More</h2>
-              
-              {/* Quick actions */}
-              <div className="space-y-2">
+          {view === 'list' && (
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search workouts..."
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 pl-8 text-sm"
+                  />
+                  <div className="absolute left-2 top-2 text-gray-400">
+                    <Icons.Search />
+                  </div>
+                </div>
                 <button
-                  onClick={() => setView('history')}
-                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg text-left flex items-center justify-between"
+                  onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                  className="bg-gray-800 px-2 py-1.5 rounded text-xs"
                 >
-                  <span>Workout List</span>
-                  <span className="text-gray-400">→</span>
-                </button>
-                
-                <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg text-left flex items-center justify-between"
-                >
-                  <span>Settings & Import/Export</span>
-                  <span className="text-gray-400">→</span>
+                  {sortOrder === 'desc' ? '↓' : '↑'}
                 </button>
               </div>
-              
-              {/* Show settings if opened */}
-              {showSettings && (
-                <div className="bg-gray-800 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-semibold">Settings</h3>
-                    <button onClick={() => setShowClear(true)} className="bg-red-600 px-2 py-1 rounded text-xs">
-                      Clear All
-                    </button>
-                  </div>
-                  <div className="flex gap-2 mb-3">
-                    <label className="cursor-pointer bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
-                      <Icons.Upload />
-                      Presets
-                      <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
-                    </label>
-                    <label className="cursor-pointer bg-green-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
-                      <Icons.Upload />
-                      Workouts
-                      <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
-                    </label>
-                    <button onClick={exportCSV} className="bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
-                      <Icons.Download />
-                      Export
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    {presets.map((p, i) => (
-                      <div key={i} className="bg-gray-700 p-3 rounded flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">{p.name}</div>
-                          <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
+
+              {filtered().map((w, i) => {
+                // Parse date without timezone issues
+                const [year, month, day] = w.date.split('-');
+                const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                
+                // Color-code by workout location
+                const locationColors = {
+                  'Garage BW': 'border-blue-500',
+                  'Manual': 'border-green-500',
+                  'Garage 10': 'border-purple-500',
+                  'BW-only': 'border-yellow-500',
+                };
+                const borderColor = locationColors[w.location] || 'border-gray-600';
+                
+                return (
+                  <div key={i} className={`bg-gray-800 rounded-lg p-3 border-l-4 ${borderColor}`}>
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <div className="font-bold text-base">
+                          {dayOfWeek} {month}/{day}
+                          {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
                         </div>
+                      </div>
+                      <div className="flex gap-3">
                         <button
-                          onClick={() => setDeletePreset(i)}
-                          className="text-red-400"
+                          onClick={() => copyToSheets(w)}
+                          className="text-blue-400 hover:text-blue-300 p-1"
+                          title="Copy to clipboard"
+                        >
+                          <Icons.Copy />
+                        </button>
+                        <button
+                          onClick={() => editWorkout(i)}
+                          className="text-green-400 hover:text-green-300 p-1"
+                        >
+                          <Icons.Edit />
+                        </button>
+                        <button
+                          onClick={() => setDeleteWorkout(i)}
+                          className="text-red-400 hover:text-red-300 p-1"
                         >
                           <Icons.Trash />
                         </button>
                       </div>
-                    ))}
+                    </div>
+                    
+                    <div className="space-y-1">
+                      {w.exercises.map((ex, ei) => {
+                        const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                        return (
+                          <div key={ei}>
+                            <div className="flex items-start text-xs">
+                              <div className="w-32 font-medium truncate">{ex.name}</div>
+                              <div className="flex-1 flex items-center gap-1">
+                                {ex.sets.map((s, si) => (
+                                  <span key={si} className="text-gray-400">
+                                    {s.reps}
+                                    {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
+                                  </span>
+                                ))}
+                                <span className="ml-1 font-bold text-white">({totalReps})</span>
+                              </div>
+                            </div>
+                            {ex.notes && (
+                              <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {w.notes && (
+                      <div className="mt-2 text-xs text-gray-400 italic border-t border-gray-700 pt-1.5">{w.notes}</div>
+                    )}
                   </div>
+                );
+              })}
+
+              {filtered().length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  {search ? 'No workouts found' : 'No workouts yet'}
                 </div>
               )}
             </div>
@@ -1354,10 +1480,39 @@ export default function Home() {
           const [year, month, day] = selectedDay.split('-');
           const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
           const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+          
+          let startY = 0;
+          let currentY = 0;
+          
+          const handleTouchStart = (e) => {
+            startY = e.touches[0].clientY;
+          };
+          
+          const handleTouchMove = (e) => {
+            currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            if (diff > 0) {
+              e.currentTarget.style.transform = `translateY(${diff}px)`;
+            }
+          };
+          
+          const handleTouchEnd = (e) => {
+            const diff = currentY - startY;
+            if (diff > 100) {
+              setShowDayModal(false);
+            }
+            e.currentTarget.style.transform = '';
+          };
 
           return (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowDayModal(false)}>
-              <div className="bg-gray-800 rounded-t-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div 
+                className="bg-gray-800 rounded-t-2xl w-full max-h-[80vh] overflow-y-auto pb-8 transition-transform" 
+                onClick={(e) => e.stopPropagation()}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
                 {/* Drag handle */}
                 <div className="flex justify-center pt-3 pb-2">
                   <div className="w-10 h-1 bg-gray-600 rounded-full"></div>
@@ -1415,6 +1570,81 @@ export default function Home() {
           );
         })()}
         
+        {/* History Modal - For workout reference */}
+        {showHistoryModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowHistoryModal(false)}>
+            <div 
+              className="bg-gray-800 rounded-t-2xl w-full max-h-[75vh] overflow-y-auto pb-8" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-gray-800 z-10 pt-3 pb-2 border-b border-gray-700">
+                <div className="flex justify-center pb-2">
+                  <div className="w-10 h-1 bg-gray-600 rounded-full"></div>
+                </div>
+                <div className="flex items-center justify-between px-4">
+                  <h3 className="font-bold text-lg">Recent Workouts</h3>
+                  <button
+                    onClick={() => setShowHistoryModal(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 space-y-2">
+                {workouts.slice().reverse().map((w, i) => {
+                  const [year, month, day] = w.date.split('-');
+                  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                  const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                  
+                  const locationColors = {
+                    'Garage BW': 'border-blue-500',
+                    'Manual': 'border-green-500',
+                    'Garage 10': 'border-purple-500',
+                    'BW-only': 'border-yellow-500',
+                  };
+                  const borderColor = locationColors[w.location] || 'border-gray-600';
+                  
+                  return (
+                    <div key={i} className={`bg-gray-700 rounded-lg p-3 border-l-4 ${borderColor}`}>
+                      <div className="font-bold text-sm mb-2">
+                        {dayOfWeek} {month}/{day}
+                        {w.location && <span className="ml-2 text-xs font-normal text-gray-400">· {w.location}</span>}
+                      </div>
+                      
+                      <div className="space-y-1">
+                        {w.exercises.map((ex, ei) => {
+                          const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                          return (
+                            <div key={ei}>
+                              <div className="flex items-start text-xs">
+                                <div className="w-28 font-medium">{ex.name}</div>
+                                <div className="flex-1 flex items-center gap-1">
+                                  {ex.sets.map((s, si) => (
+                                    <span key={si} className="text-gray-400">
+                                      {s.reps}
+                                      {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
+                                    </span>
+                                  ))}
+                                  <span className="ml-1 font-bold text-white">({totalReps})</span>
+                                </div>
+                              </div>
+                              {ex.notes && (
+                                <div className="text-[10px] text-gray-500 ml-28 -mt-0.5">{ex.notes}</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 safe-area-pb">
           <div className="max-w-4xl mx-auto flex">
@@ -1446,12 +1676,12 @@ export default function Home() {
               </div>
             </button>
             <button
-              onClick={() => setView('more')}
-              className={`flex-1 py-3 ${view === 'more' ? 'text-blue-500' : 'text-gray-400'}`}
+              onClick={() => setView('list')}
+              className={`flex-1 py-3 ${view === 'list' ? 'text-blue-500' : 'text-gray-400'}`}
             >
               <div className="flex flex-col items-center">
-                <Icons.Settings />
-                <span className="text-xs mt-1">More</span>
+                <Icons.Calendar />
+                <span className="text-xs mt-1">List</span>
               </div>
             </button>
           </div>
