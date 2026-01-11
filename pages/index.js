@@ -783,7 +783,14 @@ export default function Home() {
                   <label className="block text-xs text-gray-400 mb-1">Workout</label>
                   <select
                     value={current.location}
-                    onChange={(e) => setCurrent({ ...current, location: e.target.value })}
+                    onChange={(e) => {
+                      const selectedPreset = presets.find(p => p.name === e.target.value);
+                      if (selectedPreset) {
+                        loadPreset(selectedPreset);
+                      } else {
+                        setCurrent({ ...current, location: e.target.value });
+                      }
+                    }}
                     className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
                   >
                     <option value="">Select</option>
@@ -1879,7 +1886,14 @@ export default function Home() {
                     <label className="block text-xs text-gray-400 mb-1">Workout</label>
                     <select
                       value={current.location}
-                      onChange={(e) => setCurrent({ ...current, location: e.target.value })}
+                      onChange={(e) => {
+                        const selectedPreset = presets.find(p => p.name === e.target.value);
+                        if (selectedPreset) {
+                          loadPreset(selectedPreset);
+                        } else {
+                          setCurrent({ ...current, location: e.target.value });
+                        }
+                      }}
                       className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
                     >
                       <option value="">Select</option>
