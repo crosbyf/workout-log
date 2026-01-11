@@ -936,6 +936,7 @@ export default function Home() {
                           'Garage BW': 'border-blue-500',
                           'Manual': 'border-green-500',
                           'Garage 10': 'border-purple-500',
+                          'BW-only': 'border-yellow-500',
                         };
                         borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
                       }
@@ -977,8 +978,8 @@ export default function Home() {
                     <span className="text-xs">Garage 10</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded border-2 border-yellow-500"></div>
-                    <span className="text-xs">BW-only</span>
+                    <div className="w-4 h-4 rounded border-2 border-gray-600"></div>
+                    <span className="text-xs">Other</span>
                   </div>
                 </div>
               </div>
@@ -1079,6 +1080,7 @@ export default function Home() {
                   'Garage BW': 'border-blue-500',
                   'Manual': 'border-green-500',
                   'Garage 10': 'border-purple-500',
+                  'BW-only': 'border-yellow-500',
                 };
                 const borderColor = locationColors[w.location] || 'border-gray-600';
                 
