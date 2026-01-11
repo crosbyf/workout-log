@@ -936,7 +936,6 @@ export default function Home() {
                           'Garage BW': 'border-blue-500',
                           'Manual': 'border-green-500',
                           'Garage 10': 'border-purple-500',
-                          'BW-only': 'border-yellow-500',    // Add this line
                         };
                         borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
                       }
@@ -958,6 +957,29 @@ export default function Home() {
 
                     return days;
                   })()}
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="bg-gray-800 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-2">Workout Types:</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded border-2 border-blue-500"></div>
+                    <span className="text-xs">Garage BW</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded border-2 border-green-500"></div>
+                    <span className="text-xs">Manual</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded border-2 border-purple-500"></div>
+                    <span className="text-xs">Garage 10</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded border-2 border-gray-600"></div>
+                    <span className="text-xs">Other</span>
+                  </div>
                 </div>
               </div>
 
@@ -1054,11 +1076,10 @@ export default function Home() {
                 
                 // Color-code by workout location
                 const locationColors = {
-                    'Garage BW': 'border-blue-500',
-                    'Manual': 'border-green-500',
-                    'Garage 10': 'border-purple-500',
-                    'BW-only': 'border-yellow-500',    // Add this line
-                  };
+                  'Garage BW': 'border-blue-500',
+                  'Manual': 'border-green-500',
+                  'Garage 10': 'border-purple-500',
+                };
                 const borderColor = locationColors[w.location] || 'border-gray-600';
                 
                 return (
