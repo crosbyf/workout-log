@@ -495,7 +495,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Gors Log</title>
+        <title>Rep Log</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="theme-color" content="#111827" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -638,12 +638,23 @@ export default function Home() {
           </div>
         )}
 
-        <div className="bg-gray-800 border-b border-gray-700 p-4">
+        <div className="bg-gradient-to-b from-gray-800 to-gray-900 border-b border-gray-700/50 p-4 shadow-lg">
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <h1 className="text-2xl font-bold">Gors Log</h1>
-            <button onClick={() => setShowSettings(!showSettings)} className="bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-1">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
+                <span className="text-2xl">💪</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Rep Log</h1>
+                <p className="text-[10px] text-gray-500 -mt-0.5">Track Your Progress</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowSettings(!showSettings)} 
+              className="bg-gray-700/50 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-1.5 transition-all shadow-sm"
+            >
               {showSettings ? <Icons.X /> : <Icons.Settings />}
-              {showSettings ? 'Close' : 'Settings'}
+              <span className="font-medium">{showSettings ? 'Close' : 'Settings'}</span>
             </button>
           </div>
         </div>
@@ -696,344 +707,21 @@ export default function Home() {
         )}
 
         <div className="max-w-4xl mx-auto p-3 pb-24">
-          {view === 'log' && !showNew && (
-            <div className="space-y-1.5">
-              <button
-                onClick={() => setShowPresetSelector(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700 rounded-lg p-4 mb-3 flex items-center justify-center gap-2 text-lg font-semibold"
-              >
-                <Icons.Plus />
-                New Workout
-              </button>
-              
-              <h2 className="text-base font-semibold mb-2">Select Workout</h2>
-              {presets.map((p, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setShowNew(true);
-                    p.name === 'Manual' ? setCurrent({ ...current, location: p.name }) : loadPreset(p);
-                  }}
-                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg text-left"
-                >
-                  <div className="font-medium text-sm">{p.name}</div>
-                  {p.name === 'Manual' ? (
-                    <div className="text-xs text-gray-400">Build your own</div>
-                  ) : p.exercises.length > 0 && (
-                    <div className="text-xs text-gray-400">{p.exercises.length} exercises</div>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {view === 'log' && showNew && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-semibold">{editing !== null ? 'Edit' : 'New'}</h2>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setShowHistoryModal(true)}
-                    className="text-blue-400 hover:text-blue-300"
-                  >
-                    <Icons.Calendar />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (current.exercises.length > 0) {
-                        setShowCloseConfirm(true);
-                      } else {
-                        setShowNew(false);
-                        setEditing(null);
-                        setCurrent({
-                          date: getTodayDate(),
-                          exercises: [],
-                          notes: '',
-                          location: ''
-                        });
-                      }
-                    }}
-                  >
-                    <Icons.X />
-                  </button>
-                </div>
-              </div>
-              
-              {/* View mode toggle */}
-              <div className="flex gap-1 mb-2">
-                <button
-                  onClick={() => setWorkoutViewMode('table')}
-                  className={`flex-1 px-3 py-1.5 rounded text-xs font-medium ${
-                    workoutViewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
-                  }`}
-                >
-                  Table View
-                </button>
-                <button
-                  onClick={() => setWorkoutViewMode('cards')}
-                  className={`flex-1 px-3 py-1.5 rounded text-xs font-medium ${
-                    workoutViewMode === 'cards' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400'
-                  }`}
-                >
-                  Card View
-                </button>
-              </div>
-              
-              <div className="space-y-2">
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Date</label>
-                  <input
-                    type="text"
-                    value={current.date}
-                    onChange={(e) => setCurrent({ ...current, date: e.target.value })}
-                    placeholder="YYYY-MM-DD"
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-400 mb-1">Workout</label>
-                  <select
-                    value={current.location}
-                    onChange={(e) => {
-                      const selectedPreset = presets.find(p => p.name === e.target.value);
-                      if (selectedPreset) {
-                        loadPreset(selectedPreset);
-                      } else {
-                        setCurrent({ ...current, location: e.target.value });
-                      }
-                    }}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm"
-                  >
-                    <option value="">Select</option>
-                    {presets.map((p, i) => (
-                      <option key={i} value={p.name}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              
-              {workoutViewMode === 'table' ? (
-                // Table View
-                <div className="overflow-x-auto -mx-3 px-3">
-                  {current.exercises.map((ex, ei) => {
-                    const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                    const maxSets = Math.max(4, ex.sets.length);
-                    
-                    return (
-                      <div key={ei} className="flex gap-0.5 mb-1 overflow-x-auto pb-1">
-                        {/* Frozen exercise name */}
-                        <div className="sticky left-0 bg-gray-900 z-10 pr-0.5">
-                          <select
-                            value={ex.name}
-                            onChange={(e) => updateEx(ei, 'name', e.target.value)}
-                            className="w-[100px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
-                          >
-                            <option value="">Select</option>
-                            {exercises.map((e, i) => (
-                              <option key={i} value={e}>{e}</option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        {/* Sets */}
-                        {Array.from({ length: maxSets }, (_, si) => (
-                          <div key={si} className="relative">
-                            <input
-                              type="number"
-                              inputMode="numeric"
-                              value={ex.sets[si]?.reps || ''}
-                              onChange={(e) => {
-                                const u = [...current.exercises];
-                                if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
-                                u[ei].sets[si].reps = parseInt(e.target.value) || 0;
-                                setCurrent({ ...current, exercises: u });
-                              }}
-                              onFocus={(e) => {
-                                e.target.nextElementSibling?.classList.remove('hidden');
-                              }}
-                              onBlur={(e) => {
-                                setTimeout(() => {
-                                  e.target.nextElementSibling?.classList.add('hidden');
-                                }, 200);
-                              }}
-                              placeholder="0"
-                              className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center flex-shrink-0"
-                            />
-                            {ex.sets[si] && (
-                              <button
-                                onClick={() => {
-                                  const u = [...current.exercises];
-                                  u[ei].sets.splice(si, 1);
-                                  setCurrent({ ...current, exercises: u });
-                                }}
-                                className="hidden absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10"
-                              >
-                                ×
-                              </button>
-                            )}
-                          </div>
-                        ))}
-                        
-                        {/* Total */}
-                        <div className="w-[35px] bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold flex-shrink-0">
-                          {total}
-                        </div>
-                        
-                        {/* Notes */}
-                        <input
-                          type="text"
-                          value={ex.notes}
-                          onChange={(e) => updateEx(ei, 'notes', e.target.value)}
-                          placeholder="..."
-                          className="w-[80px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] flex-shrink-0"
-                        />
-                        
-                        {/* Delete */}
-                        <button
-                          onClick={() => setDeleteExercise(ei)}
-                          className="w-[24px] text-red-400 hover:text-red-300 text-lg flex-shrink-0"
-                        >
-                          ×
-                        </button>
-                        
-                        {/* Add Set */}
-                        <button
-                          onClick={() => {
-                            const u = [...current.exercises];
-                            u[ei].sets.push({ reps: 0, weight: null });
-                            setCurrent({ ...current, exercises: u });
-                          }}
-                          className="w-[36px] text-blue-400 hover:text-blue-300 text-xs bg-gray-700 rounded flex-shrink-0"
-                        >
-                          +
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                // Card View
-                <div className="space-y-2">
-                {current.exercises.map((ex, ei) => {
-                  const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                  return (
-                    <div key={ei} className="bg-gray-800 rounded-lg p-2">
-                      {/* Exercise name */}
-                      <select
-                        value={ex.name}
-                        onChange={(e) => updateEx(ei, 'name', e.target.value)}
-                        className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs font-medium mb-2"
-                      >
-                        <option value="">Select Exercise</option>
-                        {exercises.map((e, i) => (
-                          <option key={i} value={e}>{e}</option>
-                        ))}
-                      </select>
-                      
-                      {/* Sets row */}
-                      <div className="flex items-center gap-1 mb-2 overflow-x-auto">
-                        {ex.sets.map((s, si) => (
-                          <div key={si} className="flex flex-col items-center">
-                            <div className="text-[10px] text-gray-400 mb-0.5">S{si + 1}</div>
-                            <input
-                              type="number"
-                              inputMode="numeric"
-                              value={s.reps || ''}
-                              onChange={(e) => {
-                                const u = [...current.exercises];
-                                u[ei].sets[si].reps = parseInt(e.target.value) || 0;
-                                setCurrent({ ...current, exercises: u });
-                              }}
-                              placeholder="0"
-                              className="w-12 bg-gray-700 border border-gray-600 rounded px-1 py-1 text-[11px] text-center"
-                            />
-                          </div>
-                        ))}
-                        
-                        {/* Total */}
-                        <div className="flex flex-col items-center">
-                          <div className="text-[10px] text-gray-400 mb-0.5">Tot</div>
-                          <div className="w-12 bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold">
-                            {total}
-                          </div>
-                        </div>
-                        
-                        {/* Add Set button */}
-                        <button
-                          onClick={() => {
-                            const u = [...current.exercises];
-                            u[ei].sets.push({ reps: 0, weight: null });
-                            setCurrent({ ...current, exercises: u });
-                          }}
-                          className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-700 rounded"
-                        >
-                          +
-                        </button>
-                      </div>
-                      
-                      {/* Notes and delete */}
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          value={ex.notes}
-                          onChange={(e) => updateEx(ei, 'notes', e.target.value)}
-                          placeholder="Notes..."
-                          className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-[11px]"
-                        />
-                        <button
-                          onClick={() => setDeleteExercise(ei)}
-                          className="text-red-400 hover:text-red-300 px-2 py-1"
-                        >
-                          <Icons.Trash />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              )}
-
-              <button
-                onClick={addEx}
-                className="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded-lg border-2 border-dashed border-gray-600 text-sm"
-              >
-                + Add Exercise
-              </button>
-
-              <div>
-                <label className="block text-xs text-gray-400 mb-1">Workout Notes</label>
-                <textarea
-                  value={current.notes}
-                  onChange={(e) => setCurrent({ ...current, notes: e.target.value })}
-                  placeholder="How did it go?"
-                  className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 h-20 text-sm"
-                />
-              </div>
-
-              <button
-                onClick={saveWorkout}
-                className="w-full bg-blue-600 hover:bg-blue-700 py-2.5 rounded-lg font-semibold text-sm"
-              >
-                {editing !== null ? 'Update' : 'Save'}
-              </button>
-            </div>
-          )}
 
           {view === 'calendar' && (
             <div className="space-y-3">
               {/* New Workout Button */}
               <button
                 onClick={() => setShowPresetSelector(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700 rounded-lg p-4 mb-3 flex items-center justify-center gap-2 text-lg font-semibold"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-4 mb-4 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
               >
-                <Icons.Plus />
+                <Icons.Plus className="w-6 h-6" />
                 New Workout
               </button>
               
               {/* Recent Workouts */}
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-gray-400">Recent Workouts</h3>
+                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wide">Recent Workouts</h3>
                 {[...workouts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3).map((w, i) => {
                   const [year, month, day] = w.date.split('-');
                   const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -1056,10 +744,10 @@ export default function Home() {
                   const bgColor = bgColors[w.location] || 'bg-gray-800';
                   
                   return (
-                    <div key={i} className={`${bgColor} rounded-lg border-l-4 ${borderColor} overflow-hidden`}>
+                    <div key={i} className={`${bgColor} rounded-xl border-l-4 ${borderColor} overflow-hidden shadow-md hover:shadow-lg transition-shadow`}>
                       <button
                         onClick={() => setExpandedRecent(isExpanded ? null : i)}
-                        className="w-full p-3 text-left"
+                        className="w-full p-3 text-left transition-colors hover:bg-white/5"
                       >
                         <div className="flex items-center justify-between">
                           <div>
@@ -1142,7 +830,7 @@ export default function Home() {
               </div>
               
               {/* Calendar Header */}
-              <h3 className="text-sm font-semibold text-gray-400 mt-4 mb-2">Calendar</h3>
+              <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wide mt-4 mb-2">Calendar</h3>
               
               {/* Month navigation */}
               <div className="flex items-center justify-between mb-3">
@@ -1190,7 +878,7 @@ export default function Home() {
 
               {/* Calendar grid */}
               <div 
-                className="bg-gray-800 rounded-lg p-3"
+                className="bg-gray-800 rounded-xl p-3 shadow-md"
                 onTouchStart={(e) => {
                   e.currentTarget.dataset.startX = e.touches[0].clientX;
                 }}
@@ -1217,7 +905,7 @@ export default function Home() {
                 {/* Day headers */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
                   {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                    <div key={day} className="text-center text-xs text-gray-400 font-medium">
+                    <div key={day} className="text-center text-xs text-gray-500 font-bold uppercase tracking-wider">
                       {day}
                     </div>
                   ))}
@@ -2250,42 +1938,33 @@ export default function Home() {
         )}
         
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 safe-area-pb">
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700/50 safe-area-pb shadow-2xl">
           <div className="max-w-4xl mx-auto flex">
             <button
               onClick={() => setView('calendar')}
-              className={`flex-1 py-3 ${view === 'calendar' ? 'text-blue-500' : 'text-gray-400'}`}
+              className={`flex-1 py-3 transition-colors ${view === 'calendar' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
-                <Icons.Calendar />
-                <span className="text-xs mt-1">Home</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setView('log')}
-              className={`flex-1 py-3 ${view === 'log' ? 'text-blue-500' : 'text-gray-400'}`}
-            >
-              <div className="flex flex-col items-center">
-                <Icons.Plus />
-                <span className="text-xs mt-1">Workout</span>
+                <Icons.Calendar className={view === 'calendar' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'calendar' ? 'font-bold' : ''}`}>Home</span>
               </div>
             </button>
             <button
               onClick={() => setView('stats')}
-              className={`flex-1 py-3 ${view === 'stats' ? 'text-blue-500' : 'text-gray-400'}`}
+              className={`flex-1 py-3 transition-colors ${view === 'stats' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
-                <Icons.TrendingUp />
-                <span className="text-xs mt-1">Stats</span>
+                <Icons.TrendingUp className={view === 'stats' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'stats' ? 'font-bold' : ''}`}>Stats</span>
               </div>
             </button>
             <button
               onClick={() => setView('list')}
-              className={`flex-1 py-3 ${view === 'list' ? 'text-blue-500' : 'text-gray-400'}`}
+              className={`flex-1 py-3 transition-colors ${view === 'list' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
-                <Icons.Calendar />
-                <span className="text-xs mt-1">List</span>
+                <Icons.Calendar className={view === 'list' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'list' ? 'font-bold' : ''}`}>List</span>
               </div>
             </button>
           </div>
