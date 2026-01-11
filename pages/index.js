@@ -1295,7 +1295,10 @@ export default function Home() {
                         return days;
                       })()}
                     </div>
+                    {/* Close scrollable container */}
                   </div>
+                  {/* Close outer container */}
+                </div>
                 )}
               </div>
 
