@@ -86,7 +86,7 @@ export default function Home() {
   const [workouts, setWorkouts] = useState([]);
   const [presets, setPresets] = useState([]);
   const [exercises, setExercises] = useState([]);
-  const [view, setView] = useState('log');
+  const [view, setView] = useState('calendar'); // Start with calendar as home
   const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -103,6 +103,7 @@ export default function Home() {
   const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'day', 'week', 'month'
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
+  const [showDayModal, setShowDayModal] = useState(false);
   
   // Helper to get today's date in YYYY-MM-DD format without timezone issues
   const getTodayDate = () => {
@@ -676,48 +677,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className="bg-gray-800 border-b">
-          <div className="max-w-4xl mx-auto flex">
-            <button
-              onClick={() => setView('log')}
-              className={`flex-1 py-3 ${view === 'log' ? 'bg-gray-700 border-b-2 border-blue-500' : ''}`}
-            >
-              <div className="flex flex-col items-center">
-                <Icons.Plus />
-                <span className="text-sm mt-1">Log</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setView('calendar')}
-              className={`flex-1 py-3 ${view === 'calendar' ? 'bg-gray-700 border-b-2 border-blue-500' : ''}`}
-            >
-              <div className="flex flex-col items-center">
-                <Icons.Calendar />
-                <span className="text-sm mt-1">Cal</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setView('history')}
-              className={`flex-1 py-3 ${view === 'history' ? 'bg-gray-700 border-b-2 border-blue-500' : ''}`}
-            >
-              <div className="flex flex-col items-center">
-                <Icons.Calendar />
-                <span className="text-sm mt-1">List</span>
-              </div>
-            </button>
-            <button
-              onClick={() => setView('trends')}
-              className={`flex-1 py-3 ${view === 'trends' ? 'bg-gray-700 border-b-2 border-blue-500' : ''}`}
-            >
-              <div className="flex flex-col items-center">
-                <Icons.TrendingUp />
-                <span className="text-sm mt-1">Trends</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <div className="max-w-4xl mx-auto p-3">
+        <div className="max-w-4xl mx-auto p-3 pb-20">
           {view === 'log' && !showNew && (
             <div className="space-y-1.5">
               <h2 className="text-base font-semibold mb-2">Select Workout</h2>
@@ -813,84 +773,80 @@ export default function Home() {
               {workoutViewMode === 'table' ? (
                 // Table View
                 <div className="overflow-x-auto -mx-3 px-3">
-                  <div className="sticky left-0">
-                    {current.exercises.map((ex, ei) => {
-                      const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                      const maxSets = Math.max(4, ex.sets.length);
-                      
-                      return (
-                        <div key={ei} className="flex gap-0.5 mb-1 min-w-max">
-                          {/* Frozen exercise name */}
-                          <div className="sticky left-0 bg-gray-900 z-10">
-                            <select
-                              value={ex.name}
-                              onChange={(e) => updateEx(ei, 'name', e.target.value)}
-                              className="w-[100px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
-                            >
-                              <option value="">Select</option>
-                              {exercises.map((e, i) => (
-                                <option key={i} value={e}>{e}</option>
-                              ))}
-                            </select>
-                          </div>
-                          
-                          {/* Sets */}
-                          <div className="flex gap-0.5">
-                            {Array.from({ length: maxSets }, (_, si) => (
-                              <input
-                                key={si}
-                                type="number"
-                                inputMode="numeric"
-                                value={ex.sets[si]?.reps || ''}
-                                onChange={(e) => {
-                                  const u = [...current.exercises];
-                                  if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
-                                  u[ei].sets[si].reps = parseInt(e.target.value) || 0;
-                                  setCurrent({ ...current, exercises: u });
-                                }}
-                                placeholder="0"
-                                className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center"
-                              />
-                            ))}
-                          </div>
-                          
-                          {/* Total */}
-                          <div className="w-[35px] bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold">
-                            {total}
-                          </div>
-                          
-                          {/* Notes */}
-                          <input
-                            type="text"
-                            value={ex.notes}
-                            onChange={(e) => updateEx(ei, 'notes', e.target.value)}
-                            placeholder="..."
-                            className="w-[80px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
-                          />
-                          
-                          {/* Delete */}
-                          <button
-                            onClick={() => setDeleteExercise(ei)}
-                            className="w-[24px] text-red-400 hover:text-red-300 text-lg"
+                  {current.exercises.map((ex, ei) => {
+                    const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                    const maxSets = Math.max(4, ex.sets.length);
+                    
+                    return (
+                      <div key={ei} className="flex gap-0.5 mb-1 overflow-x-auto pb-1">
+                        {/* Frozen exercise name */}
+                        <div className="sticky left-0 bg-gray-900 z-10 pr-0.5">
+                          <select
+                            value={ex.name}
+                            onChange={(e) => updateEx(ei, 'name', e.target.value)}
+                            className="w-[100px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
                           >
-                            ×
-                          </button>
-                          
-                          {/* Add Set */}
-                          <button
-                            onClick={() => {
+                            <option value="">Select</option>
+                            {exercises.map((e, i) => (
+                              <option key={i} value={e}>{e}</option>
+                            ))}
+                          </select>
+                        </div>
+                        
+                        {/* Sets */}
+                        {Array.from({ length: maxSets }, (_, si) => (
+                          <input
+                            key={si}
+                            type="number"
+                            inputMode="numeric"
+                            value={ex.sets[si]?.reps || ''}
+                            onChange={(e) => {
                               const u = [...current.exercises];
-                              u[ei].sets.push({ reps: 0, weight: null });
+                              if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
+                              u[ei].sets[si].reps = parseInt(e.target.value) || 0;
                               setCurrent({ ...current, exercises: u });
                             }}
-                            className="w-[36px] text-blue-400 hover:text-blue-300 text-xs bg-gray-700 rounded"
-                          >
-                            +
-                          </button>
+                            placeholder="0"
+                            className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center flex-shrink-0"
+                          />
+                        ))}
+                        
+                        {/* Total */}
+                        <div className="w-[35px] bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold flex-shrink-0">
+                          {total}
                         </div>
-                      );
-                    })}
-                  </div>
+                        
+                        {/* Notes */}
+                        <input
+                          type="text"
+                          value={ex.notes}
+                          onChange={(e) => updateEx(ei, 'notes', e.target.value)}
+                          placeholder="..."
+                          className="w-[80px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] flex-shrink-0"
+                        />
+                        
+                        {/* Delete */}
+                        <button
+                          onClick={() => setDeleteExercise(ei)}
+                          className="w-[24px] text-red-400 hover:text-red-300 text-lg flex-shrink-0"
+                        >
+                          ×
+                        </button>
+                        
+                        {/* Add Set */}
+                        <button
+                          onClick={() => {
+                            const u = [...current.exercises];
+                            u[ei].sets.push({ reps: 0, weight: null });
+                            setCurrent({ ...current, exercises: u });
+                          }}
+                          className="w-[36px] text-blue-400 hover:text-blue-300 text-xs bg-gray-700 rounded flex-shrink-0"
+                        >
+                          +
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               ) : (
                 // Card View
@@ -1076,7 +1032,12 @@ export default function Home() {
                       days.push(
                         <button
                           key={day}
-                          onClick={() => setSelectedDay(hasWorkout ? dateStr : null)}
+                          onClick={() => {
+                            if (hasWorkout) {
+                              setSelectedDay(dateStr);
+                              setShowDayModal(true);
+                            }
+                          }}
                           className={`aspect-square rounded border-2 flex items-center justify-center text-sm
                             ${hasWorkout ? `${borderColor} bg-gray-700 font-bold` : 'border-gray-700 bg-gray-800'}
                             ${isToday ? 'ring-2 ring-blue-400' : ''}
@@ -1115,66 +1076,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-
-              {/* Selected day details */}
-              {selectedDay && (() => {
-                const workout = workouts.find(w => w.date === selectedDay);
-                if (!workout) return null;
-
-                const [year, month, day] = selectedDay.split('-');
-                const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-
-                return (
-                  <div className="bg-gray-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <h3 className="font-bold text-lg">
-                          {dayOfWeek}, {month}/{day}/{year}
-                        </h3>
-                        {workout.location && <div className="text-sm text-gray-400">{workout.location}</div>}
-                      </div>
-                      <button
-                        onClick={() => setSelectedDay(null)}
-                        className="text-gray-400 hover:text-white"
-                      >
-                        <Icons.X />
-                      </button>
-                    </div>
-
-                    <div className="space-y-2">
-                      {workout.exercises.map((ex, ei) => {
-                        const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                        return (
-                          <div key={ei}>
-                            <div className="flex items-start text-sm">
-                              <div className="w-32 font-medium">{ex.name}</div>
-                              <div className="flex-1 flex items-center gap-1">
-                                {ex.sets.map((s, si) => (
-                                  <span key={si} className="text-gray-400">
-                                    {s.reps}
-                                    {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
-                                  </span>
-                                ))}
-                                <span className="ml-1 font-bold text-white">({totalReps})</span>
-                              </div>
-                            </div>
-                            {ex.notes && (
-                              <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {workout.notes && (
-                      <div className="mt-3 text-sm text-gray-400 italic border-t border-gray-700 pt-2">
-                        {workout.notes}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
             </div>
           )}
 
@@ -1288,9 +1189,9 @@ export default function Home() {
             </div>
           )}
 
-          {view === 'trends' && (
+          {view === 'stats' && (
             <div className="space-y-3">
-              <h2 className="text-base font-semibold mb-2">Trends</h2>
+              <h2 className="text-base font-semibold mb-2">Your Stats</h2>
               {Object.keys(trends()).length === 0 ? (
                 <div className="text-center text-gray-500 py-8 text-sm">
                   No data yet. Start logging workouts!
@@ -1374,6 +1275,186 @@ export default function Home() {
               )}
             </div>
           )}
+          
+          {view === 'more' && (
+            <div className="space-y-3">
+              <h2 className="text-base font-semibold mb-2">More</h2>
+              
+              {/* Quick actions */}
+              <div className="space-y-2">
+                <button
+                  onClick={() => setView('history')}
+                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg text-left flex items-center justify-between"
+                >
+                  <span>Workout List</span>
+                  <span className="text-gray-400">→</span>
+                </button>
+                
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg text-left flex items-center justify-between"
+                >
+                  <span>Settings & Import/Export</span>
+                  <span className="text-gray-400">→</span>
+                </button>
+              </div>
+              
+              {/* Show settings if opened */}
+              {showSettings && (
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-semibold">Settings</h3>
+                    <button onClick={() => setShowClear(true)} className="bg-red-600 px-2 py-1 rounded text-xs">
+                      Clear All
+                    </button>
+                  </div>
+                  <div className="flex gap-2 mb-3">
+                    <label className="cursor-pointer bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                      <Icons.Upload />
+                      Presets
+                      <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
+                    </label>
+                    <label className="cursor-pointer bg-green-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                      <Icons.Upload />
+                      Workouts
+                      <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
+                    </label>
+                    <button onClick={exportCSV} className="bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                      <Icons.Download />
+                      Export
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {presets.map((p, i) => (
+                      <div key={i} className="bg-gray-700 p-3 rounded flex items-center justify-between">
+                        <div>
+                          <div className="font-medium">{p.name}</div>
+                          <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
+                        </div>
+                        <button
+                          onClick={() => setDeletePreset(i)}
+                          className="text-red-400"
+                        >
+                          <Icons.Trash />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* Day Details Modal */}
+        {showDayModal && selectedDay && (() => {
+          const workout = workouts.find(w => w.date === selectedDay);
+          if (!workout) return null;
+
+          const [year, month, day] = selectedDay.split('-');
+          const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+
+          return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowDayModal(false)}>
+              <div className="bg-gray-800 rounded-t-2xl w-full max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                {/* Drag handle */}
+                <div className="flex justify-center pt-3 pb-2">
+                  <div className="w-10 h-1 bg-gray-600 rounded-full"></div>
+                </div>
+                
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-bold text-lg">
+                        {dayOfWeek}, {month}/{day}/{year}
+                      </h3>
+                      {workout.location && <div className="text-sm text-gray-400">{workout.location}</div>}
+                    </div>
+                    <button
+                      onClick={() => setShowDayModal(false)}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <Icons.X />
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    {workout.exercises.map((ex, ei) => {
+                      const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      return (
+                        <div key={ei}>
+                          <div className="flex items-start text-sm">
+                            <div className="w-32 font-medium">{ex.name}</div>
+                            <div className="flex-1 flex items-center gap-1">
+                              {ex.sets.map((s, si) => (
+                                <span key={si} className="text-gray-400">
+                                  {s.reps}
+                                  {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
+                                </span>
+                              ))}
+                              <span className="ml-1 font-bold text-white">({totalReps})</span>
+                            </div>
+                          </div>
+                          {ex.notes && (
+                            <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {workout.notes && (
+                    <div className="mt-4 text-sm text-gray-400 italic border-t border-gray-700 pt-3">
+                      {workout.notes}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+        
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 safe-area-pb">
+          <div className="max-w-4xl mx-auto flex">
+            <button
+              onClick={() => setView('calendar')}
+              className={`flex-1 py-3 ${view === 'calendar' ? 'text-blue-500' : 'text-gray-400'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.Calendar />
+                <span className="text-xs mt-1">Home</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setView('log')}
+              className={`flex-1 py-3 ${view === 'log' ? 'text-blue-500' : 'text-gray-400'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.Plus />
+                <span className="text-xs mt-1">Log</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setView('stats')}
+              className={`flex-1 py-3 ${view === 'stats' ? 'text-blue-500' : 'text-gray-400'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.TrendingUp />
+                <span className="text-xs mt-1">Stats</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setView('more')}
+              className={`flex-1 py-3 ${view === 'more' ? 'text-blue-500' : 'text-gray-400'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.Settings />
+                <span className="text-xs mt-1">More</span>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     </>
