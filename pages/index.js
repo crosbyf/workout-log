@@ -774,7 +774,7 @@ export default function Home() {
                                   <div className="text-right">
                                     <div className="font-bold">({totalReps})</div>
                                     {ex.notes && (
-                                      <div className="text-[10px] text-gray-400 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{ex.notes}</div>
+                                      <div className="text-[10px] text-gray-400 mt-1 text-right">{ex.notes}</div>
                                     )}
                                   </div>
                                 </div>
@@ -1415,7 +1415,7 @@ export default function Home() {
                               <div className="text-right">
                                 <div className="font-bold">({totalReps})</div>
                                 {ex.notes && (
-                                  <div className="text-[10px] text-gray-400 mt-1 whitespace-nowrap overflow-hidden text-ellipsis">{ex.notes}</div>
+                                  <div className="text-[10px] text-gray-400 mt-1 text-right">{ex.notes}</div>
                                 )}
                               </div>
                             </div>
