@@ -111,6 +111,7 @@ export default function Home() {
   const [showLogCalendar, setShowLogCalendar] = useState(false);
   const [logCalendarDate, setLogCalendarDate] = useState(new Date());
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
+  const [selectedLogDay, setSelectedLogDay] = useState(null);
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -703,17 +704,10 @@ export default function Home() {
                     'Garage 10': 'border-purple-400',
                     'BW-only': 'border-yellow-400',
                   };
-                  const bgColors = {
-                    'Garage BW': 'bg-blue-900/30',
-                    'Manual': 'bg-green-900/30',
-                    'Garage 10': 'bg-purple-900/40',
-                    'BW-only': 'bg-yellow-900/30',
-                  };
                   const borderColor = locationColors[w.location] || 'border-gray-600';
-                  const bgColor = bgColors[w.location] || 'bg-gray-800';
                   
                   return (
-                    <div key={i} className={`${bgColor} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`}>
+                    <div key={i} className={`bg-gray-800 rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`}>
                       <button
                         onClick={() => setExpandedRecent(isExpanded ? null : i)}
                         className="w-full p-3 text-left transition-colors hover:bg-white/5"
@@ -777,11 +771,13 @@ export default function Home() {
                                       </span>
                                     ))}
                                   </div>
-                                  <div className="text-right font-bold">({totalReps})</div>
+                                  <div className="text-right">
+                                    <div className="font-bold">({totalReps})</div>
+                                    {ex.notes && (
+                                      <div className="text-[10px] text-gray-400 mt-1">{ex.notes}</div>
+                                    )}
+                                  </div>
                                 </div>
-                                {ex.notes && (
-                                  <div className="text-[10px] text-gray-400 mt-1 pl-2">{ex.notes}</div>
-                                )}
                               </div>
                             );
                           })}
@@ -1294,14 +1290,18 @@ export default function Home() {
                             borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
                           }
 
-                          const isToday = day === now.getDate();
+                          // Only highlight today if we're viewing the current month
+                          const isToday = day === now.getDate() && 
+                                         month === now.getMonth() && 
+                                         year === now.getFullYear();
 
                           days.push(
                             <button
                               key={day}
                               onClick={() => {
                                 if (hasWorkout) {
-                                  // Scroll to workout in list (keep calendar open)
+                                  // Set selected day and scroll to workout
+                                  setSelectedLogDay(dateStr);
                                   setTimeout(() => {
                                     const workoutIndex = filtered().findIndex(w => w.date === dateStr);
                                     if (workoutIndex >= 0) {
@@ -1314,6 +1314,7 @@ export default function Home() {
                               className={`aspect-square rounded border-2 flex items-center justify-center text-sm
                                 ${hasWorkout ? `${borderColor} bg-gray-700 font-bold` : 'border-gray-700 bg-gray-800'}
                                 ${isToday ? 'ring-2 ring-blue-400' : ''}
+                                ${selectedLogDay === dateStr ? 'ring-2 ring-white' : ''}
                                 ${hasWorkout ? 'hover:bg-gray-600' : ''}
                                 transition-colors
                               `}
@@ -1384,22 +1385,23 @@ export default function Home() {
                       {w.exercises.map((ex, ei) => {
                         const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                         return (
-                          <div key={ei}>
-                            <div className="flex items-start text-xs">
-                              <div className="w-32 font-medium truncate">{ex.name}</div>
-                              <div className="flex-1 flex items-center gap-1">
+                          <div key={ei} className="bg-gray-700/50 rounded px-2 py-1.5">
+                            <div className="grid grid-cols-[120px_1fr_50px] gap-2 items-start text-xs">
+                              <div className="font-medium truncate">{ex.name}</div>
+                              <div className="flex items-center gap-1 flex-wrap">
                                 {ex.sets.map((s, si) => (
-                                  <span key={si} className="text-gray-400">
+                                  <span key={si} className="bg-gray-600 px-1.5 py-0.5 rounded text-[11px]">
                                     {s.reps}
-                                    {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
                                   </span>
                                 ))}
-                                <span className="ml-1 font-bold text-white">({totalReps})</span>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-bold">({totalReps})</div>
+                                {ex.notes && (
+                                  <div className="text-[10px] text-gray-400 mt-1">{ex.notes}</div>
+                                )}
                               </div>
                             </div>
-                            {ex.notes && (
-                              <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
-                            )}
                           </div>
                         );
                       })}
