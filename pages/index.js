@@ -109,6 +109,8 @@ export default function Home() {
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
   const [showLogCalendar, setShowLogCalendar] = useState(false);
+  const [logCalendarDate, setLogCalendarDate] = useState(new Date());
+  const [showPresetsMenu, setShowPresetsMenu] = useState(false);
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -765,18 +767,18 @@ export default function Home() {
                           {w.exercises.map((ex, ei) => {
                             const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                             return (
-                              <div key={ei}>
-                                <div className="flex items-start text-xs">
-                                  <div className="w-28 font-medium">{ex.name}</div>
-                                  <div className="flex-1 flex items-center gap-1">
+                              <div key={ei} className="bg-gray-700/50 rounded px-2 py-1.5 mb-1">
+                                <div className="grid grid-cols-[120px_1fr_50px] gap-2 items-start text-xs">
+                                  <div className="font-medium truncate">{ex.name}</div>
+                                  <div className="flex items-center gap-1 flex-wrap">
                                     {ex.sets.map((s, si) => (
-                                      <span key={si} className="text-gray-400">
+                                      <span key={si} className="bg-gray-600 px-1.5 py-0.5 rounded text-[11px]">
                                         {s.reps}
-                                        {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
                                       </span>
                                     ))}
-                                    <span className="ml-1 font-bold text-white">({totalReps})</span>
                                   </div>
+                                  <div className="text-right font-bold">({totalReps})</div>
+                                </div>
                                 </div>
                                 {ex.notes && (
                                   <div className="text-[10px] text-gray-500 ml-28 -mt-0.5">{ex.notes}</div>
@@ -807,9 +809,11 @@ export default function Home() {
                     newDate.setMonth(newDate.getMonth() - 1);
                     setCalendarDate(newDate);
                   }}
-                  className="bg-gray-800 px-3 py-2 rounded text-sm"
+                  className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-colors"
                 >
-                  ← Prev
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
                 </button>
                 <div className="flex items-center gap-2">
                   <h2 className="text-lg font-semibold">
@@ -837,9 +841,11 @@ export default function Home() {
                     newDate.setMonth(newDate.getMonth() + 1);
                     setCalendarDate(newDate);
                   }}
-                  className="bg-gray-800 px-3 py-2 rounded text-sm"
+                  className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-colors"
                 >
-                  Next →
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
 
@@ -1214,9 +1220,35 @@ export default function Home() {
                   <div className="mt-3 bg-gray-800 rounded-xl shadow-md overflow-hidden">
                     {/* Month/Year header - sticky */}
                     <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-4 py-3 z-10">
-                      <h3 className="text-center font-bold text-lg">
-                        {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                      </h3>
+                      <div className="flex items-center justify-between">
+                        <button
+                          onClick={() => {
+                            const newDate = new Date(logCalendarDate);
+                            newDate.setMonth(newDate.getMonth() - 1);
+                            setLogCalendarDate(newDate);
+                          }}
+                          className="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg transition-colors"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <h3 className="text-center font-bold text-lg">
+                          {logCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                        </h3>
+                        <button
+                          onClick={() => {
+                            const newDate = new Date(logCalendarDate);
+                            newDate.setMonth(newDate.getMonth() + 1);
+                            setLogCalendarDate(newDate);
+                          }}
+                          className="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg transition-colors"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                     
                     {/* Scrollable calendar content */}
@@ -1234,8 +1266,8 @@ export default function Home() {
                       <div className="grid grid-cols-7 gap-1">
                       {(() => {
                         const now = new Date();
-                        const year = now.getFullYear();
-                        const month = now.getMonth();
+                        const year = logCalendarDate.getFullYear();
+                        const month = logCalendarDate.getMonth();
                         let firstDay = new Date(year, month, 1).getDay();
                         firstDay = firstDay === 0 ? 6 : firstDay - 1;
                         const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1281,7 +1313,7 @@ export default function Home() {
                                 }
                               }}
                               className={`aspect-square rounded border-2 flex items-center justify-center text-sm
-                                ${hasWorkout ? `${borderColor} font-bold bg-gray-700` : 'border-gray-700 bg-gray-800/50'}
+                                ${hasWorkout ? `${borderColor} bg-gray-700 font-bold` : 'border-gray-700 bg-gray-800'}
                                 ${isToday ? 'ring-2 ring-blue-400' : ''}
                                 ${hasWorkout ? 'hover:bg-gray-600' : ''}
                                 transition-colors
@@ -1414,22 +1446,35 @@ export default function Home() {
                 </button>
               </div>
               
-              <h3 className="text-sm font-semibold mt-4 mb-2">Workout Presets</h3>
-              <div className="space-y-2">
-                {presets.map((p, i) => (
-                  <div key={i} className="bg-gray-800 p-3 rounded-lg flex items-center justify-between shadow-sm">
-                    <div>
-                      <div className="font-medium">{p.name}</div>
-                      <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
-                    </div>
-                    <button
-                      onClick={() => setDeletePreset(i)}
-                      className="text-red-400 hover:text-red-300"
-                    >
-                      <Icons.Trash />
-                    </button>
+              <div className="mt-4">
+                <button
+                  onClick={() => setShowPresetsMenu(!showPresetsMenu)}
+                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg flex items-center justify-between transition-colors"
+                >
+                  <span className="text-sm font-semibold">Workout Presets ({presets.length})</span>
+                  <div className={`transform transition-transform ${showPresetsMenu ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
                   </div>
-                ))}
+                </button>
+                
+                {showPresetsMenu && (
+                  <div className="mt-2 space-y-2">
+                    {presets.map((p, i) => (
+                      <div key={i} className="bg-gray-800 p-3 rounded-lg flex items-center justify-between shadow-sm">
+                        <div>
+                          <div className="font-medium">{p.name}</div>
+                          <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
+                        </div>
+                        <button
+                          onClick={() => setDeletePreset(i)}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          <Icons.Trash />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -2115,11 +2160,11 @@ export default function Home() {
         )}
         
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700/50 safe-area-pb shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700/50 safe-area-pb shadow-2xl pb-2">
           <div className="max-w-4xl mx-auto flex">
             <button
               onClick={() => setView('calendar')}
-              className={`flex-1 py-3 transition-colors ${view === 'calendar' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'calendar' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.Calendar className={view === 'calendar' ? 'scale-110' : ''} />
@@ -2128,7 +2173,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setView('list')}
-              className={`flex-1 py-3 transition-colors ${view === 'list' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'list' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.Calendar className={view === 'list' ? 'scale-110' : ''} />
@@ -2137,7 +2182,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setView('stats')}
-              className={`flex-1 py-3 transition-colors ${view === 'stats' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'stats' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.TrendingUp className={view === 'stats' ? 'scale-110' : ''} />
@@ -2146,7 +2191,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setView('settings')}
-              className={`flex-1 py-3 transition-colors ${view === 'settings' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'settings' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.Settings className={view === 'settings' ? 'scale-110' : ''} />
