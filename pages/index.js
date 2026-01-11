@@ -95,8 +95,21 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [showClear, setShowClear] = useState(false);
   const [expandedTrends, setExpandedTrends] = useState({});
+  const [deleteWorkout, setDeleteWorkout] = useState(null);
+  const [deletePreset, setDeletePreset] = useState(null);
+  const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'day', 'week', 'month'
+  
+  // Helper to get today's date in YYYY-MM-DD format without timezone issues
+  const getTodayDate = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
   const [current, setCurrent] = useState({
-    date: new Date().toISOString().split('T')[0],
+    date: getTodayDate(),
     exercises: [],
     notes: '',
     location: ''
@@ -293,7 +306,7 @@ export default function Home() {
     }
     save(ws, 'workouts', setWorkouts);
     setCurrent({
-      date: new Date().toISOString().split('T')[0],
+      date: getTodayDate(),
       exercises: [],
       notes: '',
       location: ''
@@ -389,9 +402,35 @@ export default function Home() {
 
   const filtered = () => {
     let f = workouts;
+    
+    // Apply date range filter
+    if (historyFilter !== 'all') {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      f = f.filter(w => {
+        const [year, month, day] = w.date.split('-');
+        const workoutDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        
+        if (historyFilter === 'day') {
+          return workoutDate.getTime() === today.getTime();
+        } else if (historyFilter === 'week') {
+          const weekAgo = new Date(today);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          return workoutDate >= weekAgo;
+        } else if (historyFilter === 'month') {
+          const monthAgo = new Date(today);
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          return workoutDate >= monthAgo;
+        }
+        return true;
+      });
+    }
+    
+    // Apply search filter
     if (search.trim()) {
       const q = search.toLowerCase();
-      f = workouts.filter(w =>
+      f = f.filter(w =>
         w.date.includes(q) ||
         (w.location && w.location.toLowerCase().includes(q)) ||
         w.exercises.some(e => e.name.toLowerCase().includes(q)) ||
@@ -399,6 +438,7 @@ export default function Home() {
         w.exercises.some(e => e.notes && e.notes.toLowerCase().includes(q))
       );
     }
+    
     return [...f].sort((a, b) =>
       sortOrder === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date)
     );
@@ -437,6 +477,9 @@ export default function Home() {
       <Head>
         <title>Gors Log</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        <meta name="theme-color" content="#111827" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
       </Head>
       
       <div className="min-h-screen bg-gray-900 text-white">
@@ -450,6 +493,60 @@ export default function Home() {
                   Delete
                 </button>
                 <button onClick={() => setShowClear(false)} className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Workout Confirmation */}
+        {deleteWorkout !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+              <h3 className="text-xl font-bold mb-4 text-red-400">Delete Workout?</h3>
+              <p className="mb-6">Are you sure you want to delete this workout? This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    save(workouts.filter((_, idx) => idx !== deleteWorkout), 'workouts', setWorkouts);
+                    setDeleteWorkout(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeleteWorkout(null)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Preset Confirmation */}
+        {deletePreset !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+              <h3 className="text-xl font-bold mb-4 text-red-400">Delete Preset?</h3>
+              <p className="mb-6">Are you sure you want to delete this preset? This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    save(presets.filter((_, idx) => idx !== deletePreset), 'presets', setPresets);
+                    setDeletePreset(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeletePreset(null)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
                   Cancel
                 </button>
               </div>
@@ -501,7 +598,7 @@ export default function Home() {
                       <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
                     </div>
                     <button
-                      onClick={() => save(presets.filter((_, idx) => idx !== i), 'presets', setPresets)}
+                      onClick={() => setDeletePreset(i)}
                       className="text-red-400"
                     >
                       <Icons.Trash />
@@ -576,7 +673,7 @@ export default function Home() {
                     setShowNew(false);
                     setEditing(null);
                     setCurrent({
-                      date: new Date().toISOString().split('T')[0],
+                      date: getTodayDate(),
                       exercises: [],
                       notes: '',
                       location: ''
@@ -717,6 +814,23 @@ export default function Home() {
 
           {view === 'history' && (
             <div className="space-y-2.5">
+              {/* Filter buttons */}
+              <div className="flex gap-1 mb-2">
+                {['all', 'day', 'week', 'month'].map(filter => (
+                  <button
+                    key={filter}
+                    onClick={() => setHistoryFilter(filter)}
+                    className={`px-3 py-1 rounded text-xs font-medium ${
+                      historyFilter === filter
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-800 text-gray-400'
+                    }`}
+                  >
+                    {filter === 'all' ? 'All' : filter === 'day' ? 'Today' : filter === 'week' ? 'Week' : 'Month'}
+                  </button>
+                ))}
+              </div>
+              
               <div className="flex items-center gap-2 mb-3">
                 <div className="relative flex-1">
                   <input
@@ -739,9 +853,10 @@ export default function Home() {
               </div>
 
               {filtered().map((w, i) => {
-                const workoutDate = new Date(w.date);
-                const dayOfWeek = workoutDate.toLocaleDateString('en-US', { weekday: 'short' });
+                // Parse date without timezone issues
                 const [year, month, day] = w.date.split('-');
+                const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                 
                 // Color-code by workout location
                 const locationColors = {
@@ -757,8 +872,8 @@ export default function Home() {
                       <div>
                         <div className="font-bold text-base">
                           {dayOfWeek} {month}/{day}
+                          {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
                         </div>
-                        {w.location && <div className="text-xs text-gray-400 font-medium">{w.location}</div>}
                       </div>
                       <div className="flex gap-3">
                         <button
@@ -775,7 +890,7 @@ export default function Home() {
                           <Icons.Edit />
                         </button>
                         <button
-                          onClick={() => deleteWorkout(i)}
+                          onClick={() => setDeleteWorkout(i)}
                           className="text-red-400 hover:text-red-300 p-1"
                         >
                           <Icons.Trash />
