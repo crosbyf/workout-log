@@ -1191,21 +1191,24 @@ export default function Home() {
               </div>
               
               {/* Collapsible Calendar */}
-              <div className="mb-3">
+              <div className="mb-4">
                 <button
                   onClick={() => setShowLogCalendar(!showLogCalendar)}
-                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg flex items-center justify-between transition-colors"
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 p-4 rounded-xl flex items-center justify-between transition-all shadow-lg shadow-blue-500/20"
                 >
-                  <span className="text-sm font-medium">Calendar</span>
+                  <div className="flex items-center gap-2">
+                    <Icons.Calendar className="w-5 h-5" />
+                    <span className="text-base font-bold">Calendar</span>
+                  </div>
                   <div className={`transform transition-transform ${showLogCalendar ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown />
+                    <Icons.ChevronDown className="w-5 h-5" />
                   </div>
                 </button>
                 
                 {showLogCalendar && (
-                  <div className="mt-2 bg-gray-800 rounded-xl p-3 shadow-md">
+                  <div className="mt-3 bg-gray-800 rounded-xl p-3 shadow-md max-h-[400px] overflow-y-auto">
                     {/* Day headers */}
-                    <div className="grid grid-cols-7 gap-1 mb-2">
+                    <div className="grid grid-cols-7 gap-1 mb-2 sticky top-0 bg-gray-800 pb-2">
                       {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
                         <div key={day} className="text-center text-xs text-gray-500 font-bold uppercase tracking-wider">
                           {day}
