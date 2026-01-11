@@ -495,7 +495,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Rep Log</title>
+        <title>GORS LOG</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="theme-color" content="#111827" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -639,72 +639,18 @@ export default function Home() {
         )}
 
         <div className="bg-gradient-to-b from-gray-800 to-gray-900 border-b border-gray-700/50 p-4 shadow-lg">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-                <span className="text-2xl">💪</span>
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-700 to-amber-900 rounded-xl flex items-center justify-center shadow-md">
+                <span className="text-3xl">🥢</span>
               </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Rep Log</h1>
-                <p className="text-[10px] text-gray-500 -mt-0.5">Track Your Progress</p>
+              <div className="text-center">
+                <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">GORS LOG</h1>
+                <p className="text-xs text-gray-400 -mt-0.5 font-medium">Get Stronger</p>
               </div>
             </div>
-            <button 
-              onClick={() => setShowSettings(!showSettings)} 
-              className="bg-gray-700/50 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm flex items-center gap-1.5 transition-all shadow-sm"
-            >
-              {showSettings ? <Icons.X /> : <Icons.Settings />}
-              <span className="font-medium">{showSettings ? 'Close' : 'Settings'}</span>
-            </button>
           </div>
         </div>
-
-        {showSettings && (
-          <div className="bg-gray-800 border-b p-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-semibold">Settings</h2>
-                <div className="flex gap-2">
-                  <button onClick={exportCSV} className="bg-blue-600 px-2 py-1 rounded text-xs flex items-center gap-1">
-                    <Icons.Download />
-                    Export
-                  </button>
-                  <button onClick={() => setShowClear(true)} className="bg-red-600 px-2 py-1 rounded text-xs">
-                    Clear All
-                  </button>
-                </div>
-              </div>
-              <div className="flex gap-2 mb-3">
-                <label className="cursor-pointer bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
-                  <Icons.Upload />
-                  Presets
-                  <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
-                </label>
-                <label className="cursor-pointer bg-green-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
-                  <Icons.Upload />
-                  Workouts
-                  <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
-                </label>
-              </div>
-              <div className="space-y-2">
-                {presets.map((p, i) => (
-                  <div key={i} className="bg-gray-700 p-3 rounded flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{p.name}</div>
-                      <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
-                    </div>
-                    <button
-                      onClick={() => setDeletePreset(i)}
-                      className="text-red-400"
-                    >
-                      <Icons.Trash />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
@@ -1310,6 +1256,51 @@ export default function Home() {
               )}
             </div>
           )}
+          
+          {view === 'settings' && (
+            <div className="space-y-3">
+              <h2 className="text-base font-semibold mb-2">Settings</h2>
+              <div className="flex gap-2 mb-3">
+                <label className="cursor-pointer bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                  <Icons.Upload />
+                  Import Presets
+                  <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
+                </label>
+                <label className="cursor-pointer bg-green-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                  <Icons.Upload />
+                  Import Workouts
+                  <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
+                </label>
+              </div>
+              <div className="flex gap-2 mb-3">
+                <button onClick={exportCSV} className="bg-blue-600 px-3 py-1.5 rounded text-xs flex items-center gap-1.5">
+                  <Icons.Download />
+                  Export All Data
+                </button>
+                <button onClick={() => setShowClear(true)} className="bg-red-600 px-3 py-1.5 rounded text-xs">
+                  Clear All Data
+                </button>
+              </div>
+              
+              <h3 className="text-sm font-semibold mt-4 mb-2">Workout Presets</h3>
+              <div className="space-y-2">
+                {presets.map((p, i) => (
+                  <div key={i} className="bg-gray-800 p-3 rounded-lg flex items-center justify-between shadow-sm">
+                    <div>
+                      <div className="font-medium">{p.name}</div>
+                      <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
+                    </div>
+                    <button
+                      onClick={() => setDeletePreset(i)}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      <Icons.Trash />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Day Details Modal */}
@@ -1508,7 +1499,7 @@ export default function Home() {
         {/* Workout Modal */}
         {showWorkoutModal && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+            className="fixed inset-0 bg-black bg-opacity-50 z-50"
             onClick={() => {
               if (current.exercises.length > 0) {
                 setShowCloseConfirm(true);
@@ -1518,7 +1509,7 @@ export default function Home() {
             }}
           >
             <div 
-              className="bg-gray-900 rounded-t-2xl w-full h-[90vh] overflow-y-auto flex flex-col" 
+              className="fixed inset-x-0 top-0 bottom-0 bg-gray-900 overflow-y-auto flex flex-col" 
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
@@ -1965,6 +1956,15 @@ export default function Home() {
               <div className="flex flex-col items-center">
                 <Icons.Calendar className={view === 'list' ? 'scale-110' : ''} />
                 <span className={`text-xs mt-1 font-medium ${view === 'list' ? 'font-bold' : ''}`}>List</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setView('settings')}
+              className={`flex-1 py-3 transition-colors ${view === 'settings' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.Settings className={view === 'settings' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'settings' ? 'font-bold' : ''}`}>Settings</span>
               </div>
             </button>
           </div>
