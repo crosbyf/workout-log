@@ -1004,10 +1004,17 @@ export default function Home() {
                     'Garage 10': 'border-purple-500',
                     'BW-only': 'border-yellow-500',
                   };
+                  const bgColors = {
+                    'Garage BW': 'bg-blue-900/20',
+                    'Manual': 'bg-green-900/20',
+                    'Garage 10': 'bg-purple-900/20',
+                    'BW-only': 'bg-yellow-900/20',
+                  };
                   const borderColor = locationColors[w.location] || 'border-gray-600';
+                  const bgColor = bgColors[w.location] || 'bg-gray-800';
                   
                   return (
-                    <div key={i} className={`bg-gray-800 rounded-lg border-l-4 ${borderColor} overflow-hidden`}>
+                    <div key={i} className={`${bgColor} rounded-lg border-l-4 ${borderColor} overflow-hidden`}>
                       <button
                         onClick={() => setExpandedRecent(isExpanded ? null : i)}
                         className="w-full p-3 text-left"
@@ -1104,9 +1111,26 @@ export default function Home() {
                 >
                   ← Prev
                 </button>
-                <h2 className="text-lg font-semibold">
-                  {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-semibold">
+                    {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </h2>
+                  {(() => {
+                    const now = new Date();
+                    const isCurrentMonth = calendarDate.getMonth() === now.getMonth() && 
+                                          calendarDate.getFullYear() === now.getFullYear();
+                    if (!isCurrentMonth) {
+                      return (
+                        <button
+                          onClick={() => setCalendarDate(new Date())}
+                          className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs"
+                        >
+                          Today
+                        </button>
+                      );
+                    }
+                  })()}
+                </div>
                 <button
                   onClick={() => {
                     const newDate = new Date(calendarDate);
