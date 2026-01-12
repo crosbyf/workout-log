@@ -1205,6 +1205,8 @@ export default function Home() {
                   );
                 })}
               </div>
+            </div>
+          )}
           
           {view === 'list' && (
             <div className="space-y-2.5">
