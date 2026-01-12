@@ -122,6 +122,7 @@ export default function Home() {
   const [showSaveAsPreset, setShowSaveAsPreset] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [volumeWidgetDate, setVolumeWidgetDate] = useState(new Date());
+  const [autoEmail, setAutoEmail] = useState(false);
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -166,9 +167,11 @@ export default function Home() {
       const w = localStorage.getItem('workouts');
       const p = localStorage.getItem('presets');
       const e = localStorage.getItem('exercises');
+      const ae = localStorage.getItem('autoEmail');
       if (w) setWorkouts(JSON.parse(w));
       if (p) setPresets(JSON.parse(p));
       if (e) setExercises(JSON.parse(e));
+      if (ae) setAutoEmail(JSON.parse(ae));
       setLoading(false);
     }
   }, []);
@@ -353,7 +356,9 @@ export default function Home() {
   };
 
   const saveWorkout = () => {
-    if (!current.exercises.length) return;
+    // Allow Day Off workouts with zero exercises if they have notes or location
+    if (!current.exercises.length && !current.notes && current.location !== 'Day Off') return;
+    
     let ws;
     if (editing !== null) {
       ws = [...workouts];
@@ -363,6 +368,18 @@ export default function Home() {
       ws = [current, ...workouts];
     }
     save(ws, 'workouts', setWorkouts);
+    
+    // Auto-email if enabled (only for new workouts, not edits)
+    if (autoEmail && editing === null) {
+      setTimeout(() => {
+        const csvContent = exportCSV(true);
+        const subject = encodeURIComponent('GORS LOG - New Workout');
+        const dateStr = new Date(current.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const body = encodeURIComponent(`New workout logged on ${dateStr}:\n\n${current.location || 'Workout'}\n${current.exercises.length} exercises\n\n${current.notes || 'No notes'}`);
+        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+      }, 500);
+    }
+    
     setCurrent({
       date: getTodayDate(),
       exercises: [],
@@ -880,53 +897,84 @@ export default function Home() {
               </button>
               
               {/* Monthly Volume Widget */}
-              <div className="bg-gray-800 rounded-xl p-4 mb-4 shadow-md">
-                <div className="flex items-center justify-between mb-3">
+              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 mb-4 shadow-lg border border-gray-700/50">
+                <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={() => {
                       const newDate = new Date(volumeWidgetDate);
                       newDate.setMonth(newDate.getMonth() - 1);
                       setVolumeWidgetDate(newDate);
                     }}
-                    className="p-1 hover:bg-gray-700 rounded transition-colors"
+                    className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  <h3 className="text-sm font-bold">
-                    {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                  </h3>
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Monthly Volume</div>
+                    <h3 className="text-sm font-bold text-blue-400">
+                      {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </h3>
+                  </div>
                   <button
                     onClick={() => {
                       const newDate = new Date(volumeWidgetDate);
                       newDate.setMonth(newDate.getMonth() + 1);
                       setVolumeWidgetDate(newDate);
                     }}
-                    className="p-1 hover:bg-gray-700 rounded transition-colors"
+                    className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
-                <div className="space-y-2">
-                  {['Pull-ups', 'Dips', 'Chin-ups'].map(exerciseName => {
+                <div className="space-y-3">
+                  {[
+                    { name: 'Pull-ups', color: 'from-blue-500 to-blue-600', icon: '💪' },
+                    { name: 'Dips', color: 'from-green-500 to-green-600', icon: '🔥' },
+                    { name: 'Chin-ups', color: 'from-purple-500 to-purple-600', icon: '⚡' }
+                  ].map(({ name, color, icon }) => {
                     const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
                     const monthlyVolume = workouts
                       .filter(w => w.date.startsWith(monthStr))
                       .reduce((total, w) => {
-                        const exercise = w.exercises.find(ex => ex.name === exerciseName);
+                        const exercise = w.exercises.find(ex => ex.name === name);
                         if (exercise) {
                           return total + exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                         }
                         return total;
                       }, 0);
                     
+                    const maxVolume = Math.max(
+                      ...['Pull-ups', 'Dips', 'Chin-ups'].map(ex => {
+                        return workouts
+                          .filter(w => w.date.startsWith(monthStr))
+                          .reduce((total, w) => {
+                            const exercise = w.exercises.find(e => e.name === ex);
+                            return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                          }, 0);
+                      })
+                    );
+                    
+                    const percentage = maxVolume > 0 ? (monthlyVolume / maxVolume) * 100 : 0;
+                    
                     return (
-                      <div key={exerciseName} className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">{exerciseName}</span>
-                        <span className="font-bold text-lg">{monthlyVolume}</span>
+                      <div key={name} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{icon}</span>
+                            <span className="font-medium text-gray-300">{name}</span>
+                          </div>
+                          <span className="font-bold text-xl text-white">{monthlyVolume}</span>
+                        </div>
+                        <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full bg-gradient-to-r ${color} transition-all duration-500 ease-out`}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
                       </div>
                     );
                   })}
@@ -1002,6 +1050,13 @@ export default function Home() {
                             }
                           }}
                         >
+                          {w.location === 'Day Off' && w.notes ? (
+                            <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-3">
+                              <div className="text-sm font-semibold text-yellow-400 mb-2">Rest Day</div>
+                              <div className="text-sm text-gray-300">{w.notes}</div>
+                            </div>
+                          ) : (
+                            <>
                           {w.exercises.map((ex, ei) => {
                             const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                             return (
@@ -1018,15 +1073,17 @@ export default function Home() {
                                   <div className="text-right font-bold">({totalReps})</div>
                                 </div>
                                 {ex.notes && (
-                                  <div className="text-[10px] text-gray-400 mt-1">{ex.notes}</div>
+                                  <div className="text-[10px] text-gray-400 mt-1 text-right">{ex.notes}</div>
                                 )}
                               </div>
                             );
                           })}
-                          {w.notes && (
+                          {w.notes && w.location !== 'Day Off' && (
                             <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-700">
                               {w.notes}
                             </div>
+                          )}
+                            </>
                           )}
                         </div>
                       )}
@@ -1302,7 +1359,7 @@ export default function Home() {
                     </div>
                     
                     {w.notes && (
-                      <div className="mt-2 text-xs text-gray-400 italic border-t border-gray-700 pt-1.5">{w.notes}</div>
+                      <div className="mt-2 text-xs text-gray-400 border-t border-gray-700 pt-1.5">{w.notes}</div>
                     )}
                   </div>
                 );
@@ -1356,6 +1413,10 @@ export default function Home() {
                                         const weekDate = new Date(week);
                                         setLogCalendarDate(weekDate);
                                         setView('list');
+                                        // Scroll to top after navigation
+                                        setTimeout(() => {
+                                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }, 100);
                                       }}
                                       className="flex items-center gap-1.5 w-full hover:bg-gray-700 rounded px-1 -mx-1"
                                     >
@@ -1623,12 +1684,19 @@ export default function Home() {
                 return (
                   <div key={i} data-workout-date={w.date} className={`bg-gray-800 rounded-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
                         const newExpanded = new Set(expandedLog);
                         if (newExpanded.has(i)) {
                           newExpanded.delete(i);
                         } else {
                           newExpanded.add(i);
+                          // Scroll this workout to top when expanding
+                          setTimeout(() => {
+                            const element = e.currentTarget.closest('[data-workout-date]');
+                            if (element) {
+                              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                          }, 100);
                         }
                         setExpandedLog(newExpanded);
                       }}
@@ -1677,6 +1745,13 @@ export default function Home() {
                           </button>
                         </div>
                     
+                    {w.location === 'Day Off' && w.notes ? (
+                      <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-3">
+                        <div className="text-sm font-semibold text-yellow-400 mb-2">Rest Day</div>
+                        <div className="text-sm text-gray-300">{w.notes}</div>
+                      </div>
+                    ) : (
+                      <>
                     <div className="space-y-1">
                       {w.exercises.map((ex, ei) => {
                         const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
@@ -1694,15 +1769,17 @@ export default function Home() {
                               <div className="text-right font-bold">({totalReps})</div>
                             </div>
                             {ex.notes && (
-                              <div className="text-[10px] text-gray-400 mt-1">{ex.notes}</div>
+                              <div className="text-[10px] text-gray-400 mt-1 text-right">{ex.notes}</div>
                             )}
                           </div>
                         );
                       })}
                     </div>
                     
-                    {w.notes && (
+                    {w.notes && w.location !== 'Day Off' && (
                       <div className="mt-2 text-xs text-gray-400 border-t border-gray-700 pt-1.5">{w.notes}</div>
+                    )}
+                      </>
                     )}
                       </div>
                     )}
@@ -1753,6 +1830,23 @@ export default function Home() {
                   Email Data
                 </button>
               </div>
+              <div className="text-xs text-gray-400 mb-3 px-1">
+                Email button sends all workout data in CSV format
+              </div>
+              <div className="bg-gray-800 p-3 rounded-lg mb-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoEmail}
+                    onChange={(e) => {
+                      setAutoEmail(e.target.checked);
+                      save(e.target.checked, 'autoEmail', setAutoEmail);
+                    }}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">Auto-email after saving each workout</span>
+                </label>
+              </div>
               <div className="flex gap-2 mb-3">
                 <button onClick={() => setShowClear(true)} className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all w-full">
                   Delete All Workouts
@@ -1780,10 +1874,13 @@ export default function Home() {
                             setEditPresetName(p.name);
                             setEditPresetExercises([...p.exercises]);
                           }}
-                          className="flex-1 text-left"
+                          className="flex-1 text-left flex items-center gap-2"
                         >
-                          <div className="font-medium">{p.name}</div>
-                          <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
+                          <div className="flex-1">
+                            <div className="font-medium">{p.name}</div>
+                            <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
+                          </div>
+                          <Icons.Edit className="w-4 h-4 text-gray-400" />
                         </button>
                         <button
                           onClick={() => setDeletePreset(i)}
@@ -1902,7 +1999,7 @@ export default function Home() {
                   </div>
 
                   {workout.notes && (
-                    <div className="mt-4 text-sm text-gray-400 italic border-t border-gray-700 pt-3">
+                    <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3">
                       {workout.notes}
                     </div>
                   )}
@@ -2495,7 +2592,10 @@ export default function Home() {
         <div className="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700/50 safe-area-pb shadow-2xl pb-2">
           <div className="max-w-4xl mx-auto flex">
             <button
-              onClick={() => setView('calendar')}
+              onClick={() => {
+                setView('calendar');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`flex-1 py-4 transition-colors ${view === 'calendar' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
@@ -2504,7 +2604,10 @@ export default function Home() {
               </div>
             </button>
             <button
-              onClick={() => setView('list')}
+              onClick={() => {
+                setView('list');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`flex-1 py-4 transition-colors ${view === 'list' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
@@ -2513,7 +2616,10 @@ export default function Home() {
               </div>
             </button>
             <button
-              onClick={() => setView('stats')}
+              onClick={() => {
+                setView('stats');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`flex-1 py-4 transition-colors ${view === 'stats' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
@@ -2522,7 +2628,10 @@ export default function Home() {
               </div>
             </button>
             <button
-              onClick={() => setView('settings')}
+              onClick={() => {
+                setView('settings');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`flex-1 py-4 transition-colors ${view === 'settings' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
             >
               <div className="flex flex-col items-center">
