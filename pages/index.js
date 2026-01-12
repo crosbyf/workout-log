@@ -126,20 +126,26 @@ export default function Home() {
   const [autoEmail, setAutoEmail] = useState(false);
   const [emailAddress, setEmailAddress] = useState('');
   const [workoutStarted, setWorkoutStarted] = useState(false);
-  const [workoutTimer, setWorkoutTimer] = useState(0);
+  const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [timerRunning, setTimerRunning] = useState(false);
   const [showPauseMenu, setShowPauseMenu] = useState(false);
+  const [workoutTimer, setWorkoutTimer] = useState(0);
   
-  // Timer effect
+  // Timer effect - uses timestamp to continue counting even when screen is locked
   useEffect(() => {
     let interval;
-    if (timerRunning) {
-      interval = setInterval(() => {
-        setWorkoutTimer(prev => prev + 1);
-      }, 1000);
+    if (timerRunning && workoutStartTime) {
+      // Update timer every second based on actual elapsed time
+      const updateTimer = () => {
+        const elapsed = Math.floor((Date.now() - workoutStartTime) / 1000);
+        setWorkoutTimer(elapsed);
+      };
+      
+      updateTimer(); // Initial update
+      interval = setInterval(updateTimer, 1000);
     }
     return () => clearInterval(interval);
-  }, [timerRunning]);
+  }, [timerRunning, workoutStartTime]);
   
   // Format timer display
   const formatTime = (seconds) => {
@@ -616,10 +622,10 @@ export default function Home() {
       <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
         {showClear && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-xl p-6 max-w-md border-2 border-red-500/50">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-md border-2 border-red-500/50`}>
               <h3 className="text-2xl font-bold mb-3 text-red-400">⚠️ Delete All Workouts?</h3>
               <p className="mb-2 text-base">This will permanently delete <strong>all {workouts.length} workout{workouts.length !== 1 ? 's' : ''}</strong> from your history.</p>
-              <p className="mb-6 text-sm text-gray-400">Your workout presets will NOT be deleted. This action cannot be undone!</p>
+              <p className={`mb-6 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Your workout presets will NOT be deleted. This action cannot be undone!</p>
               <div className="flex gap-3">
                 <button onClick={clearAll} className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 py-3 rounded-xl font-bold shadow-lg transition-all">
                   Yes, Delete All
@@ -635,7 +641,7 @@ export default function Home() {
         {/* Delete Workout Confirmation */}
         {deleteWorkout !== null && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
               <h3 className="text-xl font-bold mb-4 text-red-400">Delete Workout?</h3>
               <p className="mb-6">Are you sure you want to delete this workout? This cannot be undone.</p>
               <div className="flex gap-3">
@@ -650,7 +656,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setDeleteWorkout(null)}
-                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
                 >
                   Cancel
                 </button>
@@ -662,7 +668,7 @@ export default function Home() {
         {/* Delete Preset Confirmation */}
         {deletePreset !== null && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
               <h3 className="text-xl font-bold mb-4 text-red-400">Delete Preset?</h3>
               <p className="mb-6">Are you sure you want to delete this preset? This cannot be undone.</p>
               <div className="flex gap-3">
@@ -677,7 +683,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setDeletePreset(null)}
-                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
                 >
                   Cancel
                 </button>
@@ -689,7 +695,7 @@ export default function Home() {
         {/* Close Workout Confirmation */}
         {showCloseConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
               <h3 className="text-xl font-bold mb-4 text-yellow-400">Discard Workout?</h3>
               <p className="mb-6">You have unsaved changes. Are you sure you want to close?</p>
               <div className="flex gap-3">
@@ -716,7 +722,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setShowCloseConfirm(false)}
-                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
                 >
                   Keep Editing
                 </button>
@@ -728,7 +734,7 @@ export default function Home() {
         {/* End Workout Confirmation */}
         {showEndWorkoutConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
-            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
               <h3 className="text-xl font-bold mb-4 text-blue-400">Finish Workout?</h3>
               <p className="mb-6">Save this workout to your log?</p>
               <div className="flex gap-3">
@@ -752,7 +758,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setShowEndWorkoutConfirm(false)}
-                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
                 >
                   Cancel
                 </button>
@@ -1104,9 +1110,24 @@ export default function Home() {
                   const borderColor = locationColors[w.location] || 'border-gray-600';
                   
                   return (
-                    <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`}>
+                    <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`} data-recent-workout={i}>
                       <button
-                        onClick={() => setExpandedRecent(isExpanded ? null : i)}
+                        onClick={(e) => {
+                          setExpandedRecent(isExpanded ? null : i);
+                          
+                          // Scroll to top when expanding
+                          if (!isExpanded) {
+                            setTimeout(() => {
+                              const element = e.currentTarget.closest('[data-recent-workout]');
+                              if (element) {
+                                const rect = element.getBoundingClientRect();
+                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                const targetY = rect.top + scrollTop - 80;
+                                window.scrollTo({ top: targetY, behavior: 'smooth' });
+                              }
+                            }, 100);
+                          }
+                        }}
                         className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
                       >
                         <div className="flex items-center justify-between">
@@ -1570,118 +1591,168 @@ export default function Home() {
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Statistics</h2>
               
-              {['Pull-ups', 'Dips', 'Chin-ups'].map(exerciseName => {
-                const stats = (() => {
-                  const weekly = {};
-                  const monthly = {};
-                  
-                  workouts.forEach(w => {
-                    // Calculate weekly stats
-                    const wDate = new Date(w.date);
-                    const dayOfWeek = wDate.getDay();
-                    const monday = new Date(wDate);
-                    monday.setDate(wDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-                    const weekKey = monday.toISOString().split('T')[0];
-                    
-                    // Calculate monthly stats
-                    const monthKey = w.date.substring(0, 7);
-                    
-                    const exercise = w.exercises.find(ex => ex.name === exerciseName);
-                    if (exercise) {
-                      const reps = exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                      weekly[weekKey] = (weekly[weekKey] || 0) + reps;
-                      monthly[monthKey] = (monthly[monthKey] || 0) + reps;
-                    }
-                  });
-                  
-                  return { weekly, monthly };
-                })();
+              {(() => {
+                // Get all unique exercises
+                const allExercises = [...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].sort();
                 
-                return (
-                  <div key={exerciseName} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                    <h3 className="font-bold text-lg mb-3">{exerciseName}</h3>
+                return allExercises.map(exerciseName => {
+                  const stats = (() => {
+                    const weekly = {};
+                    const monthly = {};
                     
-                    <div>
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>Weekly Volume</div>
-                      <div className="space-y-1">
-                        {Object.entries(stats.weekly)
-                          .sort(([a], [b]) => b.localeCompare(a))
-                          .slice(0, 8)
-                          .map(([week, reps]) => (
-                            <button
-                              key={week}
-                              onClick={() => {
-                                const weekDate = new Date(week);
-                                setLogCalendarDate(weekDate);
-                                setView('list');
-                                // Scroll to first workout of this week after navigation
-                                setTimeout(() => {
-                                  const weekStart = new Date(week);
-                                  const weekEnd = new Date(weekStart);
-                                  weekEnd.setDate(weekEnd.getDate() + 7);
-                                  
-                                  // Find first workout in this week
-                                  const firstWorkout = workouts.find(w => {
-                                    const wDate = new Date(w.date);
-                                    return wDate >= weekStart && wDate < weekEnd;
-                                  });
-                                  
-                                  if (firstWorkout) {
-                                    const element = document.querySelector(`[data-workout-date="${firstWorkout.date}"]`);
-                                    if (element) {
-                                      const rect = element.getBoundingClientRect();
-                                      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                      const targetY = rect.top + scrollTop - 70;
-                                      window.scrollTo({ top: targetY, behavior: 'smooth' });
-                                    }
-                                  } else {
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                  }
-                                }, 300);
-                              }}
-                              className={`flex items-center gap-1.5 w-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded px-1 -mx-1`}
-                            >
-                              <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} w-20 text-right`}>
-                                {new Date(week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
-                              </span>
-                              <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-5 relative overflow-hidden`}>
-                                <div
-                                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full shadow-sm"
-                                  style={{
-                                    width: `${(reps / Math.max(...Object.values(stats.weekly))) * 100}%`
-                                  }}
-                                />
-                              </div>
-                              <span className="text-sm font-semibold w-12 text-right">{reps}</span>
-                            </button>
-                          ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-4">
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>Monthly Volume</div>
-                      <div className="space-y-1">
-                        {Object.entries(stats.monthly)
-                          .sort(([a], [b]) => b.localeCompare(a))
-                          .map(([month, reps]) => (
-                            <div key={month} className="flex items-center gap-1.5">
-                              <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} w-20 text-right`}>{month}</span>
-                              <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-5 relative overflow-hidden`}>
-                                <div
-                                  className="bg-green-500 h-full rounded-full"
-                                  style={{
-                                    width: `${(reps / Math.max(...Object.values(stats.monthly))) * 100}%`
-                                  }}
-                                />
-                              </div>
-                              <span className="text-sm font-semibold w-12 text-right">{reps}</span>
+                    workouts.forEach(w => {
+                      // Calculate weekly stats
+                      const wDate = new Date(w.date);
+                      const dayOfWeek = wDate.getDay();
+                      const monday = new Date(wDate);
+                      monday.setDate(wDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                      const weekKey = monday.toISOString().split('T')[0];
+                      
+                      // Calculate monthly stats
+                      const monthKey = w.date.substring(0, 7);
+                      
+                      const exercise = w.exercises.find(ex => ex.name === exerciseName);
+                      if (exercise) {
+                        const reps = exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                        weekly[weekKey] = (weekly[weekKey] || 0) + reps;
+                        monthly[monthKey] = (monthly[monthKey] || 0) + reps;
+                      }
+                    });
+                    
+                    return { weekly, monthly };
+                  })();
+                  
+                  const isExpanded = expandedTrends[exerciseName];
+                  
+                  return (
+                    <div key={exerciseName} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                      <button
+                        onClick={(e) => {
+                          const newExpanded = { ...expandedTrends, [exerciseName]: !isExpanded };
+                          setExpandedTrends(newExpanded);
+                          
+                          // Scroll to top when expanding
+                          if (!isExpanded) {
+                            setTimeout(() => {
+                              const element = e.currentTarget.closest('[data-exercise-stats]');
+                              if (element) {
+                                const rect = element.getBoundingClientRect();
+                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                const targetY = rect.top + scrollTop - 80;
+                                window.scrollTo({ top: targetY, behavior: 'smooth' });
+                              }
+                            }, 100);
+                          }
+                        }}
+                        className={`w-full p-4 text-left ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'} transition-colors`}
+                        data-exercise-stats={exerciseName}
+                      >
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-lg">{exerciseName}</h3>
+                          <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                            <Icons.ChevronDown />
+                          </div>
+                        </div>
+                      </button>
+                      
+                      {isExpanded && (
+                        <div className={`px-4 pb-4 ${darkMode ? 'border-gray-700' : 'border-gray-200'} border-t`}>
+                          <div className="mt-3">
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>Weekly Volume</div>
+                            <div className="space-y-1">
+                              {Object.entries(stats.weekly)
+                                .sort(([a], [b]) => b.localeCompare(a))
+                                .slice(0, 8)
+                                .map(([week, reps]) => (
+                                  <button
+                                    key={week}
+                                    onClick={() => {
+                                      const weekDate = new Date(week);
+                                      setLogCalendarDate(weekDate);
+                                      setView('list');
+                                      // Scroll to first workout of this week after navigation
+                                      setTimeout(() => {
+                                        const weekStart = new Date(week);
+                                        const weekEnd = new Date(weekStart);
+                                        weekEnd.setDate(weekEnd.getDate() + 7);
+                                        
+                                        // Find first workout in this week
+                                        const firstWorkout = workouts.find(w => {
+                                          const wDate = new Date(w.date);
+                                          return wDate >= weekStart && wDate < weekEnd;
+                                        });
+                                        
+                                        if (firstWorkout) {
+                                          const element = document.querySelector(`[data-workout-date="${firstWorkout.date}"]`);
+                                          if (element) {
+                                            const rect = element.getBoundingClientRect();
+                                            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                            const targetY = rect.top + scrollTop - 70;
+                                            window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                          }
+                                        } else {
+                                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }
+                                      }, 300);
+                                    }}
+                                    className={`flex items-center gap-1.5 w-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded px-1 -mx-1`}
+                                  >
+                                    <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} w-20 text-right`}>
+                                      {new Date(week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
+                                    </span>
+                                    <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-5 relative overflow-hidden`}>
+                                      <div
+                                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full shadow-sm"
+                                        style={{
+                                          width: `${(reps / Math.max(...Object.values(stats.weekly))) * 100}%`
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-sm font-semibold w-12 text-right">{reps}</span>
+                                  </button>
+                                ))}
                             </div>
-                          ))}
-                      </div>
+                          </div>
+
+                          <div className="mt-4">
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>Monthly Volume</div>
+                            <div className="space-y-1">
+                              {Object.entries(stats.monthly)
+                                .sort(([a], [b]) => b.localeCompare(a))
+                                .map(([month, reps]) => (
+                                  <div key={month} className="flex items-center gap-1.5">
+                                    <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} w-20 text-right`}>{month}</span>
+                                    <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-5 relative overflow-hidden`}>
+                                      <div
+                                        className="bg-green-500 h-full rounded-full"
+                                        style={{
+                                          width: `${(reps / Math.max(...Object.values(stats.monthly))) * 100}%`
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-sm font-semibold w-12 text-right">{reps}</span>
+                                  </div>
+                                ))}
+                            </div>
+                          </div>
+                          
+                          {/* Collapse button at bottom */}
+                          <button
+                            onClick={() => {
+                              const newExpanded = { ...expandedTrends, [exerciseName]: false };
+                              setExpandedTrends(newExpanded);
+                            }}
+                            className={`w-full mt-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2`}
+                          >
+                            <Icons.ChevronDown />
+                            Collapse
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
             </div>
           )}
           
@@ -2012,11 +2083,11 @@ export default function Home() {
             }}
           >
             <div 
-              className="fixed inset-x-0 top-0 bottom-0 bg-gray-900 overflow-y-auto flex flex-col" 
+              className={`fixed inset-x-0 top-0 bottom-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} overflow-y-auto flex flex-col`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="sticky top-0 bg-gray-900 z-10 border-b border-gray-700 px-4 py-3">
+              <div className={`sticky top-0 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} z-10 border-b px-4 py-3`}>
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
                   <div className="flex items-center gap-2">
@@ -2053,13 +2124,13 @@ export default function Home() {
                 {current.location !== 'Day Off' && (
                   <>
                 {/* View mode toggle */}
-                <div className="flex gap-2 bg-gray-800 p-1 rounded-lg">
+                <div className={`flex gap-2 ${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} p-1 rounded-lg`}>
                   <button
                     onClick={() => setWorkoutViewMode('table')}
                     className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                       workoutViewMode === 'table' 
                         ? 'bg-blue-600 text-white shadow-md' 
-                        : 'text-gray-400 hover:text-gray-200'
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
                     Table View
@@ -2069,7 +2140,7 @@ export default function Home() {
                     className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                       workoutViewMode === 'cards' 
                         ? 'bg-blue-600 text-white shadow-md' 
-                        : 'text-gray-400 hover:text-gray-200'
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
                     }`}
                   >
                     Card View
@@ -2078,17 +2149,17 @@ export default function Home() {
                 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Date</label>
+                    <label className={`block text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1.5`}>Date</label>
                     <input
                       type="text"
                       value={current.date}
                       onChange={(e) => setCurrent({ ...current, date: e.target.value })}
                       placeholder="YYYY-MM-DD"
-                      className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                      className={`w-full ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Workout</label>
+                    <label className={`block text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1.5`}>Workout</label>
                     <select
                       value={current.location}
                       onChange={(e) => {
@@ -2099,7 +2170,7 @@ export default function Home() {
                           setCurrent({ ...current, location: e.target.value });
                         }
                       }}
-                      className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+                      className={`w-full ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
                     >
                       <option value="">Select</option>
                       {presets.map((p, i) => (
@@ -2120,11 +2191,11 @@ export default function Home() {
                       return (
                         <div key={ei} className="flex gap-0.5 mb-1 overflow-x-auto pb-1">
                           {/* Frozen exercise name */}
-                          <div className="sticky left-0 bg-gray-900 z-10 pr-0.5">
+                          <div className={`sticky left-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} z-10 pr-0.5`}>
                             <select
                               value={ex.name}
                               onChange={(e) => updateEx(ei, 'name', e.target.value)}
-                              className="w-[100px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px]"
+                              className={`w-[100px] ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded px-1 py-1 text-[11px]`}
                             >
                               <option value="">Select</option>
                               {exercises.map((e, i) => (
@@ -2156,7 +2227,7 @@ export default function Home() {
                                 }}
                                 disabled={!workoutStarted}
                                 placeholder="0"
-                                className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className={`w-[40px] ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded px-1 py-1 text-[11px] text-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed`}
                               />
                               {ex.sets[si] && (
                                 <button
@@ -2174,7 +2245,7 @@ export default function Home() {
                           ))}
                           
                           {/* Total */}
-                          <div className="w-[35px] bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold flex-shrink-0">
+                          <div className={`w-[35px] ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-300'} border rounded px-1 py-1 text-[11px] text-center font-bold flex-shrink-0`}>
                             {total}
                           </div>
                           
@@ -2184,7 +2255,7 @@ export default function Home() {
                             value={ex.notes}
                             onChange={(e) => updateEx(ei, 'notes', e.target.value)}
                             placeholder="..."
-                            className="w-[80px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] flex-shrink-0"
+                            className={`w-[80px] ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded px-1 py-1 text-[11px] flex-shrink-0`}
                           />
                           
                           {/* Delete */}
@@ -2202,7 +2273,7 @@ export default function Home() {
                               u[ei].sets.push({ reps: 0, weight: null });
                               setCurrent({ ...current, exercises: u });
                             }}
-                            className="w-[36px] text-blue-400 hover:text-blue-300 text-xs bg-gray-700 rounded flex-shrink-0"
+                            className={`w-[36px] text-blue-400 hover:text-blue-300 text-xs ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded flex-shrink-0`}
                           >
                             +
                           </button>
@@ -2216,12 +2287,12 @@ export default function Home() {
                     {current.exercises.map((ex, ei) => {
                       const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                       return (
-                        <div key={ei} className="bg-gray-800 rounded-lg p-2">
+                        <div key={ei} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-lg p-2`}>
                           {/* Exercise name */}
                           <select
                             value={ex.name}
                             onChange={(e) => updateEx(ei, 'name', e.target.value)}
-                            className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-xs font-medium mb-2"
+                            className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded px-2 py-1 text-xs font-medium mb-2`}
                           >
                             <option value="">Select Exercise</option>
                             {exercises.map((e, i) => (
@@ -2233,7 +2304,7 @@ export default function Home() {
                           <div className="flex items-center gap-1 mb-2 overflow-x-auto">
                             {ex.sets.map((s, si) => (
                               <div key={si} className="flex flex-col items-center">
-                                <div className="text-[10px] text-gray-400 mb-0.5">S{si + 1}</div>
+                                <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-0.5`}>S{si + 1}</div>
                                 <input
                                   type="number"
                                   inputMode="numeric"
@@ -2245,15 +2316,15 @@ export default function Home() {
                                   }}
                                   disabled={!workoutStarted}
                                   placeholder="0"
-                                  className="w-12 bg-gray-700 border border-gray-600 rounded px-1 py-1 text-[11px] text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className={`w-12 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded px-1 py-1 text-[11px] text-center disabled:opacity-50 disabled:cursor-not-allowed`}
                                 />
                               </div>
                             ))}
                             
                             {/* Total */}
                             <div className="flex flex-col items-center">
-                              <div className="text-[10px] text-gray-400 mb-0.5">Tot</div>
-                              <div className="w-12 bg-gray-900 border border-gray-700 rounded px-1 py-1 text-[11px] text-center font-bold">
+                              <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-0.5`}>Tot</div>
+                              <div className={`w-12 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-300'} border rounded px-1 py-1 text-[11px] text-center font-bold`}>
                                 {total}
                               </div>
                             </div>
@@ -2268,7 +2339,7 @@ export default function Home() {
                               className="flex flex-col items-center justify-end"
                             >
                               <div className="text-[10px] text-transparent mb-0.5">.</div>
-                              <div className="text-blue-400 hover:text-blue-300 text-xs px-2 py-1 bg-gray-700 rounded">
+                              <div className={`text-blue-400 hover:text-blue-300 text-xs px-2 py-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded`}>
                                 +
                               </div>
                             </button>
@@ -2281,7 +2352,7 @@ export default function Home() {
                               value={ex.notes}
                               onChange={(e) => updateEx(ei, 'notes', e.target.value)}
                               placeholder="Notes..."
-                              className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-[11px]"
+                              className={`flex-1 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded px-2 py-1 text-[11px]`}
                             />
                             <button
                               onClick={() => setDeleteExercise(ei)}
@@ -2298,7 +2369,7 @@ export default function Home() {
 
                 <button
                   onClick={addEx}
-                  className="w-full bg-gray-800 hover:bg-gray-700 py-3 rounded-xl border-2 border-dashed border-gray-600 hover:border-blue-500 text-sm font-semibold transition-all flex items-center justify-center gap-2"
+                  className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-600' : 'bg-white hover:bg-gray-50 border-gray-300'} py-3 rounded-xl border-2 border-dashed hover:border-blue-500 text-sm font-semibold transition-all flex items-center justify-center gap-2`}
                 >
                   <span className="text-lg">+</span>
                   Add Exercise
@@ -2307,14 +2378,14 @@ export default function Home() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+                  <label className={`block text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1.5`}>
                     {current.location === 'Day Off' ? 'Rest Day Notes' : 'Workout Notes'}
                   </label>
                   <textarea
                     value={current.notes}
                     onChange={(e) => setCurrent({ ...current, notes: e.target.value })}
                     placeholder={current.location === 'Day Off' ? 'Why did you skip today?' : 'How did it go? Any PRs or notes to remember...'}
-                    className={`w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none ${
+                    className={`w-full ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none ${
                       current.location === 'Day Off' ? 'h-40' : 'h-24'
                     }`}
                   />
@@ -2322,12 +2393,42 @@ export default function Home() {
               </div>
               
               {/* Footer with Timer Button */}
-              <div className="sticky bottom-0 bg-gradient-to-t from-gray-900 via-gray-900 to-transparent border-t border-gray-700/50 p-4">
-                {!workoutStarted ? (
+              <div className={`sticky bottom-0 ${darkMode ? 'bg-gradient-to-t from-gray-900 via-gray-900 to-transparent border-gray-700/50' : 'bg-gradient-to-t from-gray-50 via-gray-50 to-transparent border-gray-200'} border-t p-4`}>
+                {editing !== null ? (
+                  // Show Update/Cancel when editing a saved workout
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => {
+                        saveWorkout();
+                        setShowWorkoutModal(false);
+                        setEditing(null);
+                      }}
+                      className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+                    >
+                      Update
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowWorkoutModal(false);
+                        setEditing(null);
+                        setCurrent({
+                          date: getTodayDate(),
+                          exercises: [],
+                          notes: '',
+                          location: ''
+                        });
+                      }}
+                      className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-4 rounded-xl font-bold text-lg transition-all active:scale-[0.98]`}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : !workoutStarted ? (
                   <button
                     onClick={() => {
                       setWorkoutStarted(true);
                       setTimerRunning(true);
+                      setWorkoutStartTime(Date.now());
                     }}
                     className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                   >
@@ -2349,7 +2450,7 @@ export default function Home() {
                   <div className="space-y-2">
                     <div className="text-center mb-3">
                       <div className="text-4xl font-mono font-bold text-blue-400">{formatTime(workoutTimer)}</div>
-                      <div className="text-xs text-gray-500 mt-1">Workout paused</div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} mt-1`}>Workout paused</div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
