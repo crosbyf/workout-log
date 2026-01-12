@@ -88,6 +88,7 @@ export default function Home() {
   const [exercises, setExercises] = useState([]);
   const [view, setView] = useState('calendar'); // Start with calendar as home
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(true); // true = dark, false = light
   const [showNew, setShowNew] = useState(false);
   const [editing, setEditing] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -171,11 +172,13 @@ export default function Home() {
         const e = localStorage.getItem('exercises');
         const ae = localStorage.getItem('autoEmail');
         const ea = localStorage.getItem('emailAddress');
+        const dm = localStorage.getItem('darkMode');
         if (w) setWorkouts(JSON.parse(w));
         if (p) setPresets(JSON.parse(p));
         if (e) setExercises(JSON.parse(e));
         if (ae) setAutoEmail(JSON.parse(ae));
         if (ea) setEmailAddress(JSON.parse(ea));
+        if (dm !== null) setDarkMode(JSON.parse(dm));
       };
       
       // Load data immediately
@@ -583,8 +586,8 @@ export default function Home() {
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">GORS LOG</h1>
           <div className="flex items-center gap-2 justify-center">
             <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.4s'}}></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.8s'}}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.5s'}}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '1s'}}></div>
           </div>
         </div>
       </div>
@@ -605,12 +608,12 @@ export default function Home() {
             50% { opacity: 1; }
           }
           .animate-slow-pulse {
-            animation: slowPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
           }
         `}</style>
       </Head>
       
-      <div className="min-h-screen bg-gray-900 text-white">
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
         {showClear && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 rounded-xl p-6 max-w-md border-2 border-red-500/50">
@@ -914,10 +917,19 @@ export default function Home() {
           </div>
         )}
 
-        <div className="bg-gradient-to-b from-gray-800 to-gray-900 border-b border-gray-700/50 p-4 shadow-lg">
+        <div className={`bg-gradient-to-b ${darkMode ? 'from-gray-800 to-gray-900' : 'from-gray-100 to-gray-200'} ${darkMode ? 'border-gray-700/50' : 'border-gray-300'} border-b p-4 shadow-lg`}>
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">GORS LOG</h1>
-            <p className="text-xs text-gray-400 -mt-0.5 font-medium">Get Stronger</p>
+            <button 
+              onClick={() => {
+                const newMode = !darkMode;
+                setDarkMode(newMode);
+                save(newMode, 'darkMode', setDarkMode);
+              }}
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <h1 className={`text-2xl font-extrabold tracking-tight bg-gradient-to-r ${darkMode ? 'from-white to-gray-300' : 'from-gray-900 to-gray-700'} bg-clip-text text-transparent`}>GORS LOG</h1>
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Get Stronger</p>
+            </button>
           </div>
         </div>
 
@@ -935,7 +947,7 @@ export default function Home() {
               </button>
               
               {/* Monthly Volume Widget */}
-              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 mb-4 shadow-lg border border-gray-700/50">
+              <div className={`bg-gradient-to-br ${darkMode ? 'from-gray-800 to-gray-900 border-gray-700/50' : 'from-gray-50 to-gray-100 border-gray-300'} rounded-xl p-4 mb-4 shadow-lg border`}>
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={() => {
@@ -943,18 +955,17 @@ export default function Home() {
                       newDate.setMonth(newDate.getMonth() - 1);
                       setVolumeWidgetDate(newDate);
                     }}
-                    className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+                    className={`p-1.5 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} rounded-lg transition-colors`}
                   >
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <div className="text-center">
-                    <div className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Monthly Volume</div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} uppercase tracking-wider mb-0.5`}>Monthly Volume</div>
                     <h3 className="text-sm font-bold text-blue-400 mb-0.5">
                       {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h3>
-                    <div className="text-[10px] text-gray-600">Goal: Last Month</div>
                   </div>
                   <button
                     onClick={() => {
@@ -962,9 +973,9 @@ export default function Home() {
                       newDate.setMonth(newDate.getMonth() + 1);
                       setVolumeWidgetDate(newDate);
                     }}
-                    className="p-1.5 hover:bg-gray-700 rounded-lg transition-colors"
+                    className={`p-1.5 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} rounded-lg transition-colors`}
                   >
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
@@ -1017,23 +1028,47 @@ export default function Home() {
                     const percentage = goalVolume > 0 ? Math.min((monthlyVolume / goalVolume) * 100, 100) : 0;
                     const isOverGoal = monthlyVolume > goalVolume && goalVolume > 0;
                     
+                    // Calculate on pace / off pace
+                    const now = new Date();
+                    const isCurrentMonth = volumeWidgetDate.getMonth() === now.getMonth() && 
+                                          volumeWidgetDate.getFullYear() === now.getFullYear();
+                    let paceStatus = '';
+                    if (isCurrentMonth && prevMonthVolume > 0) {
+                      const daysInMonth = new Date(volumeWidgetDate.getFullYear(), volumeWidgetDate.getMonth() + 1, 0).getDate();
+                      const dayOfMonth = now.getDate();
+                      const expectedVolume = (prevMonthVolume / daysInMonth) * dayOfMonth;
+                      if (monthlyVolume >= expectedVolume) {
+                        paceStatus = '🟢 On Pace';
+                      } else {
+                        paceStatus = '🔴 Off Pace';
+                      }
+                    }
+                    
                     return (
                       <div key={name} className="space-y-1">
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{icon}</span>
-                            <span className="font-medium text-gray-300">{name}</span>
+                            <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{name}</span>
                           </div>
-                          <div className="text-right">
-                            <span className={`font-bold text-xl ${isOverGoal ? 'text-green-400' : 'text-white'}`}>
-                              {monthlyVolume}
-                            </span>
-                            {prevMonthVolume > 0 && (
-                              <span className="text-xs text-gray-500 ml-1">/ {prevMonthVolume}</span>
+                          <div className="text-right flex flex-col items-end">
+                            <div className="flex items-baseline gap-1">
+                              <span className={`font-bold text-xl ${isOverGoal ? 'text-green-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {monthlyVolume}
+                              </span>
+                              {prevMonthVolume > 0 && (
+                                <>
+                                  <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>/</span>
+                                  <span className={`text-sm font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{prevMonthVolume}</span>
+                                </>
+                              )}
+                            </div>
+                            {paceStatus && (
+                              <div className="text-[10px] font-medium mt-0.5">{paceStatus}</div>
                             )}
                           </div>
                         </div>
-                        <div className="h-2 bg-gray-700 rounded-full overflow-hidden relative">
+                        <div className={`h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden relative`}>
                           <div 
                             className={`h-full bg-gradient-to-r ${color} transition-all duration-500 ease-out ${isOverGoal ? 'animate-pulse' : ''}`}
                             style={{ width: `${percentage}%` }}
@@ -1160,7 +1195,7 @@ export default function Home() {
                             onClick={() => setExpandedRecent(null)}
                             className="w-full mt-3 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                           >
-                            <Icons.ChevronDown className="rotate-180" />
+                            <Icons.ChevronDown />
                             Collapse
                           </button>
                         </div>
@@ -1732,13 +1767,25 @@ export default function Home() {
                                 if (hasWorkout) {
                                   // Set selected day and scroll to workout
                                   setSelectedLogDay(dateStr);
-                                  setTimeout(() => {
-                                    const workoutIndex = filtered().findIndex(w => w.date === dateStr);
-                                    if (workoutIndex >= 0) {
+                                  
+                                  // Find and expand the workout
+                                  const workoutIndex = filtered().findIndex(w => w.date === dateStr);
+                                  if (workoutIndex >= 0) {
+                                    const newExpanded = new Set(expandedLog);
+                                    newExpanded.add(workoutIndex);
+                                    setExpandedLog(newExpanded);
+                                    
+                                    // Scroll to workout after expansion
+                                    setTimeout(() => {
                                       const element = document.querySelector(`[data-workout-date="${dateStr}"]`);
-                                      element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                    }
-                                  }, 100);
+                                      if (element) {
+                                        const rect = element.getBoundingClientRect();
+                                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                        const targetY = rect.top + scrollTop - 80;
+                                        window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                      }
+                                    }, 300);
+                                  }
                                 }
                               }}
                               className={`aspect-square rounded border-2 flex items-center justify-center text-sm
@@ -1899,7 +1946,7 @@ export default function Home() {
                           }}
                           className="w-full mt-3 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                         >
-                          <Icons.ChevronDown className="rotate-180" />
+                          <Icons.ChevronDown />
                           Collapse
                         </button>
                       </div>
@@ -2725,14 +2772,14 @@ export default function Home() {
         )}
         
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700/50 safe-area-pb shadow-2xl pb-2">
+        <div className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-gray-100/95 border-gray-300'} backdrop-blur-sm border-t safe-area-pb shadow-2xl pb-2`}>
           <div className="max-w-4xl mx-auto flex">
             <button
               onClick={() => {
                 setView('calendar');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`flex-1 py-4 transition-colors ${view === 'calendar' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'calendar' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.Calendar className={view === 'calendar' ? 'scale-110' : ''} />
@@ -2744,7 +2791,7 @@ export default function Home() {
                 setView('list');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`flex-1 py-4 transition-colors ${view === 'list' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'list' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.Calendar className={view === 'list' ? 'scale-110' : ''} />
@@ -2756,7 +2803,7 @@ export default function Home() {
                 setView('stats');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`flex-1 py-4 transition-colors ${view === 'stats' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'stats' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.TrendingUp className={view === 'stats' ? 'scale-110' : ''} />
@@ -2768,7 +2815,7 @@ export default function Home() {
                 setView('settings');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`flex-1 py-4 transition-colors ${view === 'settings' ? 'text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'settings' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
             >
               <div className="flex flex-col items-center">
                 <Icons.Settings className={view === 'settings' ? 'scale-110' : ''} />
