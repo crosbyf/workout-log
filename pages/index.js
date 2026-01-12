@@ -108,6 +108,21 @@ export default function Home() {
   const [showDayModal, setShowDayModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [expandedRecent, setExpandedRecent] = useState(null);
+  
+  // Scroll to expanded recent workout
+  useEffect(() => {
+    if (expandedRecent !== null && view === 'calendar') {
+      setTimeout(() => {
+        const element = document.querySelector(`[data-recent-workout="${expandedRecent}"]`);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const targetY = rect.top + scrollTop - 80;
+          window.scrollTo({ top: targetY, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [expandedRecent, view]);
   const [expandedLog, setExpandedLog] = useState(new Set());
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
@@ -954,41 +969,40 @@ export default function Home() {
                 New Workout
               </button>
               
-              {/* Monthly Volume Widget */}
-              <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-3 mb-3 shadow-xl border-2`}>
-                <div className="flex items-center justify-between mb-2">
-                  <button
-                    onClick={() => {
-                      const newDate = new Date(volumeWidgetDate);
-                      newDate.setMonth(newDate.getMonth() - 1);
-                      setVolumeWidgetDate(newDate);
-                    }}
-                    className={`p-1.5 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded-lg transition-colors`}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <div className="text-center">
-                    <div className={`text-[10px] ${darkMode ? 'text-blue-300' : 'text-blue-700'} uppercase tracking-wider font-bold mb-0.5`}>Monthly Volume</div>
+              {/* Monthly Volume Section */}
+              <div className="mb-3">
+                <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide mb-2`}>Monthly Volume</h3>
+                <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-2 shadow-xl border-2`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <button
+                      onClick={() => {
+                        const newDate = new Date(volumeWidgetDate);
+                        newDate.setMonth(newDate.getMonth() - 1);
+                        setVolumeWidgetDate(newDate);
+                      }}
+                      className={`p-1 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded transition-colors`}
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
                     <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h3>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const newDate = new Date(volumeWidgetDate);
+                    <button
+                      onClick={() => {
+                        const newDate = new Date(volumeWidgetDate);
                       newDate.setMonth(newDate.getMonth() + 1);
                       setVolumeWidgetDate(newDate);
                     }}
-                    className={`p-1.5 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded-lg transition-colors`}
+                    className={`p-1 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded transition-colors`}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   {[
                     { name: 'Pull-ups', color: 'from-blue-500 to-blue-600', icon: '💪' },
                     { name: 'Dips', color: 'from-green-500 to-green-600', icon: '🔥' },
@@ -1054,37 +1068,37 @@ export default function Home() {
                     }
                     
                     return (
-                      <div key={name} className={`space-y-1 p-2 rounded-lg ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'}`}>
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="text-lg">{icon}</span>
-                            <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name}</span>
+                      <div key={name} className={`space-y-0.5 p-1.5 rounded ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'}`}>
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-base">{icon}</span>
+                            <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name}</span>
                           </div>
                           <div className="text-right flex flex-col items-end">
-                            <div className="flex items-baseline gap-1">
-                              <span className={`font-bold text-xl ${isOverGoal ? 'text-green-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                            <div className="flex items-baseline gap-0.5">
+                              <span className={`font-bold text-base ${isOverGoal ? 'text-green-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                                 {monthlyVolume}
                               </span>
                               {prevMonthVolume > 0 && (
                                 <>
-                                  <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>/</span>
-                                  <span className={`text-sm font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{prevMonthVolume}</span>
+                                  <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>/</span>
+                                  <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{prevMonthVolume}</span>
                                 </>
                               )}
                             </div>
                             {paceStatus && (
-                              <div className="text-[10px] font-bold mt-0.5">{paceStatus}</div>
+                              <div className="text-[9px] font-bold mt-0">{paceStatus}</div>
                             )}
                           </div>
                         </div>
-                        <div className={`h-2.5 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full overflow-hidden relative shadow-inner`}>
+                        <div className={`h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full overflow-hidden relative shadow-inner`}>
                           <div 
                             className={`h-full bg-gradient-to-r ${color} transition-all duration-500 ease-out ${isOverGoal ? 'animate-pulse' : ''}`}
                             style={{ width: `${percentage}%` }}
                           />
                           {isOverGoal && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-[8px] font-bold text-white drop-shadow-lg">GOAL EXCEEDED! 🎉</span>
+                              <span className="text-[7px] font-bold text-white drop-shadow-lg">GOAL! 🎉</span>
                             </div>
                           )}
                         </div>
@@ -1114,32 +1128,18 @@ export default function Home() {
                   return (
                     <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`} data-recent-workout={i}>
                       <button
-                        onClick={(e) => {
-                          const wasExpanded = isExpanded;
+                        onClick={() => {
                           setExpandedRecent(isExpanded ? null : i);
-                          
-                          // Scroll to top when expanding - wait for DOM
-                          if (!wasExpanded) {
-                            setTimeout(() => {
-                              const element = e.currentTarget.closest('[data-recent-workout]');
-                              if (element) {
-                                const rect = element.getBoundingClientRect();
-                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                const targetY = rect.top + scrollTop - 80;
-                                window.scrollTo({ top: targetY, behavior: 'smooth' });
-                              }
-                            }, 300);
-                          }
                         }}
-                        className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
+                        className={`w-full p-2 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-medium text-sm">
+                            <div className="font-medium text-xs">
                               {dayOfWeek} {month}/{day}
-                              {w.location && <span className={`ml-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>· {w.location}</span>}
+                              {w.location && <span className={`ml-2 text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>· {w.location}</span>}
                             </div>
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
+                            <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
                               {w.exercises.length} exercises
                             </div>
                           </div>
@@ -1151,7 +1151,7 @@ export default function Home() {
                       
                       {isExpanded && (
                         <div 
-                          className="px-3 pb-3 space-y-2 border-t border-gray-700 pt-2"
+                          className="px-2 pb-2 space-y-1.5 border-t border-gray-700 pt-2"
                           onTouchStart={(e) => {
                             e.currentTarget.dataset.startY = e.touches[0].clientY;
                             e.currentTarget.dataset.startScrollTop = e.currentTarget.scrollTop || 0;
@@ -1189,20 +1189,20 @@ export default function Home() {
                           {w.exercises.map((ex, ei) => {
                             const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                             return (
-                              <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5 mb-1`}>
-                                <div className="grid grid-cols-[120px_1fr_50px] gap-2 items-start text-xs">
+                              <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-1.5 py-1 mb-1`}>
+                                <div className="grid grid-cols-[100px_1fr_40px] gap-1.5 items-start text-[11px]">
                                   <div className="font-medium truncate">{ex.name}</div>
                                   <div className="flex items-center gap-1 flex-wrap">
                                     {ex.sets.map((s, si) => (
-                                      <span key={si} className={`${darkMode ? 'bg-gray-600' : 'bg-gray-300'} px-1.5 py-0.5 rounded text-[11px]`}>
+                                      <span key={si} className={`${darkMode ? 'bg-gray-600' : 'bg-gray-300'} px-1 py-0.5 rounded text-[10px]`}>
                                         {s.reps}
                                       </span>
                                     ))}
                                   </div>
-                                  <div className="text-right font-bold">({totalReps})</div>
+                                  <div className="text-right font-bold text-xs">({totalReps})</div>
                                 </div>
                                 {ex.notes && (
-                                  <div className="text-[10px] text-gray-400 mt-1 text-right">{ex.notes}</div>
+                                  <div className="text-[9px] text-gray-400 mt-0.5 text-right">{ex.notes}</div>
                                 )}
                               </div>
                             );
