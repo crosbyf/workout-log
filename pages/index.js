@@ -112,6 +112,9 @@ export default function Home() {
   const [logCalendarDate, setLogCalendarDate] = useState(new Date());
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
   const [selectedLogDay, setSelectedLogDay] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showEndWorkoutConfirm, setShowEndWorkoutConfirm] = useState(false);
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -365,8 +368,7 @@ export default function Home() {
   const editWorkout = (i) => {
     setCurrent(JSON.parse(JSON.stringify(workouts[i])));
     setEditing(i);
-    setShowNew(true);
-    setView('log');
+    setShowWorkoutModal(true);
   };
 
   const loadPreset = (p) => setCurrent({
@@ -403,6 +405,11 @@ export default function Home() {
     });
     lines.push(`\t${w.location || ''}\t\t\t\t\t\t${[w.location, w.notes].filter(x => x).join('. ')}`);
     navigator.clipboard.writeText(lines.join('\n'));
+    
+    // Show toast notification
+    setToastMessage('Workout copied to clipboard!');
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
   };
 
   const clearAll = () => {
@@ -495,8 +502,9 @@ export default function Home() {
     workouts.forEach(w => {
       const d = new Date(w.date);
       const day = d.getDay();
-      const diff = d.getDate() - day;
-      const start = new Date(d.setDate(diff));
+      // Start week on Monday: if Sunday (0), go back 6 days; otherwise go back (day-1) days
+      const diff = day === 0 ? -6 : 1 - day;
+      const start = new Date(d.setDate(d.getDate() + diff));
       const ws = start.toISOString().split('T')[0];
       const m = w.date.substring(0, 7);
       
@@ -640,6 +648,37 @@ export default function Home() {
           </div>
         )}
 
+        {/* End Workout Confirmation */}
+        {showEndWorkoutConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-md">
+              <h3 className="text-xl font-bold mb-4 text-blue-400">Finish Workout?</h3>
+              <p className="mb-6">Save this workout to your log?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    saveWorkout();
+                    setShowWorkoutModal(false);
+                    setWorkoutStarted(false);
+                    setWorkoutTimer(0);
+                    setTimerRunning(false);
+                    setShowEndWorkoutConfirm(false);
+                  }}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 py-3 rounded-lg font-semibold"
+                >
+                  Save Workout
+                </button>
+                <button
+                  onClick={() => setShowEndWorkoutConfirm(false)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Delete Exercise Confirmation */}
         {deleteExercise !== null && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[70] p-4">
@@ -771,18 +810,16 @@ export default function Home() {
                                       </span>
                                     ))}
                                   </div>
-                                  <div className="text-right">
-                                    <div className="font-bold">({totalReps})</div>
-                                    {ex.notes && (
-                                      <div className="text-[10px] text-gray-400 mt-1 text-right">{ex.notes}</div>
-                                    )}
-                                  </div>
+                                  <div className="text-right font-bold">({totalReps})</div>
                                 </div>
+                                {ex.notes && (
+                                  <div className="text-[10px] text-gray-400 mt-1">{ex.notes}</div>
+                                )}
                               </div>
                             );
                           })}
                           {w.notes && (
-                            <div className="text-xs text-gray-400 italic mt-2 pt-2 border-t border-gray-700">
+                            <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-700">
                               {w.notes}
                             </div>
                           )}
@@ -1112,8 +1149,8 @@ export default function Home() {
                                       key={week}
                                       onClick={() => {
                                         const weekDate = new Date(week);
-                                        setCalendarDate(weekDate);
-                                        setView('calendar');
+                                        setLogCalendarDate(weekDate);
+                                        setView('list');
                                       }}
                                       className="flex items-center gap-1.5 w-full hover:bg-gray-700 rounded px-1 -mx-1"
                                     >
@@ -1412,13 +1449,11 @@ export default function Home() {
                                   </span>
                                 ))}
                               </div>
-                              <div className="text-right">
-                                <div className="font-bold">({totalReps})</div>
-                                {ex.notes && (
-                                  <div className="text-[10px] text-gray-400 mt-1 text-right">{ex.notes}</div>
-                                )}
-                              </div>
+                              <div className="text-right font-bold">({totalReps})</div>
                             </div>
+                            {ex.notes && (
+                              <div className="text-[10px] text-gray-400 mt-1">{ex.notes}</div>
+                            )}
                           </div>
                         );
                       })}
@@ -1847,8 +1882,9 @@ export default function Home() {
                                     e.target.nextElementSibling?.classList.add('hidden');
                                   }, 200);
                                 }}
+                                disabled={!workoutStarted}
                                 placeholder="0"
-                                className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center flex-shrink-0"
+                                className="w-[40px] bg-gray-800 border border-gray-700 rounded px-1 py-1 text-[11px] text-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                               />
                               {ex.sets[si] && (
                                 <button
@@ -1935,8 +1971,9 @@ export default function Home() {
                                     u[ei].sets[si].reps = parseInt(e.target.value) || 0;
                                     setCurrent({ ...current, exercises: u });
                                   }}
+                                  disabled={!workoutStarted}
                                   placeholder="0"
-                                  className="w-12 bg-gray-700 border border-gray-600 rounded px-1 py-1 text-[11px] text-center"
+                                  className="w-12 bg-gray-700 border border-gray-600 rounded px-1 py-1 text-[11px] text-center disabled:opacity-50 disabled:cursor-not-allowed"
                                 />
                               </div>
                             ))}
@@ -2045,13 +2082,7 @@ export default function Home() {
                         Continue
                       </button>
                       <button
-                        onClick={() => {
-                          saveWorkout();
-                          setShowWorkoutModal(false);
-                          setWorkoutStarted(false);
-                          setWorkoutTimer(0);
-                          setTimerRunning(false);
-                        }}
+                        onClick={() => setShowEndWorkoutConfirm(true)}
                         className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 py-3 rounded-xl font-semibold shadow-md transition-all active:scale-[0.98]"
                       >
                         End Workout
@@ -2174,6 +2205,13 @@ export default function Home() {
                 })}
               </div>
             </div>
+          </div>
+        )}
+        
+        {/* Toast Notification */}
+        {showToast && (
+          <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+            {toastMessage}
           </div>
         )}
         
