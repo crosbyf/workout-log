@@ -1107,6 +1107,7 @@ export default function Home() {
                   })}
                 </div>
               </div>
+            </div>
               
               {/* Recent Workouts */}
               <div className="space-y-2">
