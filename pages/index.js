@@ -91,6 +91,12 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(true); // true = dark, false = light
   const [showNew, setShowNew] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null); // For exercise detail view
+  const [statsView, setStatsView] = useState('menu'); // 'menu', 'exercises', 'weight'
+  const [weightEntries, setWeightEntries] = useState([]); // Weight tracking data
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [editingWeight, setEditingWeight] = useState(null);
+  const [currentWeight, setCurrentWeight] = useState({ date: '', weight: '', notes: '' });
+  const [deleteWeight, setDeleteWeight] = useState(null);
   const [editing, setEditing] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [sortOrder, setSortOrder] = useState('desc');
@@ -195,12 +201,14 @@ export default function Home() {
         const ae = localStorage.getItem('autoEmail');
         const ea = localStorage.getItem('emailAddress');
         const dm = localStorage.getItem('darkMode');
+        const we = localStorage.getItem('weightEntries');
         if (w) setWorkouts(JSON.parse(w));
         if (p) setPresets(JSON.parse(p));
         if (e) setExercises(JSON.parse(e));
         if (ae) setAutoEmail(JSON.parse(ae));
         if (ea) setEmailAddress(JSON.parse(ea));
         if (dm !== null) setDarkMode(JSON.parse(dm));
+        if (we) setWeightEntries(JSON.parse(we));
       };
       
       // Load data immediately
@@ -940,6 +948,113 @@ export default function Home() {
           </div>
         )}
 
+        {/* Add/Edit Weight Modal */}
+        {showWeightModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full`}>
+              <h3 className="text-xl font-bold mb-4">{editingWeight !== null ? 'Edit' : 'Add'} Weight Entry</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Date</label>
+                  <input
+                    type="date"
+                    value={currentWeight.date}
+                    onChange={(e) => setCurrentWeight({ ...currentWeight, date: e.target.value })}
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Weight (lbs)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={currentWeight.weight}
+                    onChange={(e) => setCurrentWeight({ ...currentWeight, weight: e.target.value })}
+                    placeholder="185.5"
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Notes (optional)</label>
+                  <textarea
+                    value={currentWeight.notes}
+                    onChange={(e) => setCurrentWeight({ ...currentWeight, notes: e.target.value })}
+                    placeholder="Morning weigh-in, after workout, etc."
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2 resize-none h-20`}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    if (!currentWeight.date || !currentWeight.weight) return;
+                    
+                    const entry = {
+                      date: currentWeight.date,
+                      weight: parseFloat(currentWeight.weight),
+                      notes: currentWeight.notes
+                    };
+                    
+                    let updated;
+                    if (editingWeight !== null) {
+                      updated = [...weightEntries];
+                      updated[editingWeight] = entry;
+                    } else {
+                      updated = [...weightEntries, entry];
+                    }
+                    
+                    save(updated, 'weightEntries', setWeightEntries);
+                    setShowWeightModal(false);
+                    setCurrentWeight({ date: '', weight: '', notes: '' });
+                    setEditingWeight(null);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                >
+                  {editingWeight !== null ? 'Update' : 'Add'} Entry
+                </button>
+                <button
+                  onClick={() => {
+                    setShowWeightModal(false);
+                    setCurrentWeight({ date: '', weight: '', notes: '' });
+                    setEditingWeight(null);
+                  }}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Weight Confirmation */}
+        {deleteWeight !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
+              <h3 className="text-xl font-bold mb-4 text-red-400">Delete Weight Entry?</h3>
+              <p className="mb-6">Are you sure you want to delete this weight entry? This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    const updated = weightEntries.filter((_, idx) => idx !== deleteWeight);
+                    save(updated, 'weightEntries', setWeightEntries);
+                    setDeleteWeight(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeleteWeight(null)}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className={`bg-gradient-to-b ${darkMode ? 'from-gray-800 to-gray-900' : 'from-gray-100 to-gray-200'} ${darkMode ? 'border-gray-700/50' : 'border-gray-300'} border-b p-4 shadow-lg`}>
           <div className="max-w-4xl mx-auto text-center">
             <button 
@@ -1591,8 +1706,79 @@ export default function Home() {
             </div>
           )}
           
-          {view === 'stats' && !selectedExercise && (
+          {view === 'stats' && statsView === 'menu' && (
             <div className="space-y-3">
+              <h2 className="text-base font-semibold mb-2">Statistics</h2>
+              
+              {/* Exercise Stats Card */}
+              <button
+                onClick={() => {
+                  setStatsView('exercises');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">📊</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Exercise Stats</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {[...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].length} exercises tracked
+                      </div>
+                    </div>
+                  </div>
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+              
+              {/* Body Weight Card */}
+              <button
+                onClick={() => {
+                  setStatsView('weight');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">⚖️</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Body Weight</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {weightEntries.length > 0 
+                          ? `${weightEntries[weightEntries.length - 1].weight} lbs • ${weightEntries.length} entries`
+                          : 'Track your weight over time'
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+            </div>
+          )}
+          
+          {/* Exercise List View */}
+          {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setStatsView('menu');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} mb-2`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="font-semibold">Back to Stats</span>
+              </button>
+              
               <h2 className="text-base font-semibold mb-2">Exercise Statistics</h2>
               
               {(() => {
@@ -1642,7 +1828,7 @@ export default function Home() {
           )}
           
           {/* Exercise Detail View */}
-          {view === 'stats' && selectedExercise && (() => {
+          {view === 'stats' && statsView === 'exercises' && selectedExercise && (() => {
             const stats = (() => {
               const weekly = {};
               const monthly = {};
@@ -1764,6 +1950,175 @@ export default function Home() {
               </div>
             );
           })()}
+          
+          {/* Body Weight View */}
+          {view === 'stats' && statsView === 'weight' && (
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setStatsView('menu');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} mb-2`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="font-semibold">Back to Stats</span>
+              </button>
+              
+              <h2 className="text-base font-semibold mb-2">Body Weight</h2>
+              
+              {/* Add Weight Button */}
+              <button
+                onClick={() => {
+                  setCurrentWeight({ date: getTodayDate(), weight: '', notes: '' });
+                  setEditingWeight(null);
+                  setShowWeightModal(true);
+                }}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-3 mb-3 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+              >
+                <Icons.Plus className="w-6 h-6" />
+                Add Weight Entry
+              </button>
+              
+              {/* Stats Summary */}
+              {weightEntries.length > 0 && (() => {
+                const sorted = [...weightEntries].sort((a, b) => b.date.localeCompare(a.date));
+                const latest = sorted[0];
+                const oldest = sorted[sorted.length - 1];
+                const change = latest.weight - oldest.weight;
+                
+                // Calculate 7-day average
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                const sevenDayStr = sevenDaysAgo.toISOString().split('T')[0];
+                const recent7 = sorted.filter(e => e.date >= sevenDayStr);
+                const avg7 = recent7.length > 0 ? (recent7.reduce((sum, e) => sum + parseFloat(e.weight), 0) / recent7.length).toFixed(1) : null;
+                
+                // Calculate 30-day average
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                const thirtyDayStr = thirtyDaysAgo.toISOString().split('T')[0];
+                const recent30 = sorted.filter(e => e.date >= thirtyDayStr);
+                const avg30 = recent30.length > 0 ? (recent30.reduce((sum, e) => sum + parseFloat(e.weight), 0) / recent30.length).toFixed(1) : null;
+                
+                return (
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
+                    <h3 className="font-bold text-lg mb-3">Summary</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Current</div>
+                        <div className="text-2xl font-bold">{latest.weight} <span className="text-sm font-normal">lbs</span></div>
+                      </div>
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Starting</div>
+                        <div className="text-2xl font-bold">{oldest.weight} <span className="text-sm font-normal">lbs</span></div>
+                      </div>
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Total Change</div>
+                        <div className={`text-xl font-bold ${change > 0 ? 'text-red-400' : change < 0 ? 'text-green-400' : ''}`}>
+                          {change > 0 ? '+' : ''}{change.toFixed(1)} lbs
+                        </div>
+                      </div>
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Entries</div>
+                        <div className="text-xl font-bold">{weightEntries.length}</div>
+                      </div>
+                      {avg7 && (
+                        <div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>7-Day Avg</div>
+                          <div className="text-xl font-bold">{avg7} <span className="text-sm font-normal">lbs</span></div>
+                        </div>
+                      )}
+                      {avg30 && (
+                        <div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>30-Day Avg</div>
+                          <div className="text-xl font-bold">{avg30} <span className="text-sm font-normal">lbs</span></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {/* Weight Chart Placeholder */}
+              {weightEntries.length > 1 && (
+                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
+                  <h3 className="font-bold text-lg mb-3">Weight Trend</h3>
+                  <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg h-48 flex items-center justify-center`}>
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Chart coming soon • {weightEntries.length} data points
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Recent Entries */}
+              <div className="space-y-2">
+                <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide`}>Weight History</h3>
+                {[...weightEntries].sort((a, b) => b.date.localeCompare(a.date)).map((entry, i, arr) => {
+                  const [year, month, day] = entry.date.split('-');
+                  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                  const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                  
+                  // Calculate change from previous entry
+                  const prevEntry = arr[i + 1];
+                  const change = prevEntry ? (entry.weight - prevEntry.weight) : 0;
+                  
+                  return (
+                    <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-3 shadow-md`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold">{entry.weight}</span>
+                            <span className="text-sm">lbs</span>
+                            {prevEntry && (
+                              <span className={`text-xs font-semibold ${change > 0 ? 'text-red-400' : change < 0 ? 'text-green-400' : 'text-gray-500'}`}>
+                                {change > 0 ? '↑' : change < 0 ? '↓' : '→'} {Math.abs(change).toFixed(1)}
+                              </span>
+                            )}
+                          </div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{dateStr}</div>
+                          {entry.notes && (
+                            <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} mt-1`}>{entry.notes}</div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setCurrentWeight(entry);
+                              setEditingWeight(i);
+                              setShowWeightModal(true);
+                            }}
+                            className="text-blue-400 hover:text-blue-300 p-2"
+                          >
+                            <Icons.Edit />
+                          </button>
+                          <button
+                            onClick={() => setDeleteWeight(i)}
+                            className="text-red-400 hover:text-red-300 p-2"
+                          >
+                            <Icons.Trash />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                
+                {weightEntries.length === 0 && (
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-8 shadow-md text-center`}>
+                    <div className="text-4xl mb-3">⚖️</div>
+                    <div className={`text-lg font-semibold mb-2`}>No Weight Entries Yet</div>
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Start tracking your weight by adding your first entry above
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           
           {view === 'settings' && (
             <div className="space-y-3">
@@ -2633,6 +2988,8 @@ export default function Home() {
             <button
               onClick={() => {
                 setView('stats');
+                setStatsView('menu');
+                setSelectedExercise(null);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className={`flex-1 py-4 transition-colors ${view === 'stats' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
