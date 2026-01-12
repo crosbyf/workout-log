@@ -284,9 +284,10 @@ export default function Home() {
           // Check if this is a Day Off entry
           if (cols[1] && cols[1] === 'Day Off') {
             currentWorkout.location = 'Day Off';
-            // Get notes from column 7
-            if (cols[7]) {
-              currentWorkout.notes = cols[7];
+            // Get notes from column 7 or later columns
+            const noteParts = [cols[7], cols[8], cols[9], cols[10]].filter(n => n && n.trim());
+            if (noteParts.length > 0) {
+              currentWorkout.notes = noteParts.join(' ');
             }
           }
           // Add first exercise if present
@@ -314,9 +315,17 @@ export default function Home() {
             notes: cols[7] || ''
           });
         }
-        // Check if this is workout notes (has location info in col 2)
-        else if (currentWorkout && cols[2] && (cols[2].includes('Garage') || cols[2].includes('BW') || cols[2].includes('Manual'))) {
+        // Check if this is workout notes (has location info in col 2) - but not for Day Off
+        else if (currentWorkout && currentWorkout.location !== 'Day Off' && cols[2] && (cols[2].includes('Garage') || cols[2].includes('BW') || cols[2].includes('Manual'))) {
           currentWorkout.location = cols[2];
+          const noteParts = [cols[7], cols[8], cols[9], cols[10]].filter(n => n && n.trim());
+          if (noteParts.length > 0) {
+            currentWorkout.notes = noteParts.join(' ');
+          }
+        }
+        // Handle Day Off as location in second line
+        else if (currentWorkout && cols[2] && cols[2] === 'Day Off') {
+          currentWorkout.location = 'Day Off';
           const noteParts = [cols[7], cols[8], cols[9], cols[10]].filter(n => n && n.trim());
           if (noteParts.length > 0) {
             currentWorkout.notes = noteParts.join(' ');
@@ -572,10 +581,10 @@ export default function Home() {
       <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center">
         <div className="text-center">
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">GORS LOG</h1>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+          <div className="flex items-center gap-2 justify-center">
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse"></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.4s'}}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.8s'}}></div>
           </div>
         </div>
       </div>
@@ -590,6 +599,15 @@ export default function Home() {
         <meta name="theme-color" content="#111827" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <style>{`
+          @keyframes slowPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+          }
+          .animate-slow-pulse {
+            animation: slowPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          }
+        `}</style>
       </Head>
       
       <div className="min-h-screen bg-gray-900 text-white">
@@ -933,9 +951,10 @@ export default function Home() {
                   </button>
                   <div className="text-center">
                     <div className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Monthly Volume</div>
-                    <h3 className="text-sm font-bold text-blue-400">
+                    <h3 className="text-sm font-bold text-blue-400 mb-0.5">
                       {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h3>
+                    <div className="text-[10px] text-gray-600">Goal: Last Month</div>
                   </div>
                   <button
                     onClick={() => {
@@ -1135,6 +1154,15 @@ export default function Home() {
                           )}
                             </>
                           )}
+                          
+                          {/* Collapse button at bottom */}
+                          <button
+                            onClick={() => setExpandedRecent(null)}
+                            className="w-full mt-3 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                          >
+                            <Icons.ChevronDown className="rotate-180" />
+                            Collapse
+                          </button>
                         </div>
                       )}
                     </div>
@@ -1759,17 +1787,24 @@ export default function Home() {
                         if (newExpanded.has(i)) {
                           newExpanded.delete(i);
                         } else {
+                          const element = e.currentTarget.closest('[data-workout-date]');
                           newExpanded.add(i);
-                          // Scroll this workout to top when expanding
-                          setTimeout(() => {
-                            const element = e.currentTarget.closest('[data-workout-date]');
-                            if (element) {
-                              const rect = element.getBoundingClientRect();
-                              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                              const targetY = rect.top + scrollTop - 70; // 70px offset from top
-                              window.scrollTo({ top: targetY, behavior: 'smooth' });
-                            }
-                          }, 300);
+                          setExpandedLog(newExpanded);
+                          
+                          // Scroll this workout to top when expanding - wait for DOM update
+                          requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                              setTimeout(() => {
+                                if (element) {
+                                  const rect = element.getBoundingClientRect();
+                                  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                  const targetY = rect.top + scrollTop - 80; // 80px offset from top
+                                  window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                }
+                              }, 100);
+                            });
+                          });
+                          return; // Exit early since we already called setExpandedLog
                         }
                         setExpandedLog(newExpanded);
                       }}
@@ -1854,6 +1889,19 @@ export default function Home() {
                     )}
                       </>
                     )}
+                        
+                        {/* Collapse button at bottom */}
+                        <button
+                          onClick={() => {
+                            const newExpanded = new Set(expandedLog);
+                            newExpanded.delete(i);
+                            setExpandedLog(newExpanded);
+                          }}
+                          className="w-full mt-3 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Icons.ChevronDown className="rotate-180" />
+                          Collapse
+                        </button>
                       </div>
                     )}
                   </div>
