@@ -944,34 +944,34 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           {view === 'calendar' && (
-            <div className="space-y-3 overflow-hidden">
+            <div className="space-y-2">
               {/* New Workout Button */}
               <button
                 onClick={() => setShowPresetSelector(true)}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-4 mb-4 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-3 mb-3 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
               >
                 <Icons.Plus className="w-6 h-6" />
                 New Workout
               </button>
               
               {/* Monthly Volume Widget */}
-              <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-5 mb-4 shadow-xl border-2`}>
-                <div className="flex items-center justify-between mb-4">
+              <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-3 mb-3 shadow-xl border-2`}>
+                <div className="flex items-center justify-between mb-2">
                   <button
                     onClick={() => {
                       const newDate = new Date(volumeWidgetDate);
                       newDate.setMonth(newDate.getMonth() - 1);
                       setVolumeWidgetDate(newDate);
                     }}
-                    className={`p-2 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded-lg transition-colors`}
+                    className={`p-1.5 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded-lg transition-colors`}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <div className="text-center">
-                    <div className={`text-xs ${darkMode ? 'text-blue-300' : 'text-blue-700'} uppercase tracking-widest font-bold mb-1`}>Monthly Volume</div>
-                    <h3 className={`text-base font-extrabold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    <div className={`text-[10px] ${darkMode ? 'text-blue-300' : 'text-blue-700'} uppercase tracking-wider font-bold mb-0.5`}>Monthly Volume</div>
+                    <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h3>
                   </div>
@@ -981,9 +981,9 @@ export default function Home() {
                       newDate.setMonth(newDate.getMonth() + 1);
                       setVolumeWidgetDate(newDate);
                     }}
-                    className={`p-2 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded-lg transition-colors`}
+                    className={`p-1.5 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded-lg transition-colors`}
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
@@ -1054,30 +1054,30 @@ export default function Home() {
                     }
                     
                     return (
-                      <div key={name} className={`space-y-2 p-3 rounded-lg ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'}`}>
+                      <div key={name} className={`space-y-1 p-2 rounded-lg ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'}`}>
                         <div className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2">
-                            <span className="text-2xl">{icon}</span>
-                            <span className={`font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name}</span>
+                            <span className="text-lg">{icon}</span>
+                            <span className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name}</span>
                           </div>
                           <div className="text-right flex flex-col items-end">
                             <div className="flex items-baseline gap-1">
-                              <span className={`font-extrabold text-2xl ${isOverGoal ? 'text-green-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                              <span className={`font-bold text-xl ${isOverGoal ? 'text-green-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
                                 {monthlyVolume}
                               </span>
                               {prevMonthVolume > 0 && (
                                 <>
                                   <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>/</span>
-                                  <span className={`text-base font-bold ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{prevMonthVolume}</span>
+                                  <span className={`text-sm font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{prevMonthVolume}</span>
                                 </>
                               )}
                             </div>
                             {paceStatus && (
-                              <div className="text-xs font-bold mt-0.5">{paceStatus}</div>
+                              <div className="text-[10px] font-bold mt-0.5">{paceStatus}</div>
                             )}
                           </div>
                         </div>
-                        <div className={`h-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full overflow-hidden relative shadow-inner`}>
+                        <div className={`h-2.5 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full overflow-hidden relative shadow-inner`}>
                           <div 
                             className={`h-full bg-gradient-to-r ${color} transition-all duration-500 ease-out ${isOverGoal ? 'animate-pulse' : ''}`}
                             style={{ width: `${percentage}%` }}
@@ -1120,19 +1120,15 @@ export default function Home() {
                           
                           // Scroll to top when expanding - wait for DOM
                           if (!wasExpanded) {
-                            requestAnimationFrame(() => {
-                              requestAnimationFrame(() => {
-                                setTimeout(() => {
-                                  const element = e.currentTarget.closest('[data-recent-workout]');
-                                  if (element) {
-                                    const rect = element.getBoundingClientRect();
-                                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                    const targetY = rect.top + scrollTop - 80;
-                                    window.scrollTo({ top: targetY, behavior: 'smooth' });
-                                  }
-                                }, 50);
-                              });
-                            });
+                            setTimeout(() => {
+                              const element = e.currentTarget.closest('[data-recent-workout]');
+                              if (element) {
+                                const rect = element.getBoundingClientRect();
+                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                const targetY = rect.top + scrollTop - 80;
+                                window.scrollTo({ top: targetY, behavior: 'smooth' });
+                              }
+                            }, 300);
                           }
                         }}
                         className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
