@@ -184,10 +184,10 @@ export default function Home() {
       // Load data immediately
       loadData();
       
-      // But keep loading screen visible for 2 seconds
+      // But keep loading screen visible for 3 seconds
       setTimeout(() => {
         setLoading(false);
-      }, 2000);
+      }, 3000);
     }
   }, []);
   
@@ -586,8 +586,8 @@ export default function Home() {
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">GORS LOG</h1>
           <div className="flex items-center gap-2 justify-center">
             <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.5s'}}></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '1s'}}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.66s'}}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '1.33s'}}></div>
           </div>
         </div>
       </div>
@@ -604,16 +604,16 @@ export default function Home() {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <style>{`
           @keyframes slowPulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
           }
           .animate-slow-pulse {
-            animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation: slowPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
           }
         `}</style>
       </Head>
       
-      <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
         {showClear && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-800 rounded-xl p-6 max-w-md border-2 border-red-500/50">
@@ -1037,10 +1037,11 @@ export default function Home() {
                       const daysInMonth = new Date(volumeWidgetDate.getFullYear(), volumeWidgetDate.getMonth() + 1, 0).getDate();
                       const dayOfMonth = now.getDate();
                       const expectedVolume = (prevMonthVolume / daysInMonth) * dayOfMonth;
-                      if (monthlyVolume >= expectedVolume) {
-                        paceStatus = '🟢 On Pace';
+                      const difference = Math.round(monthlyVolume - expectedVolume);
+                      if (difference >= 0) {
+                        paceStatus = `🟢 +${difference}`;
                       } else {
-                        paceStatus = '🔴 Off Pace';
+                        paceStatus = `🔴 ${difference}`;
                       }
                     }
                     
@@ -1087,7 +1088,7 @@ export default function Home() {
               
               {/* Recent Workouts */}
               <div className="space-y-2">
-                <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wide">Recent Workouts</h3>
+                <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide`}>Recent Workouts</h3>
                 {[...workouts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3).map((w, i) => {
                   const [year, month, day] = w.date.split('-');
                   const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -1103,18 +1104,18 @@ export default function Home() {
                   const borderColor = locationColors[w.location] || 'border-gray-600';
                   
                   return (
-                    <div key={i} className={`bg-gray-800 rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`}>
+                    <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`}>
                       <button
                         onClick={() => setExpandedRecent(isExpanded ? null : i)}
-                        className="w-full p-3 text-left transition-colors hover:bg-white/5"
+                        className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium text-sm">
                               {dayOfWeek} {month}/{day}
-                              {w.location && <span className="ml-2 text-xs text-gray-400">· {w.location}</span>}
+                              {w.location && <span className={`ml-2 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>· {w.location}</span>}
                             </div>
-                            <div className="text-xs text-gray-400 mt-0.5">
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
                               {w.exercises.length} exercises
                             </div>
                           </div>
@@ -1155,21 +1156,21 @@ export default function Home() {
                           }}
                         >
                           {w.location === 'Day Off' && w.notes ? (
-                            <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-3">
-                              <div className="text-sm font-semibold text-yellow-400 mb-2">Rest Day</div>
-                              <div className="text-sm text-gray-300">{w.notes}</div>
+                            <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700/50' : 'bg-yellow-50 border-yellow-300'} border rounded-lg p-3`}>
+                              <div className="text-sm font-semibold text-yellow-600 mb-2">Rest Day</div>
+                              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
                             </div>
                           ) : (
                             <>
                           {w.exercises.map((ex, ei) => {
                             const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                             return (
-                              <div key={ei} className="bg-gray-700/50 rounded px-2 py-1.5 mb-1">
+                              <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5 mb-1`}>
                                 <div className="grid grid-cols-[120px_1fr_50px] gap-2 items-start text-xs">
                                   <div className="font-medium truncate">{ex.name}</div>
                                   <div className="flex items-center gap-1 flex-wrap">
                                     {ex.sets.map((s, si) => (
-                                      <span key={si} className="bg-gray-600 px-1.5 py-0.5 rounded text-[11px]">
+                                      <span key={si} className={`${darkMode ? 'bg-gray-600' : 'bg-gray-300'} px-1.5 py-0.5 rounded text-[11px]`}>
                                         {s.reps}
                                       </span>
                                     ))}
@@ -1193,7 +1194,7 @@ export default function Home() {
                           {/* Collapse button at bottom */}
                           <button
                             onClick={() => setExpandedRecent(null)}
-                            className="w-full mt-3 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                            className={`w-full mt-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2`}
                           >
                             <Icons.ChevronDown />
                             Collapse
@@ -1204,406 +1205,6 @@ export default function Home() {
                   );
                 })}
               </div>
-              
-              {/* Calendar Header */}
-              <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wide mt-4 mb-2">Calendar</h3>
-              
-              {/* Month navigation */}
-              <div className="flex items-center justify-between mb-3">
-                <button
-                  onClick={() => {
-                    const newDate = new Date(calendarDate);
-                    newDate.setMonth(newDate.getMonth() - 1);
-                    setCalendarDate(newDate);
-                  }}
-                  className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold">
-                    {calendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                  </h2>
-                  {(() => {
-                    const now = new Date();
-                    const isCurrentMonth = calendarDate.getMonth() === now.getMonth() && 
-                                          calendarDate.getFullYear() === now.getFullYear();
-                    if (!isCurrentMonth) {
-                      return (
-                        <button
-                          onClick={() => setCalendarDate(new Date())}
-                          className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs"
-                        >
-                          Today
-                        </button>
-                      );
-                    }
-                  })()}
-                </div>
-                <button
-                  onClick={() => {
-                    const newDate = new Date(calendarDate);
-                    newDate.setMonth(newDate.getMonth() + 1);
-                    setCalendarDate(newDate);
-                  }}
-                  className="bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Calendar grid */}
-              <div 
-                className="bg-gray-800 rounded-xl p-3 shadow-md"
-                onTouchStart={(e) => {
-                  e.currentTarget.dataset.startX = e.touches[0].clientX;
-                }}
-                onTouchEnd={(e) => {
-                  const startX = parseFloat(e.currentTarget.dataset.startX);
-                  const endX = e.changedTouches[0].clientX;
-                  const diff = endX - startX;
-                  
-                  if (Math.abs(diff) > 50) {
-                    if (diff > 0) {
-                      // Swiped right - go to previous month
-                      const newDate = new Date(calendarDate);
-                      newDate.setMonth(newDate.getMonth() - 1);
-                      setCalendarDate(newDate);
-                    } else {
-                      // Swiped left - go to next month
-                      const newDate = new Date(calendarDate);
-                      newDate.setMonth(newDate.getMonth() + 1);
-                      setCalendarDate(newDate);
-                    }
-                  }
-                }}
-              >
-                {/* Day headers */}
-                <div className="grid grid-cols-7 gap-1 mb-2">
-                  {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                    <div key={day} className="text-center text-xs text-gray-500 font-bold uppercase tracking-wider">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Calendar days */}
-                <div className="grid grid-cols-7 gap-1">
-                  {(() => {
-                    const year = calendarDate.getFullYear();
-                    const month = calendarDate.getMonth();
-                    let firstDay = new Date(year, month, 1).getDay();
-                    // Convert Sunday (0) to 7, then subtract 1 to make Monday = 0
-                    firstDay = firstDay === 0 ? 6 : firstDay - 1;
-                    const daysInMonth = new Date(year, month + 1, 0).getDate();
-                    const days = [];
-
-                    // Empty cells for days before month starts
-                    for (let i = 0; i < firstDay; i++) {
-                      days.push(<div key={`empty-${i}`} className="aspect-square" />);
-                    }
-
-                    // Days of the month
-                    for (let day = 1; day <= daysInMonth; day++) {
-                      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                      const dayWorkouts = workouts.filter(w => w.date === dateStr);
-                      const hasWorkout = dayWorkouts.length > 0;
-                      const isToday = dateStr === getTodayDate();
-                      
-                      // Get workout type color
-                      let borderColor = 'border-gray-700';
-                      if (hasWorkout && dayWorkouts[0].location) {
-                        const locationColors = {
-                          'Garage BW': 'border-blue-400',
-                          'Manual': 'border-green-400',
-                          'Garage 10': 'border-purple-400',
-                          'BW-only': 'border-yellow-400',
-                        };
-                        borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
-                      }
-
-                      days.push(
-                        <button
-                          key={day}
-                          onClick={() => {
-                            if (hasWorkout) {
-                              setSelectedDay(dateStr);
-                              setShowDayModal(true);
-                            }
-                          }}
-                          className={`aspect-square rounded border-2 flex items-center justify-center text-sm
-                            ${hasWorkout ? `${borderColor} bg-gray-700 font-bold` : 'border-gray-700 bg-gray-800'}
-                            ${isToday ? 'ring-2 ring-blue-400' : ''}
-                            ${selectedDay === dateStr ? 'ring-2 ring-white' : ''}
-                          `}
-                        >
-                          {day}
-                        </button>
-                      );
-                    }
-
-                    return days;
-                  })()}
-                </div>
-              </div>
-
-              {/* Legend */}
-              <div className="bg-gray-800 rounded-xl p-3 shadow-md">
-                <div className="text-xs font-semibold text-gray-300 mb-2 uppercase tracking-wide">Workout Types:</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 shadow-sm"></div>
-                    <span className="text-xs font-medium">Garage BW</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-green-500 to-green-600 shadow-sm"></div>
-                    <span className="text-xs font-medium">Manual</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-purple-500 to-purple-600 shadow-sm"></div>
-                    <span className="text-xs font-medium">Garage 10</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-yellow-500 to-yellow-600 shadow-sm"></div>
-                    <span className="text-xs font-medium">BW-only</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {view === 'history' && (
-            <div className="space-y-2.5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search workouts..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 pl-8 text-sm"
-                  />
-                  <div className="absolute left-2 top-2 text-gray-400">
-                    <Icons.Search />
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                  className="bg-gray-800 px-2 py-1.5 rounded-lg border border-gray-700"
-                >
-                  <Icons.ArrowUpDown />
-                </button>
-              </div>
-
-              {filtered().map((w, i) => {
-                // Parse date without timezone issues
-                const [year, month, day] = w.date.split('-');
-                const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                
-                // Color-code by workout location
-                const locationColors = {
-                  'Garage BW': 'border-blue-400',
-                  'Manual': 'border-green-400',
-                  'Garage 10': 'border-purple-400',
-                  'BW-only': 'border-yellow-400',
-                };
-                const borderColor = locationColors[w.location] || 'border-gray-600';
-                
-                return (
-                  <div key={i} className={`bg-gray-800 rounded-lg p-3 border-l-4 ${borderColor}`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="font-bold text-base">
-                          {dayOfWeek} {month}/{day}
-                          {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
-                        </div>
-                      </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => copyToSheets(w)}
-                          className="text-blue-400 hover:text-blue-300 p-1"
-                          title="Copy to clipboard"
-                        >
-                          <Icons.Copy />
-                        </button>
-                        <button
-                          onClick={() => editWorkout(i)}
-                          className="text-green-400 hover:text-green-300 p-1"
-                        >
-                          <Icons.Edit />
-                        </button>
-                        <button
-                          onClick={() => setDeleteWorkout(i)}
-                          className="text-red-400 hover:text-red-300 p-1"
-                        >
-                          <Icons.Trash />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      {w.exercises.map((ex, ei) => {
-                        const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                        return (
-                          <div key={ei}>
-                            <div className="flex items-start text-xs">
-                              <div className="w-32 font-medium truncate">{ex.name}</div>
-                              <div className="flex-1 flex items-center gap-1">
-                                {ex.sets.map((s, si) => (
-                                  <span key={si} className="text-gray-400">
-                                    {s.reps}
-                                    {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
-                                  </span>
-                                ))}
-                                <span className="ml-1 font-bold text-white">({totalReps})</span>
-                              </div>
-                            </div>
-                            {ex.notes && (
-                              <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    {w.notes && (
-                      <div className="mt-2 text-xs text-gray-400 border-t border-gray-700 pt-1.5">{w.notes}</div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {filtered().length === 0 && (
-                <div className="text-center text-gray-500 py-8">
-                  {search ? 'No workouts found' : 'No workouts yet'}
-                </div>
-              )}
-            </div>
-          )}
-
-          {view === 'stats' && (
-            <div className="space-y-3">
-              <h2 className="text-base font-semibold mb-2">Your Stats</h2>
-              {Object.keys(trends()).length === 0 ? (
-                <div className="text-center text-gray-500 py-8 text-sm">
-                  No data yet. Start logging workouts!
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {Object.entries(trends()).map(([exercise, data]) => {
-                    const isExpanded = expandedTrends[exercise];
-                    return (
-                      <div key={exercise} className="bg-gray-800 rounded-lg">
-                        <button
-                          onClick={() => setExpandedTrends({
-                            ...expandedTrends,
-                            [exercise]: !isExpanded
-                          })}
-                          className="w-full p-3 flex items-center justify-between text-left"
-                        >
-                          <h3 className="font-medium text-sm">{exercise}</h3>
-                          <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                            <Icons.ChevronDown />
-                          </div>
-                        </button>
-                        
-                        {isExpanded && (
-                          <div className="px-3 pb-3">
-                            <div className="mb-3">
-                              <div className="text-xs text-gray-400 mb-1.5">Weekly Volume</div>
-                              <div className="space-y-1">
-                                {Object.entries(data.weekly)
-                                  .sort(([a], [b]) => b.localeCompare(a))
-                                  .map(([week, reps]) => (
-                                    <button
-                                      key={week}
-                                      onClick={() => {
-                                        const weekDate = new Date(week);
-                                        setLogCalendarDate(weekDate);
-                                        setView('list');
-                                        // Scroll to first workout of this week after navigation
-                                        setTimeout(() => {
-                                          const weekStart = new Date(week);
-                                          const weekEnd = new Date(weekStart);
-                                          weekEnd.setDate(weekEnd.getDate() + 7);
-                                          
-                                          // Find first workout in this week
-                                          const firstWorkout = workouts.find(w => {
-                                            const wDate = new Date(w.date);
-                                            return wDate >= weekStart && wDate < weekEnd;
-                                          });
-                                          
-                                          if (firstWorkout) {
-                                            const element = document.querySelector(`[data-workout-date="${firstWorkout.date}"]`);
-                                            if (element) {
-                                              const rect = element.getBoundingClientRect();
-                                              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                              const targetY = rect.top + scrollTop - 70;
-                                              window.scrollTo({ top: targetY, behavior: 'smooth' });
-                                            }
-                                          } else {
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                          }
-                                        }, 300);
-                                      }}
-                                      className="flex items-center gap-1.5 w-full hover:bg-gray-700 rounded px-1 -mx-1"
-                                    >
-                                      <span className="text-xs text-gray-500 w-20 text-right">
-                                        {new Date(week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
-                                      </span>
-                                      <div className="flex-1 bg-gray-700 rounded-full h-5 relative overflow-hidden">
-                                        <div
-                                          className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full shadow-sm"
-                                          style={{
-                                            width: `${(reps / Math.max(...Object.values(data.weekly))) * 100}%`
-                                          }}
-                                        />
-                                        <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                                          {reps}
-                                        </span>
-                                      </div>
-                                    </button>
-                                  ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="text-xs text-gray-400 mb-1.5">Monthly Volume</div>
-                        <div className="space-y-1">
-                          {Object.entries(data.monthly)
-                            .sort(([a], [b]) => b.localeCompare(a))
-                            .map(([month, reps]) => (
-                              <div key={month} className="flex items-center gap-1.5">
-                                <span className="text-xs text-gray-500 w-20 text-right">{month}</span>
-                                <div className="flex-1 bg-gray-700 rounded-full h-5 relative overflow-hidden">
-                                  <div
-                                    className="bg-green-500 h-full rounded-full"
-                                    style={{
-                                      width: `${(reps / Math.max(...Object.values(data.monthly))) * 100}%`
-                                    }}
-                                  />
-                                  <span className="absolute inset-0 flex items-center justify-center text-xs font-medium">
-                                    {reps}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
           
           {view === 'list' && (
             <div className="space-y-2.5">
@@ -1827,7 +1428,7 @@ export default function Home() {
                 const borderColor = locationColors[w.location] || 'border-gray-600';
                 
                 return (
-                  <div key={i} data-workout-date={w.date} className={`bg-gray-800 rounded-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
+                  <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
                     <button
                       onClick={(e) => {
                         const newExpanded = new Set(expandedLog);
@@ -1855,7 +1456,7 @@ export default function Home() {
                         }
                         setExpandedLog(newExpanded);
                       }}
-                      className="w-full p-3 text-left transition-colors hover:bg-white/5"
+                      className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -1863,7 +1464,7 @@ export default function Home() {
                             {dayOfWeek} {month}/{day}
                             {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
                           </div>
-                          <div className="text-xs text-gray-400 mt-0.5">
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
                             {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}
                           </div>
                         </div>
@@ -1874,7 +1475,7 @@ export default function Home() {
                     </button>
                     
                     {isExpanded && (
-                      <div className="px-3 pb-3 space-y-2 border-t border-gray-700 pt-2">
+                      <div className={`px-3 pb-3 space-y-2 ${darkMode ? 'border-gray-700' : 'border-gray-200'} border-t pt-2`}>
                         <div className="flex gap-3 mb-2">
                           <button
                             onClick={() => copyToSheets(w)}
@@ -1901,9 +1502,9 @@ export default function Home() {
                         </div>
                     
                     {w.location === 'Day Off' && w.notes ? (
-                      <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-3">
-                        <div className="text-sm font-semibold text-yellow-400 mb-2">Rest Day</div>
-                        <div className="text-sm text-gray-300">{w.notes}</div>
+                      <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700/50' : 'bg-yellow-50 border-yellow-300'} border rounded-lg p-3`}>
+                        <div className="text-sm font-semibold text-yellow-600 mb-2">Rest Day</div>
+                        <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
                       </div>
                     ) : (
                       <>
@@ -1911,12 +1512,12 @@ export default function Home() {
                       {w.exercises.map((ex, ei) => {
                         const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                         return (
-                          <div key={ei} className="bg-gray-700/50 rounded px-2 py-1.5">
+                          <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5`}>
                             <div className="grid grid-cols-[120px_1fr_50px] gap-2 items-start text-xs">
                               <div className="font-medium truncate">{ex.name}</div>
                               <div className="flex items-center gap-1 flex-wrap">
                                 {ex.sets.map((s, si) => (
-                                  <span key={si} className="bg-gray-600 px-1.5 py-0.5 rounded text-[11px]">
+                                  <span key={si} className={`${darkMode ? 'bg-gray-600' : 'bg-gray-300'} px-1.5 py-0.5 rounded text-[11px]`}>
                                     {s.reps}
                                   </span>
                                 ))}
@@ -1924,7 +1525,7 @@ export default function Home() {
                               <div className="text-right font-bold">({totalReps})</div>
                             </div>
                             {ex.notes && (
-                              <div className="text-[10px] text-gray-400 mt-1 text-right">{ex.notes}</div>
+                              <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1 text-right`}>{ex.notes}</div>
                             )}
                           </div>
                         );
@@ -1944,7 +1545,7 @@ export default function Home() {
                             newExpanded.delete(i);
                             setExpandedLog(newExpanded);
                           }}
-                          className="w-full mt-3 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                          className={`w-full mt-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2`}
                         >
                           <Icons.ChevronDown />
                           Collapse
