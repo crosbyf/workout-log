@@ -184,10 +184,10 @@ export default function Home() {
       // Load data immediately
       loadData();
       
-      // But keep loading screen visible for 3 seconds
+      // But keep loading screen visible for 2 seconds
       setTimeout(() => {
         setLoading(false);
-      }, 3000);
+      }, 2000);
     }
   }, []);
   
@@ -586,8 +586,8 @@ export default function Home() {
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">GORS LOG</h1>
           <div className="flex items-center gap-2 justify-center">
             <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.66s'}}></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '1.33s'}}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.5s'}}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '1s'}}></div>
           </div>
         </div>
       </div>
@@ -608,7 +608,7 @@ export default function Home() {
             50% { opacity: 1; transform: scale(1.2); }
           }
           .animate-slow-pulse {
-            animation: slowPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
           }
         `}</style>
       </Head>
@@ -1217,15 +1217,15 @@ export default function Home() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search workouts..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 pl-8 text-sm"
+                    className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded-lg px-2 py-1.5 pl-8 text-sm`}
                   />
-                  <div className="absolute left-2 top-2 text-gray-400">
+                  <div className={`absolute left-2 top-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     <Icons.Search />
                   </div>
                 </div>
                 <button
                   onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                  className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors"
+                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors`}
                 >
                   <span>Sort</span>
                   <div className="flex flex-col text-[10px] leading-none">
@@ -1256,16 +1256,16 @@ export default function Home() {
                       setExpandedLog(new Set(allIndices));
                     }
                   }}
-                  className="bg-gray-800 hover:bg-gray-700 px-4 py-3 rounded-xl text-sm font-medium transition-colors whitespace-nowrap"
+                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-4 py-3 rounded-xl text-sm font-medium transition-colors whitespace-nowrap`}
                 >
                   {expandedLog.size === filtered().length ? 'Collapse All' : 'Expand All'}
                 </button>
               </div>
               
               {showLogCalendar && (
-                <div className="mb-4 mt-3 bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                <div className={`mb-4 mt-3 ${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
                     {/* Month/Year header - sticky */}
-                    <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-4 py-3 z-10">
+                    <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 py-3 z-10`}>
                       <div className="flex items-center justify-between">
                         <button
                           onClick={() => {
@@ -1273,7 +1273,7 @@ export default function Home() {
                             newDate.setMonth(newDate.getMonth() - 1);
                             setLogCalendarDate(newDate);
                           }}
-                          className="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg transition-colors"
+                          className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} p-2 rounded-lg transition-colors`}
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -1305,7 +1305,7 @@ export default function Home() {
                             newDate.setMonth(newDate.getMonth() + 1);
                             setLogCalendarDate(newDate);
                           }}
-                          className="bg-gray-700 hover:bg-gray-600 p-2 rounded-lg transition-colors"
+                          className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} p-2 rounded-lg transition-colors`}
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1392,10 +1392,10 @@ export default function Home() {
                                 }
                               }}
                               className={`aspect-square rounded border-2 flex items-center justify-center text-sm
-                                ${hasWorkout ? `${borderColor} bg-gray-700 font-bold` : 'border-gray-700 bg-gray-800'}
+                                ${hasWorkout ? `${borderColor} ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} font-bold` : darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'}
                                 ${isToday ? 'ring-2 ring-blue-400' : ''}
                                 ${selectedLogDay === dateStr ? 'ring-2 ring-white' : ''}
-                                ${hasWorkout ? 'hover:bg-gray-600' : ''}
+                                ${hasWorkout ? darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200' : ''}
                                 transition-colors
                               `}
                             >
@@ -1566,6 +1566,125 @@ export default function Home() {
             </div>
           )}
           
+          {view === 'stats' && (
+            <div className="space-y-3">
+              <h2 className="text-base font-semibold mb-2">Statistics</h2>
+              
+              {['Pull-ups', 'Dips', 'Chin-ups'].map(exerciseName => {
+                const stats = (() => {
+                  const weekly = {};
+                  const monthly = {};
+                  
+                  workouts.forEach(w => {
+                    // Calculate weekly stats
+                    const wDate = new Date(w.date);
+                    const dayOfWeek = wDate.getDay();
+                    const monday = new Date(wDate);
+                    monday.setDate(wDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                    const weekKey = monday.toISOString().split('T')[0];
+                    
+                    // Calculate monthly stats
+                    const monthKey = w.date.substring(0, 7);
+                    
+                    const exercise = w.exercises.find(ex => ex.name === exerciseName);
+                    if (exercise) {
+                      const reps = exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      weekly[weekKey] = (weekly[weekKey] || 0) + reps;
+                      monthly[monthKey] = (monthly[monthKey] || 0) + reps;
+                    }
+                  });
+                  
+                  return { weekly, monthly };
+                })();
+                
+                return (
+                  <div key={exerciseName} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                    <h3 className="font-bold text-lg mb-3">{exerciseName}</h3>
+                    
+                    <div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>Weekly Volume</div>
+                      <div className="space-y-1">
+                        {Object.entries(stats.weekly)
+                          .sort(([a], [b]) => b.localeCompare(a))
+                          .slice(0, 8)
+                          .map(([week, reps]) => (
+                            <button
+                              key={week}
+                              onClick={() => {
+                                const weekDate = new Date(week);
+                                setLogCalendarDate(weekDate);
+                                setView('list');
+                                // Scroll to first workout of this week after navigation
+                                setTimeout(() => {
+                                  const weekStart = new Date(week);
+                                  const weekEnd = new Date(weekStart);
+                                  weekEnd.setDate(weekEnd.getDate() + 7);
+                                  
+                                  // Find first workout in this week
+                                  const firstWorkout = workouts.find(w => {
+                                    const wDate = new Date(w.date);
+                                    return wDate >= weekStart && wDate < weekEnd;
+                                  });
+                                  
+                                  if (firstWorkout) {
+                                    const element = document.querySelector(`[data-workout-date="${firstWorkout.date}"]`);
+                                    if (element) {
+                                      const rect = element.getBoundingClientRect();
+                                      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                      const targetY = rect.top + scrollTop - 70;
+                                      window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                    }
+                                  } else {
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }
+                                }, 300);
+                              }}
+                              className={`flex items-center gap-1.5 w-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded px-1 -mx-1`}
+                            >
+                              <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} w-20 text-right`}>
+                                {new Date(week).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
+                              </span>
+                              <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-5 relative overflow-hidden`}>
+                                <div
+                                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full shadow-sm"
+                                  style={{
+                                    width: `${(reps / Math.max(...Object.values(stats.weekly))) * 100}%`
+                                  }}
+                                />
+                              </div>
+                              <span className="text-sm font-semibold w-12 text-right">{reps}</span>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1.5`}>Monthly Volume</div>
+                      <div className="space-y-1">
+                        {Object.entries(stats.monthly)
+                          .sort(([a], [b]) => b.localeCompare(a))
+                          .map(([month, reps]) => (
+                            <div key={month} className="flex items-center gap-1.5">
+                              <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} w-20 text-right`}>{month}</span>
+                              <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-5 relative overflow-hidden`}>
+                                <div
+                                  className="bg-green-500 h-full rounded-full"
+                                  style={{
+                                    width: `${(reps / Math.max(...Object.values(stats.monthly))) * 100}%`
+                                  }}
+                                />
+                              </div>
+                              <span className="text-sm font-semibold w-12 text-right">{reps}</span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
           {view === 'settings' && (
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
@@ -1601,10 +1720,10 @@ export default function Home() {
                   Email Data
                 </button>
               </div>
-              <div className="text-xs text-gray-400 mb-3 px-1">
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 px-1`}>
                 Email button sends all workout data in CSV format
               </div>
-              <div className="bg-gray-800 p-3 rounded-lg mb-3">
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} p-3 rounded-lg mb-3`}>
                 <label className="flex items-center gap-2 cursor-pointer mb-3">
                   <input
                     type="checkbox"
@@ -1619,7 +1738,7 @@ export default function Home() {
                 </label>
                 {autoEmail && (
                   <div>
-                    <label className="block text-xs text-gray-400 mb-1">Email Address</label>
+                    <label className={`block text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>Email Address</label>
                     <input
                       type="email"
                       value={emailAddress}
@@ -1628,7 +1747,7 @@ export default function Home() {
                         save(e.target.value, 'emailAddress', setEmailAddress);
                       }}
                       placeholder="your@email.com"
-                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm"
+                      className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2 text-sm`}
                     />
                   </div>
                 )}
@@ -1642,7 +1761,7 @@ export default function Home() {
               <div className="mt-4">
                 <button
                   onClick={() => setShowPresetsMenu(!showPresetsMenu)}
-                  className="w-full bg-gray-800 hover:bg-gray-700 p-3 rounded-lg flex items-center justify-between transition-colors"
+                  className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} p-3 rounded-lg flex items-center justify-between transition-colors`}
                 >
                   <span className="text-sm font-semibold">Workout Presets ({presets.length})</span>
                   <div className={`transform transition-transform ${showPresetsMenu ? 'rotate-180' : ''}`}>
@@ -1653,7 +1772,7 @@ export default function Home() {
                 {showPresetsMenu && (
                   <div className="mt-2 space-y-2">
                     {presets.map((p, i) => (
-                      <div key={i} className="bg-gray-800 p-3 rounded-lg flex items-center justify-between shadow-sm">
+                      <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} p-3 rounded-lg flex items-center justify-between shadow-sm`}>
                         <button
                           onClick={() => {
                             setEditingPreset(i);
@@ -1664,9 +1783,9 @@ export default function Home() {
                         >
                           <div className="flex-1">
                             <div className="font-medium">{p.name}</div>
-                            <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{p.exercises.join(', ')}</div>
                           </div>
-                          <Icons.Edit className="w-4 h-4 text-gray-400" />
+                          <Icons.Edit className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
                         </button>
                         <button
                           onClick={() => setDeletePreset(i)}
