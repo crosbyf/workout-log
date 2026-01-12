@@ -123,6 +123,7 @@ export default function Home() {
   const [newPresetName, setNewPresetName] = useState('');
   const [volumeWidgetDate, setVolumeWidgetDate] = useState(new Date());
   const [autoEmail, setAutoEmail] = useState(false);
+  const [emailAddress, setEmailAddress] = useState('');
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -164,15 +165,26 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const w = localStorage.getItem('workouts');
-      const p = localStorage.getItem('presets');
-      const e = localStorage.getItem('exercises');
-      const ae = localStorage.getItem('autoEmail');
-      if (w) setWorkouts(JSON.parse(w));
-      if (p) setPresets(JSON.parse(p));
-      if (e) setExercises(JSON.parse(e));
-      if (ae) setAutoEmail(JSON.parse(ae));
-      setLoading(false);
+      const loadData = () => {
+        const w = localStorage.getItem('workouts');
+        const p = localStorage.getItem('presets');
+        const e = localStorage.getItem('exercises');
+        const ae = localStorage.getItem('autoEmail');
+        const ea = localStorage.getItem('emailAddress');
+        if (w) setWorkouts(JSON.parse(w));
+        if (p) setPresets(JSON.parse(p));
+        if (e) setExercises(JSON.parse(e));
+        if (ae) setAutoEmail(JSON.parse(ae));
+        if (ea) setEmailAddress(JSON.parse(ea));
+      };
+      
+      // Load data immediately
+      loadData();
+      
+      // But keep loading screen visible for 2 seconds
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
     }
   }, []);
   
@@ -257,7 +269,7 @@ export default function Home() {
         // Check if this is a new workout (has a date)
         if (cols[0] && cols[0].match(/^\d+-\d+/)) {
           // Save previous workout if exists
-          if (currentWorkout && currentWorkout.exercises.length > 0) {
+          if (currentWorkout && (currentWorkout.exercises.length > 0 || currentWorkout.location === 'Day Off')) {
             imp.push(currentWorkout);
           }
 
@@ -269,8 +281,16 @@ export default function Home() {
             location: workoutLocation
           };
 
+          // Check if this is a Day Off entry
+          if (cols[1] && cols[1] === 'Day Off') {
+            currentWorkout.location = 'Day Off';
+            // Get notes from column 7
+            if (cols[7]) {
+              currentWorkout.notes = cols[7];
+            }
+          }
           // Add first exercise if present
-          if (cols[1] && cols[1] !== 'Day Off') {
+          else if (cols[1] && cols[1] !== 'Day Off') {
             const sets = [cols[2], cols[3], cols[4], cols[5]]
               .filter(s => s && s.trim())
               .map(s => ({ reps: parseInt(s) || 0, weight: null }));
@@ -304,8 +324,8 @@ export default function Home() {
         }
       }
 
-      // Don't forget the last workout
-      if (currentWorkout && currentWorkout.exercises.length > 0) {
+      // Don't forget the last workout (including Day Off)
+      if (currentWorkout && (currentWorkout.exercises.length > 0 || currentWorkout.location === 'Day Off')) {
         imp.push(currentWorkout);
       }
 
@@ -370,13 +390,13 @@ export default function Home() {
     save(ws, 'workouts', setWorkouts);
     
     // Auto-email if enabled (only for new workouts, not edits)
-    if (autoEmail && editing === null) {
+    if (autoEmail && editing === null && emailAddress) {
       setTimeout(() => {
         const csvContent = exportCSV(true);
         const subject = encodeURIComponent('GORS LOG - New Workout');
         const dateStr = new Date(current.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         const body = encodeURIComponent(`New workout logged on ${dateStr}:\n\n${current.location || 'Workout'}\n${current.exercises.length} exercises\n\n${current.notes || 'No notes'}`);
-        window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
       }, 500);
     }
     
@@ -937,6 +957,8 @@ export default function Home() {
                     { name: 'Chin-ups', color: 'from-purple-500 to-purple-600', icon: '⚡' }
                   ].map(({ name, color, icon }) => {
                     const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
+                    
+                    // Calculate current month volume
                     const monthlyVolume = workouts
                       .filter(w => w.date.startsWith(monthStr))
                       .reduce((total, w) => {
@@ -947,7 +969,22 @@ export default function Home() {
                         return total;
                       }, 0);
                     
-                    const maxVolume = Math.max(
+                    // Calculate previous month volume (as goal)
+                    const prevMonth = new Date(volumeWidgetDate);
+                    prevMonth.setMonth(prevMonth.getMonth() - 1);
+                    const prevMonthStr = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+                    const prevMonthVolume = workouts
+                      .filter(w => w.date.startsWith(prevMonthStr))
+                      .reduce((total, w) => {
+                        const exercise = w.exercises.find(ex => ex.name === name);
+                        if (exercise) {
+                          return total + exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                        }
+                        return total;
+                      }, 0);
+                    
+                    // Use previous month as goal, or fall back to current max
+                    const goalVolume = prevMonthVolume > 0 ? prevMonthVolume : Math.max(
                       ...['Pull-ups', 'Dips', 'Chin-ups'].map(ex => {
                         return workouts
                           .filter(w => w.date.startsWith(monthStr))
@@ -958,7 +995,8 @@ export default function Home() {
                       })
                     );
                     
-                    const percentage = maxVolume > 0 ? (monthlyVolume / maxVolume) * 100 : 0;
+                    const percentage = goalVolume > 0 ? Math.min((monthlyVolume / goalVolume) * 100, 100) : 0;
+                    const isOverGoal = monthlyVolume > goalVolume && goalVolume > 0;
                     
                     return (
                       <div key={name} className="space-y-1">
@@ -967,13 +1005,25 @@ export default function Home() {
                             <span className="text-lg">{icon}</span>
                             <span className="font-medium text-gray-300">{name}</span>
                           </div>
-                          <span className="font-bold text-xl text-white">{monthlyVolume}</span>
+                          <div className="text-right">
+                            <span className={`font-bold text-xl ${isOverGoal ? 'text-green-400' : 'text-white'}`}>
+                              {monthlyVolume}
+                            </span>
+                            {prevMonthVolume > 0 && (
+                              <span className="text-xs text-gray-500 ml-1">/ {prevMonthVolume}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-2 bg-gray-700 rounded-full overflow-hidden relative">
                           <div 
-                            className={`h-full bg-gradient-to-r ${color} transition-all duration-500 ease-out`}
+                            className={`h-full bg-gradient-to-r ${color} transition-all duration-500 ease-out ${isOverGoal ? 'animate-pulse' : ''}`}
                             style={{ width: `${percentage}%` }}
                           />
+                          {isOverGoal && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-[8px] font-bold text-white drop-shadow-lg">GOAL EXCEEDED! 🎉</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -1413,10 +1463,30 @@ export default function Home() {
                                         const weekDate = new Date(week);
                                         setLogCalendarDate(weekDate);
                                         setView('list');
-                                        // Scroll to top after navigation
+                                        // Scroll to first workout of this week after navigation
                                         setTimeout(() => {
-                                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }, 100);
+                                          const weekStart = new Date(week);
+                                          const weekEnd = new Date(weekStart);
+                                          weekEnd.setDate(weekEnd.getDate() + 7);
+                                          
+                                          // Find first workout in this week
+                                          const firstWorkout = workouts.find(w => {
+                                            const wDate = new Date(w.date);
+                                            return wDate >= weekStart && wDate < weekEnd;
+                                          });
+                                          
+                                          if (firstWorkout) {
+                                            const element = document.querySelector(`[data-workout-date="${firstWorkout.date}"]`);
+                                            if (element) {
+                                              const rect = element.getBoundingClientRect();
+                                              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                              const targetY = rect.top + scrollTop - 70;
+                                              window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                            }
+                                          } else {
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                          }
+                                        }, 300);
                                       }}
                                       className="flex items-center gap-1.5 w-full hover:bg-gray-700 rounded px-1 -mx-1"
                                     >
@@ -1694,9 +1764,12 @@ export default function Home() {
                           setTimeout(() => {
                             const element = e.currentTarget.closest('[data-workout-date]');
                             if (element) {
-                              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              const rect = element.getBoundingClientRect();
+                              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                              const targetY = rect.top + scrollTop - 70; // 70px offset from top
+                              window.scrollTo({ top: targetY, behavior: 'smooth' });
                             }
-                          }, 100);
+                          }, 300);
                         }
                         setExpandedLog(newExpanded);
                       }}
@@ -1834,7 +1907,7 @@ export default function Home() {
                 Email button sends all workout data in CSV format
               </div>
               <div className="bg-gray-800 p-3 rounded-lg mb-3">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer mb-3">
                   <input
                     type="checkbox"
                     checked={autoEmail}
@@ -1846,6 +1919,21 @@ export default function Home() {
                   />
                   <span className="text-sm">Auto-email after saving each workout</span>
                 </label>
+                {autoEmail && (
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={emailAddress}
+                      onChange={(e) => {
+                        setEmailAddress(e.target.value);
+                        save(e.target.value, 'emailAddress', setEmailAddress);
+                      }}
+                      placeholder="your@email.com"
+                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm"
+                    />
+                  </div>
+                )}
               </div>
               <div className="flex gap-2 mb-3">
                 <button onClick={() => setShowClear(true)} className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all w-full">
