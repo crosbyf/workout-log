@@ -106,6 +106,7 @@ export default function Home() {
   const [showDayModal, setShowDayModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [expandedRecent, setExpandedRecent] = useState(null);
+  const [expandedLog, setExpandedLog] = useState(new Set());
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
   const [showLogCalendar, setShowLogCalendar] = useState(false);
@@ -115,6 +116,12 @@ export default function Home() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [showEndWorkoutConfirm, setShowEndWorkoutConfirm] = useState(false);
+  const [editingPreset, setEditingPreset] = useState(null);
+  const [editPresetName, setEditPresetName] = useState('');
+  const [editPresetExercises, setEditPresetExercises] = useState([]);
+  const [showSaveAsPreset, setShowSaveAsPreset] = useState(false);
+  const [newPresetName, setNewPresetName] = useState('');
+  const [volumeWidgetDate, setVolumeWidgetDate] = useState(new Date());
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -417,7 +424,7 @@ export default function Home() {
     setShowClear(false);
   };
 
-  const exportCSV = () => {
+  const exportCSV = (returnContent = false) => {
     const rows = [];
     
     workouts.sort((a, b) => a.date.localeCompare(b.date)).forEach(w => {
@@ -444,6 +451,11 @@ export default function Home() {
     });
     
     const csv = `Date,Exercise,1,2,3,4,Tot,Notes\n${rows.join('\n')}`;
+    
+    if (returnContent) {
+      return csv;
+    }
+    
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -520,8 +532,15 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
-        <div>Loading...</div>
+      <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">GORS LOG</h1>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -663,6 +682,11 @@ export default function Home() {
                     setWorkoutTimer(0);
                     setTimerRunning(false);
                     setShowEndWorkoutConfirm(false);
+                    
+                    // Offer to save as preset if it's a manual workout
+                    if (current.location === 'Manual' && current.exercises.length > 0) {
+                      setShowSaveAsPreset(true);
+                    }
                   }}
                   className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 py-3 rounded-lg font-semibold"
                 >
@@ -673,6 +697,133 @@ export default function Home() {
                   className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
                 >
                   Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Preset Modal */}
+        {editingPreset !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Edit Preset</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Preset Name</label>
+                  <input
+                    type="text"
+                    value={editPresetName}
+                    onChange={(e) => setEditPresetName(e.target.value)}
+                    className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Exercises</label>
+                  {editPresetExercises.map((ex, i) => (
+                    <div key={i} className="flex gap-2 mb-2">
+                      <select
+                        value={ex}
+                        onChange={(e) => {
+                          const updated = [...editPresetExercises];
+                          updated[i] = e.target.value;
+                          setEditPresetExercises(updated);
+                        }}
+                        className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2"
+                      >
+                        {exercises.map((e, ei) => (
+                          <option key={ei} value={e}>{e}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          const updated = editPresetExercises.filter((_, idx) => idx !== i);
+                          setEditPresetExercises(updated);
+                        }}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Icons.Trash />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setEditPresetExercises([...editPresetExercises, exercises[0]])}
+                    className="text-blue-400 hover:text-blue-300 text-sm"
+                  >
+                    + Add Exercise
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    const updated = [...presets];
+                    updated[editingPreset] = {
+                      name: editPresetName,
+                      exercises: editPresetExercises
+                    };
+                    save(updated, 'presets', setPresets);
+                    setEditingPreset(null);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => setEditingPreset(null)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Save Manual Workout as Preset */}
+        {showSaveAsPreset && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Save as Preset?</h3>
+              <p className="text-sm text-gray-400 mb-4">Would you like to save this workout as a preset for future use?</p>
+              <div>
+                <label className="block text-sm font-medium mb-1">Preset Name</label>
+                <input
+                  type="text"
+                  value={newPresetName}
+                  onChange={(e) => setNewPresetName(e.target.value)}
+                  placeholder="e.g., My Custom Workout"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2"
+                />
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    if (newPresetName.trim()) {
+                      const newPreset = {
+                        name: newPresetName.trim(),
+                        exercises: current.exercises.map(ex => ex.name)
+                      };
+                      save([...presets, newPreset], 'presets', setPresets);
+                      setToastMessage('Preset saved!');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }
+                    setShowSaveAsPreset(false);
+                    setNewPresetName('');
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                >
+                  Save Preset
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSaveAsPreset(false);
+                    setNewPresetName('');
+                  }}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Skip
                 </button>
               </div>
             </div>
@@ -727,6 +878,60 @@ export default function Home() {
                 <Icons.Plus className="w-6 h-6" />
                 New Workout
               </button>
+              
+              {/* Monthly Volume Widget */}
+              <div className="bg-gray-800 rounded-xl p-4 mb-4 shadow-md">
+                <div className="flex items-center justify-between mb-3">
+                  <button
+                    onClick={() => {
+                      const newDate = new Date(volumeWidgetDate);
+                      newDate.setMonth(newDate.getMonth() - 1);
+                      setVolumeWidgetDate(newDate);
+                    }}
+                    className="p-1 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <h3 className="text-sm font-bold">
+                    {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      const newDate = new Date(volumeWidgetDate);
+                      newDate.setMonth(newDate.getMonth() + 1);
+                      setVolumeWidgetDate(newDate);
+                    }}
+                    className="p-1 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {['Pull-ups', 'Dips', 'Chin-ups'].map(exerciseName => {
+                    const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
+                    const monthlyVolume = workouts
+                      .filter(w => w.date.startsWith(monthStr))
+                      .reduce((total, w) => {
+                        const exercise = w.exercises.find(ex => ex.name === exerciseName);
+                        if (exercise) {
+                          return total + exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                        }
+                        return total;
+                      }, 0);
+                    
+                    return (
+                      <div key={exerciseName} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-400">{exerciseName}</span>
+                        <span className="font-bold text-lg">{monthlyVolume}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
               
               {/* Recent Workouts */}
               <div className="space-y-2">
@@ -1233,23 +1438,35 @@ export default function Home() {
                 </button>
               </div>
               
-              {/* Collapsible Calendar */}
-              <div className="mb-4">
+              {/* Collapsible Calendar & Expand/Collapse All */}
+              <div className="mb-4 flex gap-2">
                 <button
                   onClick={() => setShowLogCalendar(!showLogCalendar)}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 p-4 rounded-xl flex items-center justify-between transition-all shadow-lg shadow-blue-500/20"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 p-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md"
                 >
-                  <div className="flex items-center gap-2">
-                    <Icons.Calendar className="w-5 h-5" />
-                    <span className="text-base font-bold">Calendar</span>
-                  </div>
+                  <Icons.Calendar className="w-4 h-4" />
+                  <span className="text-sm font-bold">Calendar</span>
                   <div className={`transform transition-transform ${showLogCalendar ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown className="w-5 h-5" />
+                    <Icons.ChevronDown className="w-4 h-4" />
                   </div>
                 </button>
-                
-                {showLogCalendar && (
-                  <div className="mt-3 bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                <button
+                  onClick={() => {
+                    const allIndices = filtered().map((_, i) => i);
+                    if (expandedLog.size === allIndices.length) {
+                      setExpandedLog(new Set());
+                    } else {
+                      setExpandedLog(new Set(allIndices));
+                    }
+                  }}
+                  className="bg-gray-800 hover:bg-gray-700 px-4 py-3 rounded-xl text-sm font-medium transition-colors whitespace-nowrap"
+                >
+                  {expandedLog.size === filtered().length ? 'Collapse All' : 'Expand All'}
+                </button>
+              </div>
+              
+              {showLogCalendar && (
+                <div className="mb-4 mt-3 bg-gray-800 rounded-xl shadow-md overflow-hidden">
                     {/* Month/Year header - sticky */}
                     <div className="sticky top-0 bg-gray-800 border-b border-gray-700 px-4 py-3 z-10">
                       <div className="flex items-center justify-between">
@@ -1385,14 +1602,14 @@ export default function Home() {
                   </div>
                   {/* Close outer container */}
                 </div>
-                )}
-              </div>
+              )}
 
               {filtered().map((w, i) => {
                 // Parse date without timezone issues
                 const [year, month, day] = w.date.split('-');
                 const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
                 const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                const isExpanded = expandedLog.has(i);
                 
                 // Color-code by workout location
                 const locationColors = {
@@ -1404,36 +1621,61 @@ export default function Home() {
                 const borderColor = locationColors[w.location] || 'border-gray-600';
                 
                 return (
-                  <div key={i} data-workout-date={w.date} className={`bg-gray-800 rounded-xl p-3 border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <div className="font-bold text-base">
-                          {dayOfWeek} {month}/{day}
-                          {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
+                  <div key={i} data-workout-date={w.date} className={`bg-gray-800 rounded-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
+                    <button
+                      onClick={() => {
+                        const newExpanded = new Set(expandedLog);
+                        if (newExpanded.has(i)) {
+                          newExpanded.delete(i);
+                        } else {
+                          newExpanded.add(i);
+                        }
+                        setExpandedLog(newExpanded);
+                      }}
+                      className="w-full p-3 text-left transition-colors hover:bg-white/5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-bold text-base">
+                            {dayOfWeek} {month}/{day}
+                            {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}
+                          </div>
+                        </div>
+                        <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                          <Icons.ChevronDown />
                         </div>
                       </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => copyToSheets(w)}
-                          className="text-blue-400 hover:text-blue-300 p-1"
-                          title="Copy to clipboard"
-                        >
-                          <Icons.Copy />
-                        </button>
-                        <button
-                          onClick={() => editWorkout(i)}
-                          className="text-green-400 hover:text-green-300 p-1"
-                        >
-                          <Icons.Edit />
-                        </button>
-                        <button
-                          onClick={() => setDeleteWorkout(i)}
-                          className="text-red-400 hover:text-red-300 p-1"
-                        >
-                          <Icons.Trash />
-                        </button>
-                      </div>
-                    </div>
+                    </button>
+                    
+                    {isExpanded && (
+                      <div className="px-3 pb-3 space-y-2 border-t border-gray-700 pt-2">
+                        <div className="flex gap-3 mb-2">
+                          <button
+                            onClick={() => copyToSheets(w)}
+                            className="text-blue-400 hover:text-blue-300 p-1 text-xs flex items-center gap-1"
+                            title="Copy to clipboard"
+                          >
+                            <Icons.Copy className="w-4 h-4" />
+                            Copy
+                          </button>
+                          <button
+                            onClick={() => editWorkout(i)}
+                            className="text-green-400 hover:text-green-300 p-1 text-xs flex items-center gap-1"
+                          >
+                            <Icons.Edit className="w-4 h-4" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteWorkout(i)}
+                            className="text-red-400 hover:text-red-300 p-1 text-xs flex items-center gap-1"
+                          >
+                            <Icons.Trash className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </div>
                     
                     <div className="space-y-1">
                       {w.exercises.map((ex, ei) => {
@@ -1460,7 +1702,9 @@ export default function Home() {
                     </div>
                     
                     {w.notes && (
-                      <div className="mt-2 text-xs text-gray-400 italic border-t border-gray-700 pt-1.5">{w.notes}</div>
+                      <div className="mt-2 text-xs text-gray-400 border-t border-gray-700 pt-1.5">{w.notes}</div>
+                    )}
+                      </div>
                     )}
                   </div>
                 );
@@ -1494,7 +1738,23 @@ export default function Home() {
                   <Icons.Download />
                   Export All Data
                 </button>
-                <button onClick={() => setShowClear(true)} className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all">
+                <button 
+                  onClick={() => {
+                    const csvContent = exportCSV(true);
+                    const subject = encodeURIComponent('GORS LOG - Workout Data');
+                    const body = encodeURIComponent(`Here is my workout data from GORS LOG:\n\n${csvContent}`);
+                    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                  }}
+                  className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Email Data
+                </button>
+              </div>
+              <div className="flex gap-2 mb-3">
+                <button onClick={() => setShowClear(true)} className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all w-full">
                   Delete All Workouts
                 </button>
               </div>
@@ -1514,13 +1774,20 @@ export default function Home() {
                   <div className="mt-2 space-y-2">
                     {presets.map((p, i) => (
                       <div key={i} className="bg-gray-800 p-3 rounded-lg flex items-center justify-between shadow-sm">
-                        <div>
+                        <button
+                          onClick={() => {
+                            setEditingPreset(i);
+                            setEditPresetName(p.name);
+                            setEditPresetExercises([...p.exercises]);
+                          }}
+                          className="flex-1 text-left"
+                        >
                           <div className="font-medium">{p.name}</div>
                           <div className="text-xs text-gray-400">{p.exercises.join(', ')}</div>
-                        </div>
+                        </button>
                         <button
                           onClick={() => setDeletePreset(i)}
-                          className="text-red-400 hover:text-red-300"
+                          className="text-red-400 hover:text-red-300 ml-2"
                         >
                           <Icons.Trash />
                         </button>
@@ -1780,6 +2047,9 @@ export default function Home() {
               
               {/* Content - reuse workout form */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {/* Hide exercises for Day Off */}
+                {current.location !== 'Day Off' && (
+                  <>
                 {/* View mode toggle */}
                 <div className="flex gap-2 bg-gray-800 p-1 rounded-lg">
                   <button
@@ -2031,14 +2301,20 @@ export default function Home() {
                   <span className="text-lg">+</span>
                   Add Exercise
                 </button>
+                  </>
+                )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Workout Notes</label>
+                  <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+                    {current.location === 'Day Off' ? 'Rest Day Notes' : 'Workout Notes'}
+                  </label>
                   <textarea
                     value={current.notes}
                     onChange={(e) => setCurrent({ ...current, notes: e.target.value })}
-                    placeholder="How did it go? Any PRs or notes to remember..."
-                    className="w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2.5 h-24 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none"
+                    placeholder={current.location === 'Day Off' ? 'Why did you skip today?' : 'How did it go? Any PRs or notes to remember...'}
+                    className={`w-full bg-gray-800 border border-gray-600 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none ${
+                      current.location === 'Day Off' ? 'h-40' : 'h-24'
+                    }`}
                   />
                 </div>
               </div>
