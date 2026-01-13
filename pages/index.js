@@ -97,6 +97,8 @@ export default function Home() {
   const [editingWeight, setEditingWeight] = useState(null);
   const [currentWeight, setCurrentWeight] = useState({ date: '', weight: '', notes: '' });
   const [deleteWeight, setDeleteWeight] = useState(null);
+  const [weightCalendarMonth, setWeightCalendarMonth] = useState(new Date().getMonth());
+  const [weightCalendarYear, setWeightCalendarYear] = useState(new Date().getFullYear());
   const [editing, setEditing] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [sortOrder, setSortOrder] = useState('desc');
@@ -956,105 +958,103 @@ export default function Home() {
               <div className="space-y-3">
                 <div>
                   <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Date</label>
-                  {(() => {
-                    const selectedDate = currentWeight.date ? new Date(currentWeight.date + 'T00:00:00') : new Date();
-                    const [calendarYear, setCalendarYear] = useState(selectedDate.getFullYear());
-                    const [calendarMonth, setCalendarMonth] = useState(selectedDate.getMonth());
-                    
-                    const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
-                    const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday = 0
-                    const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
-                    const today = new Date();
-                    
-                    return (
-                      <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3`}>
-                        {/* Month/Year selector */}
-                        <div className="flex items-center justify-between mb-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (calendarMonth === 0) {
-                                setCalendarMonth(11);
-                                setCalendarYear(calendarYear - 1);
-                              } else {
-                                setCalendarMonth(calendarMonth - 1);
-                              }
-                            }}
-                            className={`p-1 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                          </button>
-                          <div className="font-semibold">
-                            {new Date(calendarYear, calendarMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (calendarMonth === 11) {
-                                setCalendarMonth(0);
-                                setCalendarYear(calendarYear + 1);
-                              } else {
-                                setCalendarMonth(calendarMonth + 1);
-                              }
-                            }}
-                            className={`p-1 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </button>
-                        </div>
-                        
-                        {/* Day headers - Monday first */}
-                        <div className="grid grid-cols-7 gap-1 mb-1">
-                          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
-                            <div key={i} className="text-center text-xs text-gray-500 font-bold">
-                              {day}
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {/* Calendar days */}
-                        <div className="grid grid-cols-7 gap-1">
-                          {/* Empty cells before first day */}
-                          {[...Array(adjustedFirstDay)].map((_, i) => (
-                            <div key={`empty-${i}`} />
-                          ))}
-                          
-                          {/* Days */}
-                          {[...Array(daysInMonth)].map((_, i) => {
-                            const day = i + 1;
-                            const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                            const isSelected = currentWeight.date === dateStr;
-                            const isToday = day === today.getDate() && 
-                                          calendarMonth === today.getMonth() && 
-                                          calendarYear === today.getFullYear();
-                            
-                            return (
-                              <button
-                                key={day}
-                                type="button"
-                                onClick={() => setCurrentWeight({ ...currentWeight, date: dateStr })}
-                                className={`
-                                  aspect-square rounded text-sm font-medium
-                                  ${isSelected 
-                                    ? 'bg-blue-600 text-white' 
-                                    : isToday
-                                    ? darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'
-                                    : darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
-                                  }
-                                `}
-                              >
-                                {day}
-                              </button>
-                            );
-                          })}
-                        </div>
+                  <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3`}>
+                    {/* Month/Year selector */}
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (weightCalendarMonth === 0) {
+                            setWeightCalendarMonth(11);
+                            setWeightCalendarYear(weightCalendarYear - 1);
+                          } else {
+                            setWeightCalendarMonth(weightCalendarMonth - 1);
+                          }
+                        }}
+                        className={`p-1 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <div className="font-semibold">
+                        {new Date(weightCalendarYear, weightCalendarMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                       </div>
-                    );
-                  })()}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (weightCalendarMonth === 11) {
+                            setWeightCalendarMonth(0);
+                            setWeightCalendarYear(weightCalendarYear + 1);
+                          } else {
+                            setWeightCalendarMonth(weightCalendarMonth + 1);
+                          }
+                        }}
+                        className={`p-1 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    {/* Day headers - Monday first */}
+                    <div className="grid grid-cols-7 gap-1 mb-1">
+                      {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                        <div key={i} className="text-center text-xs text-gray-500 font-bold">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Calendar days */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {(() => {
+                        const firstDay = new Date(weightCalendarYear, weightCalendarMonth, 1).getDay();
+                        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday = 0
+                        const daysInMonth = new Date(weightCalendarYear, weightCalendarMonth + 1, 0).getDate();
+                        const today = new Date();
+                        
+                        const days = [];
+                        
+                        // Empty cells before first day
+                        for (let i = 0; i < adjustedFirstDay; i++) {
+                          days.push(<div key={`empty-${i}`} />);
+                        }
+                        
+                        // Days
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          const day = i;
+                          const dateStr = `${weightCalendarYear}-${String(weightCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const isSelected = currentWeight.date === dateStr;
+                          const isToday = day === today.getDate() && 
+                                        weightCalendarMonth === today.getMonth() && 
+                                        weightCalendarYear === today.getFullYear();
+                          
+                          days.push(
+                            <button
+                              key={day}
+                              type="button"
+                              onClick={() => setCurrentWeight({ ...currentWeight, date: dateStr })}
+                              className={`
+                                aspect-square rounded text-sm font-medium
+                                ${isSelected 
+                                  ? 'bg-blue-600 text-white' 
+                                  : isToday
+                                  ? darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'
+                                  : darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
+                                }
+                              `}
+                            >
+                              {day}
+                            </button>
+                          );
+                        }
+                        
+                        return days;
+                      })()}
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Weight (lbs)</label>
@@ -2065,8 +2065,11 @@ export default function Home() {
               {/* Add Weight Button */}
               <button
                 onClick={() => {
+                  const today = new Date();
                   setCurrentWeight({ date: getTodayDate(), weight: '', notes: '' });
                   setEditingWeight(null);
+                  setWeightCalendarMonth(today.getMonth());
+                  setWeightCalendarYear(today.getFullYear());
                   setShowWeightModal(true);
                 }}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-3 mb-3 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
@@ -2272,6 +2275,10 @@ export default function Home() {
                             onClick={() => {
                               setCurrentWeight(entry);
                               setEditingWeight(i);
+                              // Set calendar to the entry's month
+                              const entryDate = new Date(entry.date + 'T00:00:00');
+                              setWeightCalendarMonth(entryDate.getMonth());
+                              setWeightCalendarYear(entryDate.getFullYear());
                               setShowWeightModal(true);
                             }}
                             className="text-blue-400 hover:text-blue-300 p-2"
