@@ -1177,42 +1177,6 @@ export default function Home() {
 
           {view === 'calendar' && (
             <div className="space-y-2 pb-20">
-              {/* Quick Stats Summary */}
-              {workouts.length > 0 && (() => {
-                const last7Days = workouts.filter(w => {
-                  const wDate = new Date(w.date);
-                  const now = new Date();
-                  const diffTime = Math.abs(now - wDate);
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  return diffDays <= 7;
-                });
-                
-                const thisMonth = workouts.filter(w => {
-                  const wDate = new Date(w.date);
-                  const now = new Date();
-                  return wDate.getMonth() === now.getMonth() && wDate.getFullYear() === now.getFullYear();
-                });
-                
-                return (
-                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-3 shadow-md mb-3`}>
-                    <div className="grid grid-cols-3 gap-3 text-center">
-                      <div>
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Total</div>
-                        <div className="text-2xl font-bold">{workouts.length}</div>
-                      </div>
-                      <div>
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>This Month</div>
-                        <div className="text-2xl font-bold">{thisMonth.length}</div>
-                      </div>
-                      <div>
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Last 7 Days</div>
-                        <div className="text-2xl font-bold">{last7Days.length}</div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-              
               {/* Monthly Volume Section */}
               <div className="mb-3">
                 <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide mb-2`}>Monthly Volume</h3>
@@ -2720,39 +2684,20 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-4">Calendar Legend</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded border-l-4 border-blue-400 bg-gray-700 flex-shrink-0"></div>
-                  <div>
-                    <div className="font-semibold text-sm">Garage BW</div>
-                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Bodyweight workout in garage</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded border-l-4 border-green-400 bg-gray-700 flex-shrink-0"></div>
-                  <div>
-                    <div className="font-semibold text-sm">Manual</div>
-                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manually entered workout</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded border-l-4 border-purple-400 bg-gray-700 flex-shrink-0"></div>
-                  <div>
-                    <div className="font-semibold text-sm">Garage 10</div>
-                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>10-minute garage workout</div>
-                  </div>
+                  <div className="font-semibold text-sm">Garage 10</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded border-l-4 border-yellow-400 bg-gray-700 flex-shrink-0"></div>
-                  <div>
-                    <div className="font-semibold text-sm">BW-only</div>
-                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Bodyweight-only workout</div>
-                  </div>
+                  <div className="font-semibold text-sm">BW-only</div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded border-l-4 border-gray-600 bg-gray-700 flex-shrink-0"></div>
-                  <div>
-                    <div className="font-semibold text-sm">Other</div>
-                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Other workout types</div>
-                  </div>
+                  <div className="w-8 h-8 rounded border-l-4 border-blue-400 bg-gray-700 flex-shrink-0"></div>
+                  <div className="font-semibold text-sm">Garage BW</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded border-l-4 border-green-400 bg-gray-700 flex-shrink-0"></div>
+                  <div className="font-semibold text-sm">Manual</div>
                 </div>
               </div>
               <button
@@ -3289,18 +3234,21 @@ export default function Home() {
           </div>
         )}
         
-        {/* Floating Action Button - New Workout */}
-        {view === 'calendar' && (
-          <button
-            onClick={() => setShowPresetSelector(true)}
-            className="fixed bottom-20 right-4 w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/50 transition-all active:scale-95 z-40 animate-pulse"
-          >
-            <Icons.Plus className="w-8 h-8" strokeWidth={3} />
-          </button>
-        )}
-        
         {/* Bottom Navigation */}
         <div className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-gray-100/95 border-gray-300'} backdrop-blur-sm border-t safe-area-pb shadow-2xl pb-2`}>
+          {/* New Workout Button - only on Home */}
+          {view === 'calendar' && (
+            <div className="max-w-4xl mx-auto px-3 pt-2 pb-1">
+              <button
+                onClick={() => setShowPresetSelector(true)}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-3 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+              >
+                <Icons.Plus className="w-6 h-6" />
+                New Workout
+              </button>
+            </div>
+          )}
+          
           <div className="max-w-4xl mx-auto flex">
             <button
               onClick={() => {
