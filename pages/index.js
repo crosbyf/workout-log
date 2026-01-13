@@ -134,13 +134,13 @@ export default function Home() {
   const [expandedLog, setExpandedLog] = useState(new Set());
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
-  const [showLogCalendar, setShowLogCalendar] = useState(false);
+  const [showLogCalendar, setShowLogCalendar] = useState(true); // Default to open
   const [logCalendarDate, setLogCalendarDate] = useState(new Date());
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
   const [selectedLogDay, setSelectedLogDay] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [showEndWorkoutConfirm, setShowEndWorkoutConfirm] = useState(false);
+  const [showCalendarLegend, setShowCalendarLegend] = useState(false);  const [showEndWorkoutConfirm, setShowEndWorkoutConfirm] = useState(false);
   const [editingPreset, setEditingPreset] = useState(null);
   const [editPresetName, setEditPresetName] = useState('');
   const [editPresetExercises, setEditPresetExercises] = useState([]);
@@ -618,9 +618,9 @@ export default function Home() {
         <div className="text-center">
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">GORS LOG</h1>
           <div className="flex items-center gap-2 justify-center">
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '0.5s'}}></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-slow-pulse" style={{animationDelay: '1s'}}></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full loading-dot-1"></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full loading-dot-2"></div>
+            <div className="w-3 h-3 bg-blue-500 rounded-full loading-dot-3"></div>
           </div>
         </div>
       </div>
@@ -637,11 +637,20 @@ export default function Home() {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <style>{`
           @keyframes slowPulse {
-            0%, 100% { opacity: 0.2; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.3); }
           }
-          .animate-slow-pulse {
+          .loading-dot-1 {
             animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation-delay: 0s;
+          }
+          .loading-dot-2 {
+            animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation-delay: 0.5s;
+          }
+          .loading-dot-3 {
+            animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation-delay: 1s;
           }
         `}</style>
       </Head>
@@ -1167,15 +1176,42 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           {view === 'calendar' && (
-            <div className="space-y-2">
-              {/* New Workout Button */}
-              <button
-                onClick={() => setShowPresetSelector(true)}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-3 mb-3 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
-              >
-                <Icons.Plus className="w-6 h-6" />
-                New Workout
-              </button>
+            <div className="space-y-2 pb-20">
+              {/* Quick Stats Summary */}
+              {workouts.length > 0 && (() => {
+                const last7Days = workouts.filter(w => {
+                  const wDate = new Date(w.date);
+                  const now = new Date();
+                  const diffTime = Math.abs(now - wDate);
+                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  return diffDays <= 7;
+                });
+                
+                const thisMonth = workouts.filter(w => {
+                  const wDate = new Date(w.date);
+                  const now = new Date();
+                  return wDate.getMonth() === now.getMonth() && wDate.getFullYear() === now.getFullYear();
+                });
+                
+                return (
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-3 shadow-md mb-3`}>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Total</div>
+                        <div className="text-2xl font-bold">{workouts.length}</div>
+                      </div>
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>This Month</div>
+                        <div className="text-2xl font-bold">{thisMonth.length}</div>
+                      </div>
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Last 7 Days</div>
+                        <div className="text-2xl font-bold">{last7Days.length}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
               
               {/* Monthly Volume Section */}
               <div className="mb-3">
@@ -1443,43 +1479,35 @@ export default function Home() {
           
           {view === 'list' && (
             <div className="space-y-2.5">
+              {/* Single row with all controls */}
               <div className="flex items-center gap-2 mb-3">
-                <div className="relative flex-1 max-w-md">
+                {/* Search - shorter */}
+                <div className="relative flex-1">
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search workouts..."
+                    placeholder="Search..."
                     className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded-lg px-2 py-1.5 pl-8 text-sm`}
                   />
                   <div className={`absolute left-2 top-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     <Icons.Search />
                   </div>
                 </div>
+                
+                {/* Sort button */}
                 <button
                   onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors`}
+                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors`}
+                  title="Sort order"
                 >
-                  <span>Sort</span>
                   <div className="flex flex-col text-[10px] leading-none">
                     <span>↑</span>
                     <span>↓</span>
                   </div>
                 </button>
-              </div>
-              
-              {/* Collapsible Calendar & Expand/Collapse All */}
-              <div className="mb-4 flex gap-2">
-                <button
-                  onClick={() => setShowLogCalendar(!showLogCalendar)}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 p-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md"
-                >
-                  <Icons.Calendar className="w-4 h-4" />
-                  <span className="text-sm font-bold">Calendar</span>
-                  <div className={`transform transition-transform ${showLogCalendar ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown className="w-4 h-4" />
-                  </div>
-                </button>
+                
+                {/* Expand/Collapse All */}
                 <button
                   onClick={() => {
                     const allIndices = filtered().map((_, i) => i);
@@ -1489,9 +1517,21 @@ export default function Home() {
                       setExpandedLog(new Set(allIndices));
                     }
                   }}
-                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-4 py-3 rounded-xl text-sm font-medium transition-colors whitespace-nowrap`}
+                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-colors whitespace-nowrap leading-tight`}
                 >
-                  {expandedLog.size === filtered().length ? 'Collapse All' : 'Expand All'}
+                  {expandedLog.size === filtered().length ? 'Collapse' : 'Expand'}
+                </button>
+                
+                {/* Calendar toggle */}
+                <button
+                  onClick={() => setShowLogCalendar(!showLogCalendar)}
+                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1`}
+                  title="Toggle calendar"
+                >
+                  <Icons.Calendar className="w-4 h-4" />
+                  <div className={`transform transition-transform ${showLogCalendar ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown className="w-3 h-3" />
+                  </div>
                 </button>
               </div>
               
@@ -1500,6 +1540,16 @@ export default function Home() {
                     {/* Month/Year header - sticky */}
                     <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 py-3 z-10`}>
                       <div className="flex items-center justify-between">
+                        {/* Info button for legend */}
+                        <button
+                          onClick={() => setShowCalendarLegend(true)}
+                          className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-700'} p-1`}
+                          title="Calendar legend"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
                         <button
                           onClick={() => {
                             const newDate = new Date(logCalendarDate);
@@ -2113,7 +2163,7 @@ export default function Home() {
                       </div>
                       <div>
                         <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Total Change</div>
-                        <div className={`text-xl font-bold ${change > 0 ? 'text-red-400' : change < 0 ? 'text-green-400' : ''}`}>
+                        <div className="text-xl font-bold">
                           {change > 0 ? '+' : ''}{change.toFixed(1)} lbs
                         </div>
                       </div>
@@ -2260,7 +2310,7 @@ export default function Home() {
                             <span className="text-2xl font-bold">{entry.weight}</span>
                             <span className="text-sm">lbs</span>
                             {prevEntry && (
-                              <span className={`text-xs font-semibold ${change > 0 ? 'text-red-400' : change < 0 ? 'text-green-400' : 'text-gray-500'}`}>
+                              <span className={`text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                                 {change > 0 ? '↑' : change < 0 ? '↓' : '→'} {Math.abs(change).toFixed(1)}
                               </span>
                             )}
@@ -2313,42 +2363,59 @@ export default function Home() {
           {view === 'settings' && (
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
-              <div className="flex gap-2 mb-3">
-                <label className="cursor-pointer bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
-                  <Icons.Upload />
-                  Import Presets
-                  <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
-                </label>
-                <label className="cursor-pointer bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
-                  <Icons.Upload />
-                  Import Workouts
-                  <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
-                </label>
-              </div>
-              <div className="flex gap-2 mb-3">
-                <button onClick={exportCSV} className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
-                  <Icons.Download />
-                  Export All Data
-                </button>
-                <button 
-                  onClick={() => {
-                    const csvContent = exportCSV(true);
-                    const subject = encodeURIComponent('GORS LOG - Workout Data');
-                    const body = encodeURIComponent(`Here is my workout data from GORS LOG:\n\n${csvContent}`);
-                    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-                  }}
-                  className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
+              
+              {/* Workout Presets - Collapsed at top */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                <button
+                  onClick={() => setShowPresetsMenu(!showPresetsMenu)}
+                  className={`w-full p-4 flex items-center justify-between ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  Email Data
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">💪</span>
+                    <span className="font-bold">Workout Presets</span>
+                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>({presets.length})</span>
+                  </div>
+                  <div className={`transform transition-transform ${showPresetsMenu ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
                 </button>
+                
+                {showPresetsMenu && (
+                  <div className={`p-3 space-y-2 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
+                    {presets.map((p, i) => (
+                      <div key={i} className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} p-3 rounded-lg flex items-center justify-between`}>
+                        <button
+                          onClick={() => {
+                            setEditingPreset(i);
+                            setEditPresetName(p.name);
+                            setEditPresetExercises([...p.exercises]);
+                          }}
+                          className="flex-1 text-left flex items-center gap-2"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{p.name}</div>
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{p.exercises.join(', ')}</div>
+                          </div>
+                          <Icons.Edit className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                        </button>
+                        <button
+                          onClick={() => setDeletePreset(i)}
+                          className="text-red-400 hover:text-red-300 ml-2"
+                        >
+                          <Icons.Trash />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 px-1`}>
-                Email button sends all workout data in CSV format
-              </div>
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} p-3 rounded-lg mb-3`}>
+
+              {/* Auto-Email Settings */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <span className="text-lg">📧</span>
+                  Auto-Email
+                </h3>
                 <label className="flex items-center gap-2 cursor-pointer mb-3">
                   <input
                     type="checkbox"
@@ -2359,7 +2426,7 @@ export default function Home() {
                     }}
                     className="w-4 h-4"
                   />
-                  <span className="text-sm">Auto-email after saving each workout</span>
+                  <span className="text-sm">Email after saving each workout</span>
                 </label>
                 {autoEmail && (
                   <div>
@@ -2377,51 +2444,73 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <div className="flex gap-2 mb-3">
-                <button onClick={() => setShowClear(true)} className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-2.5 rounded-lg text-sm font-semibold shadow-md transition-all w-full">
+
+              {/* Data Import/Export Section */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <span className="text-lg">💾</span>
+                  Data Management
+                </h3>
+                <div className="space-y-2">
+                  <label className="cursor-pointer block">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
+                      <Icons.Upload />
+                      Import Presets
+                    </div>
+                    <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
+                  </label>
+                  
+                  <label className="cursor-pointer block">
+                    <div className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
+                      <Icons.Upload />
+                      Import Workouts
+                    </div>
+                    <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
+                  </label>
+                  
+                  <button 
+                    onClick={exportCSV} 
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
+                  >
+                    <Icons.Download />
+                    Export All Data
+                  </button>
+                  
+                  <button 
+                    onClick={() => {
+                      const csvContent = exportCSV(true);
+                      const subject = encodeURIComponent('GORS LOG - Workout Data');
+                      const body = encodeURIComponent(`Here is my workout data from GORS LOG:\n\n${csvContent}`);
+                      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                    }}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Email Data
+                  </button>
+                </div>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 px-1`}>
+                  Email button sends all workout data in CSV format
+                </div>
+              </div>
+
+              {/* Data Deletion Section */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md border-2 ${darkMode ? 'border-red-900/30' : 'border-red-200'}`}>
+                <h3 className="font-bold mb-3 flex items-center gap-2 text-red-400">
+                  <span className="text-lg">⚠️</span>
+                  Data Deletion
+                </h3>
+                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3`}>
+                  Permanently delete all workout data. This action cannot be undone.
+                </p>
+                <button 
+                  onClick={() => setShowClear(true)} 
+                  className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-3 rounded-lg text-sm font-bold shadow-md transition-all"
+                >
                   Delete All Workouts
                 </button>
-              </div>
-              
-              <div className="mt-4">
-                <button
-                  onClick={() => setShowPresetsMenu(!showPresetsMenu)}
-                  className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} p-3 rounded-lg flex items-center justify-between transition-colors`}
-                >
-                  <span className="text-sm font-semibold">Workout Presets ({presets.length})</span>
-                  <div className={`transform transition-transform ${showPresetsMenu ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown />
-                  </div>
-                </button>
-                
-                {showPresetsMenu && (
-                  <div className="mt-2 space-y-2">
-                    {presets.map((p, i) => (
-                      <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} p-3 rounded-lg flex items-center justify-between shadow-sm`}>
-                        <button
-                          onClick={() => {
-                            setEditingPreset(i);
-                            setEditPresetName(p.name);
-                            setEditPresetExercises([...p.exercises]);
-                          }}
-                          className="flex-1 text-left flex items-center gap-2"
-                        >
-                          <div className="flex-1">
-                            <div className="font-medium">{p.name}</div>
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{p.exercises.join(', ')}</div>
-                          </div>
-                          <Icons.Edit className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
-                        </button>
-                        <button
-                          onClick={() => setDeletePreset(i)}
-                          className="text-red-400 hover:text-red-300 ml-2"
-                        >
-                          <Icons.Trash />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -2620,6 +2709,58 @@ export default function Home() {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Calendar Legend Modal */}
+        {showCalendarLegend && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowCalendarLegend(false)}>
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-sm w-full`} onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-xl font-bold mb-4">Calendar Legend</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded border-l-4 border-blue-400 bg-gray-700 flex-shrink-0"></div>
+                  <div>
+                    <div className="font-semibold text-sm">Garage BW</div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Bodyweight workout in garage</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded border-l-4 border-green-400 bg-gray-700 flex-shrink-0"></div>
+                  <div>
+                    <div className="font-semibold text-sm">Manual</div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manually entered workout</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded border-l-4 border-purple-400 bg-gray-700 flex-shrink-0"></div>
+                  <div>
+                    <div className="font-semibold text-sm">Garage 10</div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>10-minute garage workout</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded border-l-4 border-yellow-400 bg-gray-700 flex-shrink-0"></div>
+                  <div>
+                    <div className="font-semibold text-sm">BW-only</div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Bodyweight-only workout</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded border-l-4 border-gray-600 bg-gray-700 flex-shrink-0"></div>
+                  <div>
+                    <div className="font-semibold text-sm">Other</div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Other workout types</div>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCalendarLegend(false)}
+                className="mt-6 w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold transition-colors"
+              >
+                Got it
+              </button>
             </div>
           </div>
         )}
@@ -3146,6 +3287,16 @@ export default function Home() {
           <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
             {toastMessage}
           </div>
+        )}
+        
+        {/* Floating Action Button - New Workout */}
+        {view === 'calendar' && (
+          <button
+            onClick={() => setShowPresetSelector(true)}
+            className="fixed bottom-20 right-4 w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/50 transition-all active:scale-95 z-40 animate-pulse"
+          >
+            <Icons.Plus className="w-8 h-8" strokeWidth={3} />
+          </button>
         )}
         
         {/* Bottom Navigation */}
