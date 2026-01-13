@@ -951,17 +951,110 @@ export default function Home() {
         {/* Add/Edit Weight Modal */}
         {showWeightModal && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full`}>
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto`}>
               <h3 className="text-xl font-bold mb-4">{editingWeight !== null ? 'Edit' : 'Add'} Weight Entry</h3>
               <div className="space-y-3">
                 <div>
                   <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Date</label>
-                  <input
-                    type="date"
-                    value={currentWeight.date}
-                    onChange={(e) => setCurrentWeight({ ...currentWeight, date: e.target.value })}
-                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
-                  />
+                  {(() => {
+                    const selectedDate = currentWeight.date ? new Date(currentWeight.date + 'T00:00:00') : new Date();
+                    const [calendarYear, setCalendarYear] = useState(selectedDate.getFullYear());
+                    const [calendarMonth, setCalendarMonth] = useState(selectedDate.getMonth());
+                    
+                    const firstDay = new Date(calendarYear, calendarMonth, 1).getDay();
+                    const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday = 0
+                    const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+                    const today = new Date();
+                    
+                    return (
+                      <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3`}>
+                        {/* Month/Year selector */}
+                        <div className="flex items-center justify-between mb-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (calendarMonth === 0) {
+                                setCalendarMonth(11);
+                                setCalendarYear(calendarYear - 1);
+                              } else {
+                                setCalendarMonth(calendarMonth - 1);
+                              }
+                            }}
+                            className={`p-1 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <div className="font-semibold">
+                            {new Date(calendarYear, calendarMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (calendarMonth === 11) {
+                                setCalendarMonth(0);
+                                setCalendarYear(calendarYear + 1);
+                              } else {
+                                setCalendarMonth(calendarMonth + 1);
+                              }
+                            }}
+                            className={`p-1 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        {/* Day headers - Monday first */}
+                        <div className="grid grid-cols-7 gap-1 mb-1">
+                          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                            <div key={i} className="text-center text-xs text-gray-500 font-bold">
+                              {day}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Calendar days */}
+                        <div className="grid grid-cols-7 gap-1">
+                          {/* Empty cells before first day */}
+                          {[...Array(adjustedFirstDay)].map((_, i) => (
+                            <div key={`empty-${i}`} />
+                          ))}
+                          
+                          {/* Days */}
+                          {[...Array(daysInMonth)].map((_, i) => {
+                            const day = i + 1;
+                            const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                            const isSelected = currentWeight.date === dateStr;
+                            const isToday = day === today.getDate() && 
+                                          calendarMonth === today.getMonth() && 
+                                          calendarYear === today.getFullYear();
+                            
+                            return (
+                              <button
+                                key={day}
+                                type="button"
+                                onClick={() => setCurrentWeight({ ...currentWeight, date: dateStr })}
+                                className={`
+                                  aspect-square rounded text-sm font-medium
+                                  ${isSelected 
+                                    ? 'bg-blue-600 text-white' 
+                                    : isToday
+                                    ? darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'
+                                    : darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
+                                  }
+                                `}
+                              >
+                                {day}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Weight (lbs)</label>
@@ -2027,13 +2120,13 @@ export default function Home() {
                       </div>
                       {avg7 && (
                         <div>
-                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>7-Day Avg</div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Avg (Last 7 Days)</div>
                           <div className="text-xl font-bold">{avg7} <span className="text-sm font-normal">lbs</span></div>
                         </div>
                       )}
                       {avg30 && (
                         <div>
-                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>30-Day Avg</div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Avg (Last 30 Days)</div>
                           <div className="text-xl font-bold">{avg30} <span className="text-sm font-normal">lbs</span></div>
                         </div>
                       )}
@@ -2042,17 +2135,107 @@ export default function Home() {
                 );
               })()}
               
-              {/* Weight Chart Placeholder */}
-              {weightEntries.length > 1 && (
-                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
-                  <h3 className="font-bold text-lg mb-3">Weight Trend</h3>
-                  <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg h-48 flex items-center justify-center`}>
-                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Chart coming soon • {weightEntries.length} data points
+              {/* Weight Chart */}
+              {weightEntries.length > 1 && (() => {
+                const sorted = [...weightEntries].sort((a, b) => a.date.localeCompare(b.date));
+                const weights = sorted.map(e => parseFloat(e.weight));
+                const dates = sorted.map(e => e.date);
+                
+                const minWeight = Math.min(...weights);
+                const maxWeight = Math.max(...weights);
+                const range = maxWeight - minWeight;
+                const padding = range * 0.1 || 5; // Add 10% padding or 5 lbs if flat
+                const chartMin = minWeight - padding;
+                const chartMax = maxWeight + padding;
+                const chartRange = chartMax - chartMin;
+                
+                // Chart dimensions
+                const width = 100; // percentage
+                const height = 180;
+                const pointRadius = 4;
+                
+                // Generate SVG path
+                const points = weights.map((w, i) => {
+                  const x = (i / (weights.length - 1)) * 100;
+                  const y = ((chartMax - w) / chartRange) * 100;
+                  return { x, y, weight: w, date: dates[i] };
+                });
+                
+                const pathData = points.map((p, i) => 
+                  `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
+                ).join(' ');
+                
+                // Create gradient fill path (same as line but closed to bottom)
+                const fillPath = `${pathData} L 100 100 L 0 100 Z`;
+                
+                return (
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
+                    <h3 className="font-bold text-lg mb-3">Weight Trend</h3>
+                    <div className="relative" style={{ height: `${height}px` }}>
+                      <svg 
+                        viewBox="0 0 100 100" 
+                        preserveAspectRatio="none"
+                        className="absolute inset-0 w-full h-full"
+                      >
+                        {/* Gradient fill under line */}
+                        <defs>
+                          <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.05" />
+                          </linearGradient>
+                        </defs>
+                        <path
+                          d={fillPath}
+                          fill="url(#weightGradient)"
+                        />
+                        {/* Line */}
+                        <path
+                          d={pathData}
+                          fill="none"
+                          stroke="#3b82f6"
+                          strokeWidth="0.5"
+                          vectorEffect="non-scaling-stroke"
+                        />
+                      </svg>
+                      
+                      {/* Data points */}
+                      <svg 
+                        viewBox="0 0 100 100" 
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                        preserveAspectRatio="none"
+                      >
+                        {points.map((p, i) => (
+                          <g key={i}>
+                            <circle
+                              cx={p.x}
+                              cy={p.y}
+                              r="0.8"
+                              fill="#3b82f6"
+                              vectorEffect="non-scaling-stroke"
+                            />
+                          </g>
+                        ))}
+                      </svg>
+                      
+                      {/* Y-axis labels */}
+                      <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-gray-500 pr-1">
+                        <span>{chartMax.toFixed(0)}</span>
+                        <span>{((chartMax + chartMin) / 2).toFixed(0)}</span>
+                        <span>{chartMin.toFixed(0)}</span>
+                      </div>
+                      
+                      {/* X-axis labels (first and last date) */}
+                      <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-gray-500 pt-2">
+                        <span>{new Date(dates[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <span>{new Date(dates[dates.length - 1]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                      </div>
+                    </div>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} text-center mt-4`}>
+                      {weightEntries.length} data points • Showing all time
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
               
               {/* Recent Entries */}
               <div className="space-y-2">
