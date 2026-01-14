@@ -436,10 +436,25 @@ export default function Home() {
     // Auto-email if enabled (only for new workouts, not edits)
     if (autoEmail && editing === null && emailAddress) {
       setTimeout(() => {
-        const csvContent = exportCSV(true);
-        const subject = encodeURIComponent('GORS LOG - New Workout');
         const dateStr = new Date(current.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const body = encodeURIComponent(`New workout logged on ${dateStr}:\n\n${current.location || 'Workout'}\n${current.exercises.length} exercises\n\n${current.notes || 'No notes'}`);
+        
+        // Format workout details
+        let workoutDetails = `Workout: ${current.location || 'Manual'}\nDate: ${dateStr}\n\n`;
+        
+        current.exercises.forEach(ex => {
+          const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+          const setDetails = ex.sets.map(s => s.reps || 0).join(', ');
+          workoutDetails += `${ex.name}: ${setDetails} (Total: ${totalReps})`;
+          if (ex.notes) workoutDetails += ` - ${ex.notes}`;
+          workoutDetails += '\n';
+        });
+        
+        if (current.notes) {
+          workoutDetails += `\nNotes: ${current.notes}`;
+        }
+        
+        const subject = encodeURIComponent('GORS LOG - New Workout');
+        const body = encodeURIComponent(workoutDetails);
         window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
       }, 500);
     }
@@ -2442,21 +2457,22 @@ export default function Home() {
                   
                   <button 
                     onClick={() => {
-                      const csvContent = exportCSV(true);
-                      const subject = encodeURIComponent('GORS LOG - Workout Data');
-                      const body = encodeURIComponent(`Here is my workout data from GORS LOG:\n\n${csvContent}`);
-                      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                      // Generate CSV and download it
+                      exportCSV(false);
+                      
+                      // Show toast
+                      setToastMessage('CSV file downloaded! You can now attach it to an email.');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 4000);
                     }}
                     className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    Email Data
+                    <Icons.Download />
+                    Download CSV for Email
                   </button>
                 </div>
                 <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 px-1`}>
-                  Email button sends all workout data in CSV format
+                  Download CSV file and attach it to your email client
                 </div>
               </div>
 
