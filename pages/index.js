@@ -680,7 +680,8 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center">
         <div className="text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-4">GORS LOG</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">GORS LOG</h1>
+          <p className="text-xs text-gray-400 mt-1 mb-4 font-medium">Be About It</p>
           <div className="flex items-center gap-2 justify-center">
             <div className="w-3 h-3 bg-blue-500 rounded-full loading-dot-1"></div>
             <div className="w-3 h-3 bg-blue-500 rounded-full loading-dot-2"></div>
