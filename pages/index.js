@@ -2759,9 +2759,22 @@ export default function Home() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className={`sticky top-0 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} z-10 border-b px-4 py-2`}>
+              <div className={`${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 py-2`}>
                 <div className="flex items-center justify-between">
                   <h2 className="text-base font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
+                  
+                  {/* Timer - in header */}
+                  {workoutStarted && editing === null && (
+                    <div className="flex items-center gap-2">
+                      <div className="text-xl font-mono font-bold text-blue-400">{formatTime(workoutTimer)}</div>
+                      <button
+                        onClick={() => setTimerRunning(!timerRunning)}
+                        className="text-blue-400 hover:text-blue-300 p-1"
+                      >
+                        {timerRunning ? <Icons.Pause /> : <Icons.Play />}
+                      </button>
+                    </div>
+                  )}
                   
                   <div className="flex items-center gap-2">
                     {!(workoutStarted && editing === null) && (
@@ -3125,21 +3138,6 @@ export default function Home() {
                   </button>
                 )}
               </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Floating Timer Badge - Always visible when workout active */}
-        {showWorkoutModal && workoutStarted && editing === null && (
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] pointer-events-none">
-            <div className="pointer-events-auto bg-blue-600 rounded-full px-6 py-2 shadow-2xl shadow-blue-500/50 flex items-center gap-3">
-              <div className="text-2xl font-mono font-bold text-white">{formatTime(workoutTimer)}</div>
-              <button
-                onClick={() => setTimerRunning(!timerRunning)}
-                className="text-white hover:opacity-80 transition-opacity"
-              >
-                {timerRunning ? <Icons.Pause /> : <Icons.Play />}
-              </button>
             </div>
           </div>
         )}
