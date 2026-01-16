@@ -2744,70 +2744,72 @@ export default function Home() {
         
         {/* Workout Modal */}
         {showWorkoutModal && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-50"
-            onClick={() => {
-              if (current.exercises.length > 0) {
-                setShowCloseConfirm(true);
-              } else {
-                setShowWorkoutModal(false);
-              }
-            }}
-          >
-            <div 
-              className={`fixed inset-x-0 top-0 bottom-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} flex flex-col`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header - Fixed position even with keyboard */}
-              <div className={`fixed top-0 left-0 right-0 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} z-[60] border-b px-4 py-2`}>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
-                  
-                  {/* Timer - compact, in header */}
-                  {workoutStarted && editing === null && (
-                    <div className="flex items-center gap-2">
-                      <div className="text-xl font-mono font-bold text-blue-400">{formatTime(workoutTimer)}</div>
-                      <button
-                        onClick={() => setTimerRunning(!timerRunning)}
-                        className="text-blue-400 hover:text-blue-300 p-1"
-                      >
-                        {timerRunning ? <Icons.Pause /> : <Icons.Play />}
-                      </button>
-                    </div>
-                  )}
-                  
+          <>
+            {/* Fixed Header - Outside modal container for true viewport fixing */}
+            <div className={`fixed top-0 left-0 right-0 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} z-[60] border-b px-4 py-2`}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
+                
+                {/* Timer - compact, in header */}
+                {workoutStarted && editing === null && (
                   <div className="flex items-center gap-2">
-                    {!(workoutStarted && editing === null) && (
-                      <button
-                        onClick={() => setShowHistoryModal(true)}
-                        className="text-blue-400 hover:text-blue-300"
-                      >
-                        <Icons.Calendar />
-                      </button>
-                    )}
+                    <div className="text-xl font-mono font-bold text-blue-400">{formatTime(workoutTimer)}</div>
                     <button
-                      onClick={() => {
-                        if (current.exercises.length > 0) {
-                          setShowCloseConfirm(true);
-                        } else {
-                          setShowWorkoutModal(false);
-                          setCurrent({
-                            date: getTodayDate(),
-                            exercises: [],
-                            notes: '',
-                            location: ''
-                          });
-                        }
-                      }}
+                      onClick={() => setTimerRunning(!timerRunning)}
+                      className="text-blue-400 hover:text-blue-300 p-1"
                     >
-                      <Icons.X />
+                      {timerRunning ? <Icons.Pause /> : <Icons.Play />}
                     </button>
                   </div>
+                )}
+                
+                <div className="flex items-center gap-2">
+                  {!(workoutStarted && editing === null) && (
+                    <button
+                      onClick={() => setShowHistoryModal(true)}
+                      className="text-blue-400 hover:text-blue-300"
+                    >
+                      <Icons.Calendar />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      if (current.exercises.length > 0) {
+                        setShowCloseConfirm(true);
+                      } else {
+                        setShowWorkoutModal(false);
+                        setCurrent({
+                          date: getTodayDate(),
+                          exercises: [],
+                          notes: '',
+                          location: ''
+                        });
+                      }
+                    }}
+                  >
+                    <Icons.X />
+                  </button>
                 </div>
               </div>
-              
-              {/* Content - reuse workout form */}
-              <div className="flex-1 overflow-y-auto p-4 pt-16 space-y-3">
+            </div>
+            
+            {/* Modal Content */}
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-50 z-50"
+              onClick={() => {
+                if (current.exercises.length > 0) {
+                  setShowCloseConfirm(true);
+                } else {
+                  setShowWorkoutModal(false);
+                }
+              }}
+            >
+              <div 
+                className={`fixed inset-x-0 top-0 bottom-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} flex flex-col`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Content - reuse workout form */}
+                <div className="flex-1 overflow-y-auto p-4 pt-16 space-y-3">
                 {/* Hide exercises for Day Off */}
                 {current.location !== 'Day Off' && (
                   <>
@@ -3140,6 +3142,7 @@ export default function Home() {
               </div>
             </div>
           </div>
+          </>
         )}
         
         {/* History Modal - For workout reference */}
