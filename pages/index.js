@@ -436,25 +436,30 @@ export default function Home() {
     // Auto-email if enabled (only for new workouts, not edits)
     if (autoEmail && editing === null && emailAddress) {
       setTimeout(() => {
-        const dateStr = new Date(current.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const d = new Date(current.date);
+        const dateStr = `${d.getMonth() + 1}-${d.getDate()}-${d.toLocaleDateString('en-US', { weekday: 'short' })}`;
         
-        // Format workout details
-        let workoutDetails = `Workout: ${current.location || 'Manual'}\nDate: ${dateStr}\n\n`;
+        // Format as tab-delimited text (TSV) for easy spreadsheet pasting
+        let workoutData = '';
         
-        current.exercises.forEach(ex => {
-          const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-          const setDetails = ex.sets.map(s => s.reps || 0).join(', ');
-          workoutDetails += `${ex.name}: ${setDetails} (Total: ${totalReps})`;
-          if (ex.notes) workoutDetails += ` - ${ex.notes}`;
-          workoutDetails += '\n';
+        current.exercises.forEach((ex, i) => {
+          // Pad sets to 4 columns
+          const sets = ex.sets.slice(0, 4);
+          const reps = sets.map(s => s.reps || '').concat(Array(4 - sets.length).fill(''));
+          const total = sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+          const notes = ex.notes || '';
+          
+          // First row has date, others are indented with tab
+          const dateCol = i === 0 ? dateStr : '';
+          workoutData += `${dateCol}\t${ex.name}\t${reps[0]}\t${reps[1]}\t${reps[2]}\t${reps[3]}\t${total}\t${notes}\n`;
         });
         
-        if (current.notes) {
-          workoutDetails += `\nNotes: ${current.notes}`;
-        }
+        // Add workout location/notes row
+        const workoutNotes = [current.location, current.notes].filter(x => x).join('. ');
+        workoutData += `\t${current.location || ''}\t\t\t\t\t\t${workoutNotes}\n`;
         
         const subject = encodeURIComponent('GORS LOG - New Workout');
-        const body = encodeURIComponent(workoutDetails);
+        const body = encodeURIComponent(workoutData);
         window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
       }, 500);
     }
@@ -2743,16 +2748,32 @@ export default function Home() {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className={`sticky top-0 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} z-10 border-b px-4 py-3`}>
+              <div className={`sticky top-0 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} z-10 border-b px-4 py-2`}>
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
+                  <h2 className="text-base font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
+                  
+                  {/* Timer - compact, in header */}
+                  {workoutStarted && editing === null && (
+                    <div className="flex items-center gap-2">
+                      <div className="text-xl font-mono font-bold text-blue-400">{formatTime(workoutTimer)}</div>
+                      <button
+                        onClick={() => setTimerRunning(!timerRunning)}
+                        className="text-blue-400 hover:text-blue-300 p-1"
+                      >
+                        {timerRunning ? <Icons.Pause /> : <Icons.Play />}
+                      </button>
+                    </div>
+                  )}
+                  
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowHistoryModal(true)}
-                      className="text-blue-400 hover:text-blue-300"
-                    >
-                      <Icons.Calendar />
-                    </button>
+                    {!(workoutStarted && editing === null) && (
+                      <button
+                        onClick={() => setShowHistoryModal(true)}
+                        className="text-blue-400 hover:text-blue-300"
+                      >
+                        <Icons.Calendar />
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         if (current.exercises.length > 0) {
@@ -3091,39 +3112,6 @@ export default function Home() {
                     <span className="text-2xl">▶</span>
                     Start Workout
                   </button>
-                ) : timerRunning ? (
-                  <button
-                    onClick={() => {
-                      setTimerRunning(false);
-                      setShowPauseMenu(true);
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex flex-col items-center"
-                  >
-                    <span className="text-3xl font-mono tracking-wider">{formatTime(workoutTimer)}</span>
-                    <span className="text-xs font-normal opacity-75 mt-0.5">Tap to pause</span>
-                  </button>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="text-center mb-3">
-                      <div className="text-4xl font-mono font-bold text-blue-400">{formatTime(workoutTimer)}</div>
-                      <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} mt-1`}>Workout paused</div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => setTimerRunning(true)}
-                        className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 py-3 rounded-xl font-semibold shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                      >
-                        <span className="text-xl">▶</span>
-                        Continue
-                      </button>
-                      <button
-                        onClick={() => setShowEndWorkoutConfirm(true)}
-                        className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 py-3 rounded-xl font-semibold shadow-md transition-all active:scale-[0.98]"
-                      >
-                        End Workout
-                      </button>
-                    </div>
-                  </div>
                 )}
               </div>
             </div>
