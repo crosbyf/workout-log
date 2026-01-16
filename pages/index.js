@@ -3112,6 +3112,13 @@ export default function Home() {
                     <span className="text-2xl">▶</span>
                     Start Workout
                   </button>
+                ) : (
+                  <button
+                    onClick={saveAndClose}
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+                  >
+                    Save Workout
+                  </button>
                 )}
               </div>
             </div>
