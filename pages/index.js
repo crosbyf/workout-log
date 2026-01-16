@@ -439,17 +439,20 @@ export default function Home() {
     setCurrent({ ...current, exercises: u });
   };
 
-  const saveWorkout = () => {
+  const saveWorkout = (elapsedTime = null) => {
     // Allow Day Off workouts with zero exercises if they have notes or location
     if (!current.exercises.length && !current.notes && current.location !== 'Day Off') return;
+    
+    // Add elapsed time if provided
+    const workoutToSave = elapsedTime !== null ? { ...current, elapsedTime } : current;
     
     let ws;
     if (editing !== null) {
       ws = [...workouts];
-      ws[editing] = current;
+      ws[editing] = workoutToSave;
       setEditing(null);
     } else {
-      ws = [current, ...workouts];
+      ws = [workoutToSave, ...workouts];
     }
     save(ws, 'workouts', setWorkouts);
     
@@ -816,23 +819,18 @@ export default function Home() {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    // Add elapsed time to workout before saving
-                    setCurrent({ ...current, elapsedTime: workoutTimer });
+                    // Pass elapsed time directly to saveWorkout
+                    saveWorkout(workoutTimer);
+                    setShowWorkoutModal(false);
+                    setWorkoutStarted(false);
+                    setWorkoutTimer(0);
+                    setTimerRunning(false);
+                    setShowEndWorkoutConfirm(false);
                     
-                    // Small delay to ensure state updates
-                    setTimeout(() => {
-                      saveWorkout();
-                      setShowWorkoutModal(false);
-                      setWorkoutStarted(false);
-                      setWorkoutTimer(0);
-                      setTimerRunning(false);
-                      setShowEndWorkoutConfirm(false);
-                      
-                      // Offer to save as preset if it's a manual workout
-                      if (current.location === 'Manual' && current.exercises.length > 0) {
-                        setShowSaveAsPreset(true);
-                      }
-                    }, 50);
+                    // Offer to save as preset if it's a manual workout
+                    if (current.location === 'Manual' && current.exercises.length > 0) {
+                      setShowSaveAsPreset(true);
+                    }
                   }}
                   className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 py-3 rounded-lg font-semibold"
                 >
