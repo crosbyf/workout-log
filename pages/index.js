@@ -91,6 +91,13 @@ const Icons = {
       <rect x="14" y="4" width="4" height="16"/>
     </svg>
   ),
+  Share: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+      <polyline points="16 6 12 2 8 6"/>
+      <line x1="12" y1="2" x2="12" y2="15"/>
+    </svg>
+  ),
 };
 
 export default function Home() {
@@ -158,8 +165,6 @@ export default function Home() {
   const [showSaveAsPreset, setShowSaveAsPreset] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [volumeWidgetDate, setVolumeWidgetDate] = useState(new Date());
-  const [autoEmail, setAutoEmail] = useState(false);
-  const [emailAddress, setEmailAddress] = useState('');
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutStartTime, setWorkoutStartTime] = useState(null);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -220,15 +225,11 @@ export default function Home() {
         const w = localStorage.getItem('workouts');
         const p = localStorage.getItem('presets');
         const e = localStorage.getItem('exercises');
-        const ae = localStorage.getItem('autoEmail');
-        const ea = localStorage.getItem('emailAddress');
         const dm = localStorage.getItem('darkMode');
         const we = localStorage.getItem('weightEntries');
         if (w) setWorkouts(JSON.parse(w));
         if (p) setPresets(JSON.parse(p));
         if (e) setExercises(JSON.parse(e));
-        if (ae) setAutoEmail(JSON.parse(ae));
-        if (ea) setEmailAddress(JSON.parse(ea));
         if (dm !== null) setDarkMode(JSON.parse(dm));
         if (we) setWeightEntries(JSON.parse(we));
       };
@@ -456,37 +457,6 @@ export default function Home() {
     }
     save(ws, 'workouts', setWorkouts);
     
-    // Auto-email if enabled (only for new workouts, not edits)
-    if (autoEmail && editing === null && emailAddress) {
-      setTimeout(() => {
-        const d = new Date(current.date);
-        const dateStr = `${d.getMonth() + 1}-${d.getDate()}-${d.toLocaleDateString('en-US', { weekday: 'short' })}`;
-        
-        // Format as tab-delimited text (TSV) for easy spreadsheet pasting
-        let workoutData = '';
-        
-        current.exercises.forEach((ex, i) => {
-          // Pad sets to 4 columns
-          const sets = ex.sets.slice(0, 4);
-          const reps = sets.map(s => s.reps || '').concat(Array(4 - sets.length).fill(''));
-          const total = sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-          const notes = ex.notes || '';
-          
-          // First row has date, others are indented with tab
-          const dateCol = i === 0 ? dateStr : '';
-          workoutData += `${dateCol}\t${ex.name}\t${reps[0]}\t${reps[1]}\t${reps[2]}\t${reps[3]}\t${total}\t${notes}\n`;
-        });
-        
-        // Add workout location/notes row
-        const workoutNotes = [current.location, current.notes].filter(x => x).join('. ');
-        workoutData += `\t${current.location || ''}\t\t\t\t\t\t${workoutNotes}\n`;
-        
-        const subject = encodeURIComponent('GORS LOG - New Workout');
-        const body = encodeURIComponent(workoutData);
-        window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
-      }, 500);
-    }
-    
     setCurrent({
       date: getTodayDate(),
       exercises: [],
@@ -542,6 +512,57 @@ export default function Home() {
     setToastMessage('Workout copied to clipboard!');
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const shareWorkout = async (w) => {
+    // Format workout data in readable format
+    const d = new Date(w.date);
+    const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    
+    let shareText = `GORS LOG - ${w.location || 'Workout'}\n`;
+    shareText += `${dateStr}\n`;
+    if (w.elapsedTime) {
+      shareText += `Duration: ${formatTimeHHMMSS(w.elapsedTime)}\n`;
+    }
+    shareText += `\n`;
+    
+    w.exercises.forEach((ex) => {
+      const sets = ex.sets.map(s => s.reps || 0).join(', ');
+      const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+      shareText += `${ex.name}: ${sets} (Total: ${total})`;
+      if (ex.notes) shareText += ` - ${ex.notes}`;
+      shareText += `\n`;
+    });
+    
+    if (w.notes) {
+      shareText += `\nNotes: ${w.notes}`;
+    }
+    
+    // Try Web Share API (native iOS share sheet)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `GORS LOG - ${w.location || 'Workout'}`,
+          text: shareText
+        });
+      } catch (err) {
+        // User cancelled or error - ignore
+        if (err.name !== 'AbortError') {
+          console.error('Share failed:', err);
+          // Fallback to clipboard
+          navigator.clipboard.writeText(shareText);
+          setToastMessage('Copied to clipboard!');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        }
+      }
+    } else {
+      // Fallback for browsers without Web Share API
+      navigator.clipboard.writeText(shareText);
+      setToastMessage('Copied to clipboard!');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
   };
 
   const clearAll = () => {
@@ -1780,6 +1801,14 @@ export default function Home() {
                             Copy
                           </button>
                           <button
+                            onClick={() => shareWorkout(w)}
+                            className="text-purple-400 hover:text-purple-300 p-1 text-xs flex items-center gap-1"
+                            title="Share workout"
+                          >
+                            <Icons.Share className="w-4 h-4" />
+                            Share
+                          </button>
+                          <button
                             onClick={() => editWorkout(i)}
                             className="text-green-400 hover:text-green-300 p-1 text-xs flex items-center gap-1"
                           >
@@ -2419,41 +2448,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Auto-Email Settings */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                <h3 className="font-bold mb-3 flex items-center gap-2">
-                  <span className="text-lg">📧</span>
-                  Auto-Email
-                </h3>
-                <label className="flex items-center gap-2 cursor-pointer mb-3">
-                  <input
-                    type="checkbox"
-                    checked={autoEmail}
-                    onChange={(e) => {
-                      setAutoEmail(e.target.checked);
-                      save(e.target.checked, 'autoEmail', setAutoEmail);
-                    }}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">Email after saving each workout</span>
-                </label>
-                {autoEmail && (
-                  <div>
-                    <label className={`block text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-1`}>Email Address</label>
-                    <input
-                      type="email"
-                      value={emailAddress}
-                      onChange={(e) => {
-                        setEmailAddress(e.target.value);
-                        save(e.target.value, 'emailAddress', setEmailAddress);
-                      }}
-                      placeholder="your@email.com"
-                      className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2 text-sm`}
-                    />
-                  </div>
-                )}
-              </div>
-
               {/* Data Import/Export Section */}
               <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
                 <h3 className="font-bold mb-3 flex items-center gap-2">
@@ -2484,25 +2478,6 @@ export default function Home() {
                     <Icons.Download />
                     Export All Data
                   </button>
-                  
-                  <button 
-                    onClick={() => {
-                      // Generate CSV and download it
-                      exportCSV(false);
-                      
-                      // Show toast
-                      setToastMessage('CSV file downloaded! You can now attach it to an email.');
-                      setShowToast(true);
-                      setTimeout(() => setShowToast(false), 4000);
-                    }}
-                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
-                  >
-                    <Icons.Download />
-                    Download CSV for Email
-                  </button>
-                </div>
-                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 px-1`}>
-                  Download CSV file and attach it to your email client
                 </div>
               </div>
 
