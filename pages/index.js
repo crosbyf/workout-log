@@ -189,6 +189,15 @@ export default function Home() {
     return `${mins}:${String(secs).padStart(2, '0')}`;
   };
   
+  // Format elapsed time as hh:mm:ss
+  const formatTimeHHMMSS = (seconds) => {
+    if (!seconds) return null;
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+  
   // Helper to get today's date in YYYY-MM-DD format without timezone issues
   const getTodayDate = () => {
     const now = new Date();
@@ -807,17 +816,23 @@ export default function Home() {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    saveWorkout();
-                    setShowWorkoutModal(false);
-                    setWorkoutStarted(false);
-                    setWorkoutTimer(0);
-                    setTimerRunning(false);
-                    setShowEndWorkoutConfirm(false);
+                    // Add elapsed time to workout before saving
+                    setCurrent({ ...current, elapsedTime: workoutTimer });
                     
-                    // Offer to save as preset if it's a manual workout
-                    if (current.location === 'Manual' && current.exercises.length > 0) {
-                      setShowSaveAsPreset(true);
-                    }
+                    // Small delay to ensure state updates
+                    setTimeout(() => {
+                      saveWorkout();
+                      setShowWorkoutModal(false);
+                      setWorkoutStarted(false);
+                      setWorkoutTimer(0);
+                      setTimerRunning(false);
+                      setShowEndWorkoutConfirm(false);
+                      
+                      // Offer to save as preset if it's a manual workout
+                      if (current.location === 'Manual' && current.exercises.length > 0) {
+                        setShowSaveAsPreset(true);
+                      }
+                    }, 50);
                   }}
                   className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 py-3 rounded-lg font-semibold"
                 >
@@ -1746,6 +1761,7 @@ export default function Home() {
                           </div>
                           <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
                             {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}
+                            {w.elapsedTime && ` • ${formatTimeHHMMSS(w.elapsedTime)}`}
                           </div>
                         </div>
                         <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
