@@ -2755,11 +2755,11 @@ export default function Home() {
             }}
           >
             <div 
-              className={`fixed inset-x-0 top-0 bottom-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} overflow-y-auto flex flex-col`}
+              className={`fixed inset-x-0 top-0 bottom-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} flex flex-col`}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className={`sticky top-0 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} z-10 border-b px-4 py-2`}>
+              <div className={`${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} z-20 border-b px-4 py-2 flex-shrink-0`}>
                 <div className="flex items-center justify-between">
                   <h2 className="text-base font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
                   
