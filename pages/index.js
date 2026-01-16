@@ -3114,7 +3114,13 @@ export default function Home() {
                   </button>
                 ) : (
                   <button
-                    onClick={saveAndClose}
+                    onClick={() => {
+                      saveWorkout();
+                      setShowWorkoutModal(false);
+                      setWorkoutStarted(false);
+                      setTimerRunning(false);
+                      setWorkoutTimer(0);
+                    }}
                     className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
                   >
                     Save Workout
