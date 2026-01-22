@@ -122,6 +122,8 @@ export default function Home() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [search, setSearch] = useState('');
   const [showClear, setShowClear] = useState(false);
+  const [showBackups, setShowBackups] = useState(false);
+  const [backupsList, setBackupsList] = useState([]);
   const [expandedTrends, setExpandedTrends] = useState({});
   const [deleteWorkout, setDeleteWorkout] = useState(null);
   const [deletePreset, setDeletePreset] = useState(null);
@@ -243,6 +245,68 @@ export default function Home() {
       }, 2000);
     }
   }, []);
+  
+  // Auto-backup system (every 7 days)
+  useEffect(() => {
+    if (typeof window === 'undefined' || workouts.length === 0) return;
+    
+    const createBackup = async () => {
+      try {
+        const backup = {
+          timestamp: Date.now(),
+          workouts: workouts,
+          presets: presets,
+          weightEntries: weightEntries,
+          exercises: exercises
+        };
+        
+        // Open IndexedDB
+        const request = indexedDB.open('GorsLogBackups', 1);
+        
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('backups')) {
+            db.createObjectStore('backups', { keyPath: 'timestamp' });
+          }
+        };
+        
+        request.onsuccess = (e) => {
+          const db = e.target.result;
+          const transaction = db.transaction(['backups'], 'readwrite');
+          const store = transaction.objectStore('backups');
+          
+          // Add new backup
+          store.add(backup);
+          
+          // Prune old backups (keep last 5)
+          const getAllRequest = store.getAll();
+          getAllRequest.onsuccess = () => {
+            const allBackups = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
+            if (allBackups.length > 5) {
+              const toDelete = allBackups.slice(5);
+              toDelete.forEach(b => {
+                store.delete(b.timestamp);
+              });
+            }
+          };
+          
+          localStorage.setItem('lastBackup', backup.timestamp.toString());
+          console.log('Backup created:', new Date(backup.timestamp).toLocaleString());
+        };
+      } catch (err) {
+        console.error('Backup failed:', err);
+      }
+    };
+    
+    // Check if backup is needed
+    const lastBackup = localStorage.getItem('lastBackup');
+    const now = Date.now();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    
+    if (!lastBackup || now - parseInt(lastBackup) > sevenDays) {
+      createBackup();
+    }
+  }, [workouts, presets, weightEntries, exercises]);
   
   // Disable background scroll when modals are open
   useEffect(() => {
@@ -735,6 +799,77 @@ export default function Home() {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Backups Modal */}
+        {showBackups && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowBackups(false)}>
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-xl font-bold mb-4">Automatic Backups</h3>
+              
+              {backupsList.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">💾</div>
+                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    No backups yet. Backups are created automatically every 7 days.
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {backupsList.map((backup) => {
+                    const date = new Date(backup.timestamp);
+                    return (
+                      <div key={backup.timestamp} className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-3`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="font-semibold text-sm">
+                              {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </div>
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Restore backup from ${date.toLocaleDateString()}? Your current data will be replaced.`)) {
+                                setWorkouts(backup.workouts || []);
+                                setPresets(backup.presets || []);
+                                setWeightEntries(backup.weightEntries || []);
+                                setExercises(backup.exercises || []);
+                                
+                                save(backup.workouts || [], 'workouts', setWorkouts);
+                                save(backup.presets || [], 'presets', setPresets);
+                                save(backup.weightEntries || [], 'weightEntries', setWeightEntries);
+                                save(backup.exercises || [], 'exercises', setExercises);
+                                
+                                setShowBackups(false);
+                                setToastMessage('Backup restored successfully!');
+                                setShowToast(true);
+                                setTimeout(() => setShowToast(false), 3000);
+                              }
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+                          >
+                            Restore
+                          </button>
+                        </div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {backup.workouts?.length || 0} workouts • {backup.presets?.length || 0} presets • {backup.weightEntries?.length || 0} weight entries
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              <button
+                onClick={() => setShowBackups(false)}
+                className={`w-full mt-4 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold transition-colors`}
+              >
+                Close
+              </button>
             </div>
           </div>
         )}
@@ -1892,6 +2027,30 @@ export default function Home() {
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Statistics</h2>
               
+              {/* Progress Charts Card */}
+              <button
+                onClick={() => {
+                  setStatsView('progress');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">📈</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Progress Charts</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        Volume trends & workout frequency
+                      </div>
+                    </div>
+                  </div>
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+              
               {/* Exercise Stats Card */}
               <button
                 onClick={() => {
@@ -2174,6 +2333,13 @@ export default function Home() {
                 const oldest = sorted[sorted.length - 1];
                 const change = latest.weight - oldest.weight;
                 
+                // Calculate weight change rate (lbs/week)
+                const oldestDate = new Date(oldest.date);
+                const latestDate = new Date(latest.date);
+                const daysDiff = (latestDate - oldestDate) / (1000 * 60 * 60 * 24);
+                const weeksDiff = daysDiff / 7;
+                const changeRate = weeksDiff > 0 ? (change / weeksDiff).toFixed(2) : null;
+                
                 // Calculate 7-day average
                 const sevenDaysAgo = new Date();
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -2206,6 +2372,14 @@ export default function Home() {
                           {change > 0 ? '+' : ''}{change.toFixed(1)} lbs
                         </div>
                       </div>
+                      {changeRate && weeksDiff >= 1 && (
+                        <div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Rate</div>
+                          <div className="text-xl font-bold">
+                            {changeRate > 0 ? '+' : ''}{changeRate} <span className="text-sm font-normal">lbs/week</span>
+                          </div>
+                        </div>
+                      )}
                       <div>
                         <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Entries</div>
                         <div className="text-xl font-bold">{weightEntries.length}</div>
@@ -2399,6 +2573,165 @@ export default function Home() {
             </div>
           )}
           
+          {/* Progress Charts View */}
+          {view === 'stats' && statsView === 'progress' && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 mb-3">
+                <button
+                  onClick={() => {
+                    setStatsView('menu');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="text-blue-400 hover:text-blue-300"
+                >
+                  ← Back
+                </button>
+                <h2 className="text-base font-semibold">Progress Charts</h2>
+              </div>
+              
+              {workouts.length === 0 ? (
+                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-8 text-center shadow-md`}>
+                  <div className="text-4xl mb-3">📊</div>
+                  <div className="text-lg font-semibold mb-2">No Workout Data</div>
+                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    Start logging workouts to see your progress!
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Volume Trend Chart */}
+                  {(() => {
+                    // Get last 12 weeks of data
+                    const now = new Date();
+                    const twelveWeeksAgo = new Date(now.getTime() - (12 * 7 * 24 * 60 * 60 * 1000));
+                    
+                    const weeklyData = [];
+                    for (let i = 11; i >= 0; i--) {
+                      const weekStart = new Date(now.getTime() - (i * 7 * 24 * 60 * 60 * 1000));
+                      const weekEnd = new Date(weekStart.getTime() + (7 * 24 * 60 * 60 * 1000));
+                      
+                      const weekWorkouts = workouts.filter(w => {
+                        const wDate = new Date(w.date);
+                        return wDate >= weekStart && wDate < weekEnd;
+                      });
+                      
+                      const totalReps = weekWorkouts.reduce((sum, w) => {
+                        return sum + w.exercises.reduce((exSum, ex) => {
+                          return exSum + ex.sets.reduce((setSum, s) => setSum + (s.reps || 0), 0);
+                        }, 0);
+                      }, 0);
+                      
+                      weeklyData.push({
+                        label: `${weekStart.getMonth() + 1}/${weekStart.getDate()}`,
+                        value: totalReps
+                      });
+                    }
+                    
+                    const maxVolume = Math.max(...weeklyData.map(d => d.value), 1);
+                    
+                    return (
+                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                        <h3 className="font-bold text-lg mb-1">Volume Trend</h3>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                          Total reps per week (last 12 weeks)
+                        </div>
+                        
+                        {/* Chart */}
+                        <div className="h-48 flex items-end gap-1">
+                          {weeklyData.map((week, i) => {
+                            const height = maxVolume > 0 ? (week.value / maxVolume) * 100 : 0;
+                            return (
+                              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                <div className="w-full flex flex-col justify-end" style={{ height: '170px' }}>
+                                  {week.value > 0 && (
+                                    <div 
+                                      className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:opacity-80"
+                                      style={{ height: `${height}%` }}
+                                      title={`${week.value} reps`}
+                                    />
+                                  )}
+                                </div>
+                                <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center`}>
+                                  {week.label}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
+                          Current week: {weeklyData[weeklyData.length - 1].value} reps
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  
+                  {/* Workout Frequency Chart */}
+                  {(() => {
+                    // Get last 12 weeks of data
+                    const now = new Date();
+                    const twelveWeeksAgo = new Date(now.getTime() - (12 * 7 * 24 * 60 * 60 * 1000));
+                    
+                    const weeklyWorkouts = [];
+                    for (let i = 11; i >= 0; i--) {
+                      const weekStart = new Date(now.getTime() - (i * 7 * 24 * 60 * 60 * 1000));
+                      const weekEnd = new Date(weekStart.getTime() + (7 * 24 * 60 * 60 * 1000));
+                      
+                      const count = workouts.filter(w => {
+                        const wDate = new Date(w.date);
+                        return wDate >= weekStart && wDate < weekEnd;
+                      }).length;
+                      
+                      weeklyWorkouts.push({
+                        label: `${weekStart.getMonth() + 1}/${weekStart.getDate()}`,
+                        count: count
+                      });
+                    }
+                    
+                    const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
+                    const avgWorkouts = (weeklyWorkouts.reduce((sum, w) => sum + w.count, 0) / 12).toFixed(1);
+                    
+                    return (
+                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                        <h3 className="font-bold text-lg mb-1">Workout Frequency</h3>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                          Workouts per week (last 12 weeks)
+                        </div>
+                        
+                        {/* Chart */}
+                        <div className="h-48 flex items-end gap-1">
+                          {weeklyWorkouts.map((week, i) => {
+                            const height = maxCount > 0 ? (week.count / maxCount) * 100 : 0;
+                            return (
+                              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                <div className="w-full flex flex-col justify-end" style={{ height: '170px' }}>
+                                  {week.count > 0 && (
+                                    <div 
+                                      className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t transition-all hover:opacity-80"
+                                      style={{ height: `${height}%` }}
+                                      title={`${week.count} workouts`}
+                                    />
+                                  )}
+                                </div>
+                                <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center`}>
+                                  {week.label}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
+                          Average: {avgWorkouts} workouts/week
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+          )}
+          
           {view === 'settings' && (
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
@@ -2479,6 +2812,40 @@ export default function Home() {
                     <Icons.Download />
                     Export All Data
                   </button>
+                  
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const request = indexedDB.open('GorsLogBackups', 1);
+                        request.onsuccess = (e) => {
+                          const db = e.target.result;
+                          const transaction = db.transaction(['backups'], 'readonly');
+                          const store = transaction.objectStore('backups');
+                          const getAllRequest = store.getAll();
+                          
+                          getAllRequest.onsuccess = () => {
+                            const backups = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
+                            setBackupsList(backups);
+                            setShowBackups(true);
+                          };
+                        };
+                      } catch (err) {
+                        console.error('Failed to load backups:', err);
+                        setToastMessage('Failed to load backups');
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 3000);
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    View Backups
+                  </button>
+                </div>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 px-1`}>
+                  Auto-backups every 7 days • Last 5 backups kept
                 </div>
               </div>
 
