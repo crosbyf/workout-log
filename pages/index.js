@@ -2639,35 +2639,31 @@ export default function Home() {
                     }
                     
                     const maxVolume = Math.max(...weeklyData.map(d => d.value), 1);
-                    const [selectedBar, setSelectedBar] = React.useState(null);
                     
                     return (
                       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
                         <h3 className="font-bold text-lg mb-1">Volume Trend</h3>
                         <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-                          Total reps per week (last 12 weeks) • Tap bar to see value
+                          Total reps per week (last 12 weeks)
                         </div>
                         
                         {/* Chart */}
                         <div className="h-48 flex items-end gap-1">
                           {weeklyData.map((week, i) => {
                             const height = maxVolume > 0 ? (week.value / maxVolume) * 100 : 0;
-                            const isSelected = selectedBar === i;
                             return (
-                              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                <div className="w-full flex flex-col justify-end" style={{ height: '170px' }}>
+                              <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                                <div className="w-full flex flex-col justify-end relative" style={{ height: '170px' }}>
                                   {week.value > 0 && (
-                                    <button
-                                      onClick={() => setSelectedBar(isSelected ? null : i)}
-                                      className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:opacity-80 relative"
-                                      style={{ height: `${height}%` }}
-                                    >
-                                      {isSelected && (
-                                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap">
-                                          {week.value}
-                                        </div>
-                                      )}
-                                    </button>
+                                    <>
+                                      <div 
+                                        className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:opacity-80"
+                                        style={{ height: `${height}%` }}
+                                      />
+                                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        {week.value}
+                                      </div>
+                                    </>
                                   )}
                                 </div>
                                 <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-blue-400' : ''}`}>
@@ -2716,35 +2712,31 @@ export default function Home() {
                     
                     const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
                     const avgWorkouts = (weeklyWorkouts.reduce((sum, w) => sum + w.count, 0) / 12).toFixed(1);
-                    const [selectedBar, setSelectedBar] = React.useState(null);
                     
                     return (
                       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
                         <h3 className="font-bold text-lg mb-1">Workout Frequency</h3>
                         <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-                          Workouts per week (last 12 weeks) • Tap bar to see value
+                          Workouts per week (last 12 weeks)
                         </div>
                         
                         {/* Chart */}
                         <div className="h-48 flex items-end gap-1">
                           {weeklyWorkouts.map((week, i) => {
                             const height = maxCount > 0 ? (week.count / maxCount) * 100 : 0;
-                            const isSelected = selectedBar === i;
                             return (
-                              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                <div className="w-full flex flex-col justify-end" style={{ height: '170px' }}>
+                              <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                                <div className="w-full flex flex-col justify-end relative" style={{ height: '170px' }}>
                                   {week.count > 0 && (
-                                    <button
-                                      onClick={() => setSelectedBar(isSelected ? null : i)}
-                                      className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t transition-all hover:opacity-80 relative"
-                                      style={{ height: `${height}%` }}
-                                    >
-                                      {isSelected && (
-                                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap">
-                                          {week.count}
-                                        </div>
-                                      )}
-                                    </button>
+                                    <>
+                                      <div 
+                                        className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t transition-all hover:opacity-80"
+                                        style={{ height: `${height}%` }}
+                                      />
+                                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                        {week.count}
+                                      </div>
+                                    </>
                                   )}
                                 </div>
                                 <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-green-400' : ''}`}>
