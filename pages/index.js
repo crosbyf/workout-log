@@ -131,7 +131,6 @@ export default function Home() {
       inputBorder: 'border-gray-300',
       headerGradient: 'from-gray-100 to-gray-200',
       headerBorder: 'border-gray-300',
-      statusBar: '#f9fafb',
       accent: 'blue',
       isDark: false
     },
@@ -145,7 +144,6 @@ export default function Home() {
       inputBorder: 'border-gray-600',
       headerGradient: 'from-gray-800 to-gray-900',
       headerBorder: 'border-gray-700/50',
-      statusBar: '#111827',
       accent: 'blue',
       isDark: true
     },
@@ -159,7 +157,6 @@ export default function Home() {
       inputBorder: 'border-green-500/50',
       headerGradient: 'from-zinc-950 to-black',
       headerBorder: 'border-green-500/50',
-      statusBar: '#000000',
       accent: 'green',
       isDark: true
     },
@@ -173,7 +170,6 @@ export default function Home() {
       inputBorder: 'border-purple-600',
       headerGradient: 'from-purple-900 to-purple-950',
       headerBorder: 'border-orange-500/30',
-      statusBar: '#3b0764',
       accent: 'orange',
       isDark: true
     }
@@ -182,42 +178,6 @@ export default function Home() {
   // Safety check - if theme is invalid (e.g., old 'midnight' value), default to 'dark'
   const currentTheme = themes[theme] || themes.dark;
   const darkMode = currentTheme.isDark; // For backwards compatibility
-  
-  // Update status bar color when theme changes
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      // Remove existing theme-color meta tags (there might be multiple)
-      const existingMetas = document.querySelectorAll('meta[name="theme-color"]');
-      existingMetas.forEach(meta => meta.remove());
-      
-      // Create fresh meta tag
-      const metaThemeColor = document.createElement('meta');
-      metaThemeColor.name = 'theme-color';
-      metaThemeColor.content = currentTheme.statusBar;
-      document.head.appendChild(metaThemeColor);
-      
-      // Also try updating Apple-specific status bar (for iOS Safari)
-      let appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-      if (appleStatusBar) {
-        appleStatusBar.remove();
-      }
-      appleStatusBar = document.createElement('meta');
-      appleStatusBar.name = 'apple-mobile-web-app-status-bar-style';
-      // Use 'default' for light theme, 'black-translucent' for dark themes
-      appleStatusBar.content = theme === 'light' ? 'default' : 'black-translucent';
-      document.head.appendChild(appleStatusBar);
-      
-      // iOS Safari trick: Toggle viewport to force re-render of status bar
-      const viewport = document.querySelector('meta[name="viewport"]');
-      if (viewport) {
-        const viewportContent = viewport.content;
-        viewport.content = viewportContent + ', minimal-ui';
-        setTimeout(() => {
-          viewport.content = viewportContent;
-        }, 10);
-      }
-    }
-  }, [theme, currentTheme.statusBar]);
   
   const [showSettings, setShowSettings] = useState(false);
   const [sortOrder, setSortOrder] = useState('desc');
@@ -946,8 +906,7 @@ export default function Home() {
       <Head>
         <title>GORS LOG</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-        <meta name="theme-color" content={currentTheme.statusBar} />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <style>{`
           @keyframes slowPulse {
