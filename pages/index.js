@@ -1726,48 +1726,46 @@ export default function Home() {
                   const borderColor = color.border;
                   
                   return (
-                    <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`} data-recent-workout={i}>
+                    <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`} data-recent-workout={i}>
                       <button
                         onClick={() => {
                           if (!isExpanded) {
                             setExpandedRecent(i);
-                            // Scroll to show full expanded content
+                            // Scroll to show expanded content
                             setTimeout(() => {
                               const card = document.querySelector(`[data-recent-workout="${i}"]`);
                               const container = document.getElementById('home-scroll-container');
                               
                               if (card && container) {
-                                // Wait for expand animation to complete
                                 setTimeout(() => {
-                                  // Calculate positions
-                                  const containerRect = container.getBoundingClientRect();
-                                  const cardRect = card.getBoundingClientRect();
+                                  const cardTop = card.offsetTop;
                                   const cardHeight = card.offsetHeight;
-                                  const containerHeight = containerRect.height;
+                                  const containerScroll = container.scrollTop;
+                                  const containerHeight = container.clientHeight;
                                   
-                                  // If card is taller than container, scroll to top of card
-                                  // Otherwise, center it
-                                  if (cardHeight > containerHeight * 0.8) {
-                                    // Tall card - scroll to top
-                                    container.scrollTo({
-                                      top: card.offsetTop - 10,
-                                      behavior: 'smooth'
-                                    });
-                                  } else {
-                                    // Short card - ensure bottom is visible
-                                    const cardBottom = card.offsetTop + cardHeight;
-                                    const containerScroll = container.scrollTop;
-                                    const containerVisibleBottom = containerScroll + containerHeight;
-                                    
-                                    if (cardBottom > containerVisibleBottom - 20) {
-                                      // Bottom is cut off, scroll down
+                                  // Calculate if card fits in viewport
+                                  const cardBottom = cardTop + cardHeight;
+                                  const visibleTop = containerScroll;
+                                  const visibleBottom = containerScroll + containerHeight;
+                                  
+                                  // If card top is above viewport or card bottom is below viewport
+                                  if (cardTop < visibleTop || cardBottom > visibleBottom) {
+                                    // Try to show entire card, but prioritize showing the top
+                                    if (cardHeight > containerHeight - 100) {
+                                      // Card is too tall - just show from top with small margin
                                       container.scrollTo({
-                                        top: cardBottom - containerHeight + 40,
+                                        top: cardTop - 20,
+                                        behavior: 'smooth'
+                                      });
+                                    } else {
+                                      // Card fits - center it with more space at bottom
+                                      container.scrollTo({
+                                        top: cardTop - 20,
                                         behavior: 'smooth'
                                       });
                                     }
                                   }
-                                }, 100);
+                                }, 150);
                               }
                             }, 50);
                           } else {
@@ -2117,7 +2115,7 @@ export default function Home() {
                 const borderColor = color.border;
                 
                 return (
-                  <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
+                  <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
                     <button
                       onClick={(e) => {
                         const newExpanded = new Set(expandedLog);
@@ -2219,7 +2217,7 @@ export default function Home() {
                           <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5`}>
                             <div className="grid grid-cols-[120px_1fr_50px] gap-2 items-start text-xs">
                               <div className="font-medium truncate">{ex.name}</div>
-                              <div className="flex items-center gap-1.5 flex-wrap">
+                              <div className="flex items-center gap-1 flex-wrap">
                                 {ex.sets.map((s, si) => (
                                   <span 
                                     key={si} 
@@ -2227,13 +2225,13 @@ export default function Home() {
                                       darkMode 
                                         ? 'bg-gray-800 text-blue-300 border border-gray-600' 
                                         : 'bg-white text-gray-900 border border-gray-400'
-                                    } px-2 py-1 rounded font-mono text-sm font-semibold shadow-sm`}
+                                    } px-1.5 py-0.5 rounded font-mono text-xs font-semibold shadow-sm whitespace-nowrap`}
                                   >
                                     {s.reps}
                                   </span>
                                 ))}
                               </div>
-                              <div className={`text-right font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                              <div className={`text-right font-bold text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
                                 ({totalReps})
                               </div>
                             </div>
