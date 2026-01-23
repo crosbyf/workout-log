@@ -1731,7 +1731,7 @@ export default function Home() {
                         onClick={() => {
                           if (!isExpanded) {
                             setExpandedRecent(i);
-                            // Scroll to show expanded content
+                            // Scroll to show expanded content without hiding header
                             setTimeout(() => {
                               const card = document.querySelector(`[data-recent-workout="${i}"]`);
                               const container = document.getElementById('home-scroll-container');
@@ -1739,31 +1739,18 @@ export default function Home() {
                               if (card && container) {
                                 setTimeout(() => {
                                   const cardTop = card.offsetTop;
-                                  const cardHeight = card.offsetHeight;
                                   const containerScroll = container.scrollTop;
-                                  const containerHeight = container.clientHeight;
                                   
-                                  // Calculate if card fits in viewport
-                                  const cardBottom = cardTop + cardHeight;
-                                  const visibleTop = containerScroll;
-                                  const visibleBottom = containerScroll + containerHeight;
+                                  // Only scroll if card is not already mostly visible
+                                  // Keep at least 60px margin from top to keep header visible
+                                  const targetScroll = Math.max(0, cardTop - 60);
                                   
-                                  // If card top is above viewport or card bottom is below viewport
-                                  if (cardTop < visibleTop || cardBottom > visibleBottom) {
-                                    // Try to show entire card, but prioritize showing the top
-                                    if (cardHeight > containerHeight - 100) {
-                                      // Card is too tall - just show from top with small margin
-                                      container.scrollTo({
-                                        top: cardTop - 20,
-                                        behavior: 'smooth'
-                                      });
-                                    } else {
-                                      // Card fits - center it with more space at bottom
-                                      container.scrollTo({
-                                        top: cardTop - 20,
-                                        behavior: 'smooth'
-                                      });
-                                    }
+                                  // Only scroll if we need to
+                                  if (containerScroll > targetScroll + 20 || containerScroll < targetScroll - 20) {
+                                    container.scrollTo({
+                                      top: targetScroll,
+                                      behavior: 'smooth'
+                                    });
                                   }
                                 }, 150);
                               }
@@ -1800,32 +1787,6 @@ export default function Home() {
                       {isExpanded && (
                         <div 
                           className="px-2 pb-2 space-y-1.5 border-t border-gray-700 pt-2"
-                          onTouchStart={(e) => {
-                            e.currentTarget.dataset.startY = e.touches[0].clientY;
-                            e.currentTarget.dataset.startScrollTop = e.currentTarget.scrollTop || 0;
-                          }}
-                          onTouchMove={(e) => {
-                            const startY = parseFloat(e.currentTarget.dataset.startY);
-                            const scrollTop = parseFloat(e.currentTarget.dataset.startScrollTop);
-                            const currentY = e.touches[0].clientY;
-                            const diff = currentY - startY;
-                            
-                            // Only trigger swipe if we're at the top and swiping down
-                            if (scrollTop === 0 && diff > 0) {
-                              e.preventDefault();
-                            }
-                          }}
-                          onTouchEnd={(e) => {
-                            const startY = parseFloat(e.currentTarget.dataset.startY);
-                            const scrollTop = parseFloat(e.currentTarget.dataset.startScrollTop);
-                            const currentY = e.changedTouches[0].clientY;
-                            const diff = currentY - startY;
-                            
-                            // Swipe down to collapse
-                            if (scrollTop === 0 && diff > 50) {
-                              setExpandedRecent(null);
-                            }
-                          }}
                         >
                           {w.location === 'Day Off' && w.notes ? (
                             <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700/50' : 'bg-yellow-50 border-yellow-300'} border rounded-lg p-3`}>
