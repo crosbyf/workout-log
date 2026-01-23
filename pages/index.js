@@ -1052,7 +1052,7 @@ export default function Home() {
         {/* Edit Preset Modal */}
         {editingPreset !== null && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full`}>
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto`}>
               <h3 className="text-xl font-bold mb-4">Edit Preset</h3>
               <div className="space-y-3">
                 <div>
@@ -1572,7 +1572,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           {view === 'calendar' && (
-            <div className="space-y-2 h-[calc(100vh-140px)] overflow-y-auto pb-2">{/* Allow vertical scroll */}
+            <div id="home-scroll-container" className="space-y-2 h-[calc(100vh-140px)] overflow-y-auto pb-20">{/* Add more bottom padding */}
               {/* Monthly Volume Section */}
               <div className="mb-3">
                 <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide mb-2`}>Monthly Volume</h3>
@@ -1731,22 +1731,45 @@ export default function Home() {
                         onClick={() => {
                           if (!isExpanded) {
                             setExpandedRecent(i);
-                            // Scroll to show expanded content including collapse button
+                            // Scroll to show full expanded content
                             setTimeout(() => {
-                              const element = document.querySelector(`[data-recent-workout="${i}"]`);
-                              if (element) {
-                                // Get the container and element positions
-                                const container = element.closest('.overflow-y-auto');
-                                if (container) {
-                                  const elementRect = element.getBoundingClientRect();
+                              const card = document.querySelector(`[data-recent-workout="${i}"]`);
+                              const container = document.getElementById('home-scroll-container');
+                              
+                              if (card && container) {
+                                // Wait for expand animation to complete
+                                setTimeout(() => {
+                                  // Calculate positions
                                   const containerRect = container.getBoundingClientRect();
+                                  const cardRect = card.getBoundingClientRect();
+                                  const cardHeight = card.offsetHeight;
+                                  const containerHeight = containerRect.height;
                                   
-                                  // Calculate scroll position to show entire card
-                                  const scrollTop = element.offsetTop - container.offsetTop - 10; // 10px padding from top
-                                  container.scrollTo({ top: scrollTop, behavior: 'smooth' });
-                                }
+                                  // If card is taller than container, scroll to top of card
+                                  // Otherwise, center it
+                                  if (cardHeight > containerHeight * 0.8) {
+                                    // Tall card - scroll to top
+                                    container.scrollTo({
+                                      top: card.offsetTop - 10,
+                                      behavior: 'smooth'
+                                    });
+                                  } else {
+                                    // Short card - ensure bottom is visible
+                                    const cardBottom = card.offsetTop + cardHeight;
+                                    const containerScroll = container.scrollTop;
+                                    const containerVisibleBottom = containerScroll + containerHeight;
+                                    
+                                    if (cardBottom > containerVisibleBottom - 20) {
+                                      // Bottom is cut off, scroll down
+                                      container.scrollTo({
+                                        top: cardBottom - containerHeight + 40,
+                                        behavior: 'smooth'
+                                      });
+                                    }
+                                  }
+                                }, 100);
                               }
-                            }, 200); // Wait for expand animation
+                            }, 50);
                           } else {
                             setExpandedRecent(null);
                           }
@@ -3093,6 +3116,7 @@ export default function Home() {
                         setNewPresetName('');
                         setNewPresetExercises(exercises.length > 0 ? [exercises[0]] : []);
                         setNewPresetColor('Blue');
+                        setNewPresetIncludeInMenu(true);
                         setShowCreatePreset(true);
                       }}
                       className={`w-full py-3 rounded-lg border-2 border-dashed transition-all ${
@@ -3478,14 +3502,13 @@ export default function Home() {
                   )}
                   
                   <div className="flex items-center gap-2">
-                    {!(workoutStarted && editing === null) && (
-                      <button
-                        onClick={() => setShowHistoryModal(true)}
-                        className="text-blue-400 hover:text-blue-300"
-                      >
-                        <Icons.Calendar />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setShowHistoryModal(true)}
+                      className="text-blue-400 hover:text-blue-300"
+                      title="View past workouts"
+                    >
+                      <Icons.Calendar />
+                    </button>
                     <button
                       onClick={() => {
                         if (current.exercises.length > 0) {
@@ -3566,9 +3589,24 @@ export default function Home() {
                         className={`flex-1 ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
                       >
                         <option value="">Select</option>
-                        {presets.filter(p => p.includeInMenu !== false).map((p, i) => (
-                          <option key={i} value={p.name}>{p.name}</option>
-                        ))}
+                        {presets.filter(p => p.includeInMenu !== false).map((p, i) => {
+                          const color = getPresetColor(p.name);
+                          const colorEmoji = {
+                            'Blue': '🔵',
+                            'Purple': '🟣',
+                            'Green': '🟢',
+                            'Yellow': '🟡',
+                            'Red': '🔴',
+                            'Pink': '🩷',
+                            'Orange': '🟠',
+                            'Cyan': '🔷'
+                          };
+                          return (
+                            <option key={i} value={p.name}>
+                              {colorEmoji[color.name] || '⚪'} {p.name}
+                            </option>
+                          );
+                        })}
                       </select>
                       
                       {/* Structure Buttons */}
