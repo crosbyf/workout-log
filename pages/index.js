@@ -218,7 +218,9 @@ export default function Home() {
     date: getTodayDate(),
     exercises: [],
     notes: '',
-    location: ''
+    location: '',
+    structure: '', // 'pairs' or 'circuit'
+    structureDuration: '' // '3', '4', '5' for pairs duration
   });
 
   useEffect(() => {
@@ -525,7 +527,9 @@ export default function Home() {
       date: getTodayDate(),
       exercises: [],
       notes: '',
-      location: ''
+      location: '',
+      structure: '',
+      structureDuration: ''
     });
     setShowNew(false);
   };
@@ -944,7 +948,9 @@ export default function Home() {
                       date: getTodayDate(),
                       exercises: [],
                       notes: '',
-                      location: ''
+                      location: '',
+                      structure: '',
+                      structureDuration: ''
                     });
                     setShowCloseConfirm(false);
                     // Reset timer
@@ -1550,7 +1556,7 @@ export default function Home() {
                         <div className="flex items-center justify-between">
                           <div>
                             <div className="font-medium text-xs">
-                              {dayOfWeek} {month}/{day}
+                              {dayOfWeek} {month}/{day}/{year.slice(2)}
                               {w.location && <span className={`ml-2 text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>· {w.location}</span>}
                             </div>
                             <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
@@ -1915,11 +1921,17 @@ export default function Home() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-bold text-base">
-                            {dayOfWeek} {month}/{day}
+                            {dayOfWeek} {month}/{day}/{year.slice(2)}
                             {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
                           </div>
                           <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
                             {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}
+                            {w.structure && (
+                              <span className="font-semibold">
+                                {' • '}
+                                {w.structure === 'pairs' ? `Pairs ${w.structureDuration}'` : 'Circuit'}
+                              </span>
+                            )}
                             {w.elapsedTime && ` • ${formatTimeHHMMSS(w.elapsedTime)}`}
                           </div>
                         </div>
@@ -3245,26 +3257,72 @@ export default function Home() {
                     />
                   </div>
                   <div>
-                    <label className={`block text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1.5`}>Workout</label>
-                    <select
-                      value={current.location}
-                      onChange={(e) => {
-                        const selectedPreset = presets.find(p => p.name === e.target.value);
-                        if (selectedPreset && editing === null) {
-                          // Only load preset exercises for NEW workouts, not when editing
-                          loadPreset(selectedPreset);
-                        } else {
-                          // Just change the location name, keep exercises intact
-                          setCurrent({ ...current, location: e.target.value });
-                        }
-                      }}
-                      className={`w-full ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
-                    >
-                      <option value="">Select</option>
-                      {presets.map((p, i) => (
-                        <option key={i} value={p.name}>{p.name}</option>
-                      ))}
-                    </select>
+                    <label className={`block text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1.5`}>Workout & Structure</label>
+                    <div className="flex gap-2">
+                      {/* Workout Dropdown */}
+                      <select
+                        value={current.location}
+                        onChange={(e) => {
+                          const selectedPreset = presets.find(p => p.name === e.target.value);
+                          if (selectedPreset && editing === null) {
+                            // Only load preset exercises for NEW workouts, not when editing
+                            loadPreset(selectedPreset);
+                          } else {
+                            // Just change the location name, keep exercises intact
+                            setCurrent({ ...current, location: e.target.value });
+                          }
+                        }}
+                        className={`flex-1 ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
+                      >
+                        <option value="">Select</option>
+                        {presets.map((p, i) => (
+                          <option key={i} value={p.name}>{p.name}</option>
+                        ))}
+                      </select>
+                      
+                      {/* Structure Buttons */}
+                      <button
+                        onClick={() => setCurrent({ ...current, structure: current.structure === 'pairs' ? '' : 'pairs', structureDuration: current.structure === 'pairs' ? '' : '3' })}
+                        className={`px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                          current.structure === 'pairs' 
+                            ? 'bg-blue-600 text-white' 
+                            : `${darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`
+                        }`}
+                      >
+                        Pairs
+                      </button>
+                      
+                      <button
+                        onClick={() => setCurrent({ ...current, structure: current.structure === 'circuit' ? '' : 'circuit', structureDuration: '' })}
+                        className={`px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                          current.structure === 'circuit' 
+                            ? 'bg-green-600 text-white' 
+                            : `${darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`
+                        }`}
+                      >
+                        Circuit
+                      </button>
+                    </div>
+                    
+                    {/* Pairs Duration Selector */}
+                    {current.structure === 'pairs' && (
+                      <div className="flex gap-2 mt-2">
+                        <span className="text-xs text-gray-400 self-center">Duration:</span>
+                        {['3', '4', '5'].map(duration => (
+                          <button
+                            key={duration}
+                            onClick={() => setCurrent({ ...current, structureDuration: duration })}
+                            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+                              current.structureDuration === duration
+                                ? 'bg-blue-600 text-white'
+                                : `${darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`
+                            }`}
+                          >
+                            {duration}'
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
