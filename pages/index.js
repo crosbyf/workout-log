@@ -166,11 +166,13 @@ export default function Home() {
   const [editPresetName, setEditPresetName] = useState('');
   const [editPresetExercises, setEditPresetExercises] = useState([]);
   const [editPresetColor, setEditPresetColor] = useState('Blue');
+  const [editPresetIncludeInMenu, setEditPresetIncludeInMenu] = useState(true);
   const [showSaveAsPreset, setShowSaveAsPreset] = useState(false);
   const [showCreatePreset, setShowCreatePreset] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [newPresetExercises, setNewPresetExercises] = useState([]);
   const [newPresetColor, setNewPresetColor] = useState('Blue');
+  const [newPresetIncludeInMenu, setNewPresetIncludeInMenu] = useState(true);
   const [volumeWidgetDate, setVolumeWidgetDate] = useState(new Date());
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -1116,6 +1118,17 @@ export default function Home() {
                     + Add Exercise
                   </button>
                 </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editPresetIncludeInMenu}
+                      onChange={(e) => setEditPresetIncludeInMenu(e.target.checked)}
+                      className="w-4 h-4 rounded"
+                    />
+                    <span className="text-sm">Show in New Workout menu</span>
+                  </label>
+                </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button
@@ -1124,7 +1137,8 @@ export default function Home() {
                     updated[editingPreset] = {
                       name: editPresetName,
                       exercises: editPresetExercises,
-                      color: editPresetColor
+                      color: editPresetColor,
+                      includeInMenu: editPresetIncludeInMenu
                     };
                     save(updated, 'presets', setPresets);
                     setEditingPreset(null);
@@ -1213,6 +1227,17 @@ export default function Home() {
                     + Add Exercise
                   </button>
                 </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newPresetIncludeInMenu}
+                      onChange={(e) => setNewPresetIncludeInMenu(e.target.checked)}
+                      className="w-4 h-4 rounded"
+                    />
+                    <span className="text-sm">Show in New Workout menu</span>
+                  </label>
+                </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button
@@ -1221,7 +1246,8 @@ export default function Home() {
                       const newPreset = {
                         name: newPresetName.trim(),
                         exercises: newPresetExercises,
-                        color: newPresetColor
+                        color: newPresetColor,
+                        includeInMenu: newPresetIncludeInMenu
                       };
                       save([...presets, newPreset], 'presets', setPresets);
                       setToastMessage('Preset created!');
@@ -1709,9 +1735,18 @@ export default function Home() {
                             setTimeout(() => {
                               const element = document.querySelector(`[data-recent-workout="${i}"]`);
                               if (element) {
-                                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                // Get the container and element positions
+                                const container = element.closest('.overflow-y-auto');
+                                if (container) {
+                                  const elementRect = element.getBoundingClientRect();
+                                  const containerRect = container.getBoundingClientRect();
+                                  
+                                  // Calculate scroll position to show entire card
+                                  const scrollTop = element.offsetTop - container.offsetTop - 10; // 10px padding from top
+                                  container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+                                }
                               }
-                            }, 150);
+                            }, 200); // Wait for expand animation
                           } else {
                             setExpandedRecent(null);
                           }
@@ -1786,12 +1821,21 @@ export default function Home() {
                                   <div className="font-medium truncate">{ex.name}</div>
                                   <div className="flex items-center gap-1 flex-wrap">
                                     {ex.sets.map((s, si) => (
-                                      <span key={si} className={`${darkMode ? 'bg-gray-600' : 'bg-gray-300'} px-1 py-0.5 rounded text-[10px]`}>
+                                      <span 
+                                        key={si} 
+                                        className={`${
+                                          darkMode 
+                                            ? 'bg-gray-800 text-blue-300 border border-gray-600' 
+                                            : 'bg-white text-gray-900 border border-gray-400'
+                                        } px-1.5 py-0.5 rounded font-mono text-[11px] font-semibold`}
+                                      >
                                         {s.reps}
                                       </span>
                                     ))}
                                   </div>
-                                  <div className="text-right font-bold text-xs">({totalReps})</div>
+                                  <div className={`text-right font-bold text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                    ({totalReps})
+                                  </div>
                                 </div>
                                 {ex.notes && (
                                   <div className="text-[9px] text-gray-400 mt-0.5 text-right">{ex.notes}</div>
@@ -2152,14 +2196,23 @@ export default function Home() {
                           <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5`}>
                             <div className="grid grid-cols-[120px_1fr_50px] gap-2 items-start text-xs">
                               <div className="font-medium truncate">{ex.name}</div>
-                              <div className="flex items-center gap-1 flex-wrap">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 {ex.sets.map((s, si) => (
-                                  <span key={si} className={`${darkMode ? 'bg-gray-600' : 'bg-gray-300'} px-1.5 py-0.5 rounded text-[11px]`}>
+                                  <span 
+                                    key={si} 
+                                    className={`${
+                                      darkMode 
+                                        ? 'bg-gray-800 text-blue-300 border border-gray-600' 
+                                        : 'bg-white text-gray-900 border border-gray-400'
+                                    } px-2 py-1 rounded font-mono text-sm font-semibold shadow-sm`}
+                                  >
                                     {s.reps}
                                   </span>
                                 ))}
                               </div>
-                              <div className="text-right font-bold">({totalReps})</div>
+                              <div className={`text-right font-bold ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                ({totalReps})
+                              </div>
                             </div>
                             {ex.notes && (
                               <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1 text-right`}>{ex.notes}</div>
@@ -2959,36 +3012,41 @@ export default function Home() {
                       return (
                         <div 
                           key={i} 
-                          draggable
-                          onDragStart={(e) => {
-                            setDraggedPreset(i);
-                            e.dataTransfer.effectAllowed = 'move';
-                          }}
-                          onDragEnd={() => setDraggedPreset(null)}
-                          onDragOver={(e) => {
-                            e.preventDefault();
-                            e.dataTransfer.dropEffect = 'move';
-                          }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            if (draggedPreset !== null && draggedPreset !== i) {
-                              const updated = [...presets];
-                              const [moved] = updated.splice(draggedPreset, 1);
-                              updated.splice(i, 0, moved);
-                              save(updated, 'presets', setPresets);
-                            }
-                            setDraggedPreset(null);
-                          }}
-                          className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg overflow-hidden transition-all ${
-                            draggedPreset === i ? 'opacity-50' : 'hover:shadow-md'
-                          }`}
+                          className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg overflow-hidden transition-all hover:shadow-md`}
                         >
                           <div className={`flex items-center border-l-4 ${color.border}`}>
-                            {/* Drag Handle */}
-                            <div className={`px-2 py-3 cursor-move ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'} transition-colors`}>
-                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
-                              </svg>
+                            {/* Reorder Buttons */}
+                            <div className="flex flex-col px-1">
+                              <button
+                                onClick={() => {
+                                  if (i > 0) {
+                                    const updated = [...presets];
+                                    [updated[i - 1], updated[i]] = [updated[i], updated[i - 1]];
+                                    save(updated, 'presets', setPresets);
+                                  }
+                                }}
+                                disabled={i === 0}
+                                className={`p-1 ${i === 0 ? 'opacity-30 cursor-not-allowed' : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}`}
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (i < presets.length - 1) {
+                                    const updated = [...presets];
+                                    [updated[i], updated[i + 1]] = [updated[i + 1], updated[i]];
+                                    save(updated, 'presets', setPresets);
+                                  }
+                                }}
+                                disabled={i === presets.length - 1}
+                                className={`p-1 ${i === presets.length - 1 ? 'opacity-30 cursor-not-allowed' : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}`}
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
                             </div>
                             
                             {/* Color Indicator & Content */}
@@ -2998,6 +3056,7 @@ export default function Home() {
                                 setEditPresetName(p.name);
                                 setEditPresetExercises([...p.exercises]);
                                 setEditPresetColor(p.color || 'Blue');
+                                setEditPresetIncludeInMenu(p.includeInMenu !== false);
                               }}
                               className="flex-1 text-left flex items-center gap-3 py-3 pr-3"
                             >
@@ -3507,7 +3566,7 @@ export default function Home() {
                         className={`flex-1 ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
                       >
                         <option value="">Select</option>
-                        {presets.map((p, i) => (
+                        {presets.filter(p => p.includeInMenu !== false).map((p, i) => (
                           <option key={i} value={p.name}>{p.name}</option>
                         ))}
                       </select>
@@ -4015,6 +4074,14 @@ export default function Home() {
               </div>
             </button>
           </div>
+        </div>
+        
+        {/* Hidden div to ensure Tailwind includes all color classes */}
+        <div className="hidden">
+          <div className="border-blue-400 border-purple-400 border-green-400 border-yellow-400 border-red-400 border-pink-400 border-orange-400 border-cyan-400"></div>
+          <div className="bg-blue-500/10 bg-purple-500/10 bg-green-500/10 bg-yellow-500/10 bg-red-500/10 bg-pink-500/10 bg-orange-500/10 bg-cyan-500/10"></div>
+          <div className="text-blue-400 text-purple-400 text-green-400 text-yellow-400 text-red-400 text-pink-400 text-orange-400 text-cyan-400"></div>
+          <div className="bg-blue-400 bg-purple-400 bg-green-400 bg-yellow-400 bg-red-400 bg-pink-400 bg-orange-400 bg-cyan-400"></div>
         </div>
       </div>
     </>
