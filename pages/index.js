@@ -1741,9 +1741,8 @@ export default function Home() {
                                   const cardTop = card.offsetTop;
                                   const containerScroll = container.scrollTop;
                                   
-                                  // Only scroll if card is not already mostly visible
-                                  // Keep at least 60px margin from top to keep header visible
-                                  const targetScroll = Math.max(0, cardTop - 60);
+                                  // Keep 100px margin from top to ensure header stays visible
+                                  const targetScroll = Math.max(0, cardTop - 100);
                                   
                                   // Only scroll if we need to
                                   if (containerScroll > targetScroll + 20 || containerScroll < targetScroll - 20) {
