@@ -182,6 +182,23 @@ export default function Home() {
   // Safety check - if theme is invalid (e.g., old 'midnight' value), default to 'dark'
   const currentTheme = themes[theme] || themes.dark;
   const darkMode = currentTheme.isDark; // For backwards compatibility
+  
+  // Update status bar color when theme changes
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      // Update theme-color meta tag
+      let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', currentTheme.statusBar);
+      } else {
+        metaThemeColor = document.createElement('meta');
+        metaThemeColor.name = 'theme-color';
+        metaThemeColor.content = currentTheme.statusBar;
+        document.head.appendChild(metaThemeColor);
+      }
+    }
+  }, [theme, currentTheme.statusBar]);
+  
   const [showSettings, setShowSettings] = useState(false);
   const [sortOrder, setSortOrder] = useState('desc');
   const [search, setSearch] = useState('');
