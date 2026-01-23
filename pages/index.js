@@ -167,7 +167,10 @@ export default function Home() {
   const [editPresetExercises, setEditPresetExercises] = useState([]);
   const [editPresetColor, setEditPresetColor] = useState('Blue');
   const [showSaveAsPreset, setShowSaveAsPreset] = useState(false);
+  const [showCreatePreset, setShowCreatePreset] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
+  const [newPresetExercises, setNewPresetExercises] = useState([]);
+  const [newPresetColor, setNewPresetColor] = useState('Blue');
   const [volumeWidgetDate, setVolumeWidgetDate] = useState(new Date());
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [timerRunning, setTimerRunning] = useState(false);
@@ -1141,6 +1144,107 @@ export default function Home() {
           </div>
         )}
 
+        {/* Create New Preset Modal */}
+        {showCreatePreset && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto`}>
+              <h3 className="text-xl font-bold mb-4">Create New Preset</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Preset Name</label>
+                  <input
+                    type="text"
+                    value={newPresetName}
+                    onChange={(e) => setNewPresetName(e.target.value)}
+                    placeholder="e.g., Upper Body Day"
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? '' : 'text-gray-700'}`}>Color</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {presetColors.map(color => (
+                      <button
+                        key={color.name}
+                        onClick={() => setNewPresetColor(color.name)}
+                        className={`h-10 rounded-lg border-2 transition-all ${
+                          newPresetColor === color.name 
+                            ? `${color.border} border-opacity-100 scale-105` 
+                            : `${color.border} border-opacity-30 hover:border-opacity-60`
+                        } ${color.bg}`}
+                      >
+                        <div className={`text-xs font-semibold ${color.text}`}>{color.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Exercises</label>
+                  {newPresetExercises.map((ex, i) => (
+                    <div key={i} className="flex gap-2 mb-2">
+                      <select
+                        value={ex}
+                        onChange={(e) => {
+                          const updated = [...newPresetExercises];
+                          updated[i] = e.target.value;
+                          setNewPresetExercises(updated);
+                        }}
+                        className={`flex-1 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                      >
+                        {exercises.map((e, ei) => (
+                          <option key={ei} value={e}>{e}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          const updated = newPresetExercises.filter((_, idx) => idx !== i);
+                          setNewPresetExercises(updated);
+                        }}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Icons.Trash />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setNewPresetExercises([...newPresetExercises, exercises[0]])}
+                    className="text-blue-400 hover:text-blue-300 text-sm"
+                  >
+                    + Add Exercise
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    if (newPresetName.trim() && newPresetExercises.length > 0) {
+                      const newPreset = {
+                        name: newPresetName.trim(),
+                        exercises: newPresetExercises,
+                        color: newPresetColor
+                      };
+                      save([...presets, newPreset], 'presets', setPresets);
+                      setToastMessage('Preset created!');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }
+                    setShowCreatePreset(false);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                >
+                  Create Preset
+                </button>
+                <button
+                  onClick={() => setShowCreatePreset(false)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Save Manual Workout as Preset */}
         {showSaveAsPreset && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -1601,13 +1705,13 @@ export default function Home() {
                         onClick={() => {
                           if (!isExpanded) {
                             setExpandedRecent(i);
-                            // Scroll to show expanded content
+                            // Scroll to show expanded content including collapse button
                             setTimeout(() => {
                               const element = document.querySelector(`[data-recent-workout="${i}"]`);
                               if (element) {
-                                element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
                               }
-                            }, 100);
+                            }, 150);
                           } else {
                             setExpandedRecent(null);
                           }
@@ -1779,7 +1883,7 @@ export default function Home() {
               </div>
               
               {showLogCalendar && (
-                <div className={`mb-4 mt-3 ${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                <div key={JSON.stringify(presets.map(p => ({n: p.name, c: p.color})))} className={`mb-4 mt-3 ${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
                     {/* Month/Year header - sticky */}
                     <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 py-3 z-10`}>
                       <div className="flex items-center justify-between">
@@ -2856,17 +2960,24 @@ export default function Home() {
                         <div 
                           key={i} 
                           draggable
-                          onDragStart={() => setDraggedPreset(i)}
+                          onDragStart={(e) => {
+                            setDraggedPreset(i);
+                            e.dataTransfer.effectAllowed = 'move';
+                          }}
                           onDragEnd={() => setDraggedPreset(null)}
                           onDragOver={(e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'move';
+                          }}
+                          onDrop={(e) => {
                             e.preventDefault();
                             if (draggedPreset !== null && draggedPreset !== i) {
                               const updated = [...presets];
                               const [moved] = updated.splice(draggedPreset, 1);
                               updated.splice(i, 0, moved);
                               save(updated, 'presets', setPresets);
-                              setDraggedPreset(i);
                             }
+                            setDraggedPreset(null);
                           }}
                           className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg overflow-hidden transition-all ${
                             draggedPreset === i ? 'opacity-50' : 'hover:shadow-md'
@@ -2916,6 +3027,26 @@ export default function Home() {
                         </div>
                       );
                     })}
+                    
+                    {/* Create New Preset Button */}
+                    <button
+                      onClick={() => {
+                        setNewPresetName('');
+                        setNewPresetExercises(exercises.length > 0 ? [exercises[0]] : []);
+                        setNewPresetColor('Blue');
+                        setShowCreatePreset(true);
+                      }}
+                      className={`w-full py-3 rounded-lg border-2 border-dashed transition-all ${
+                        darkMode 
+                          ? 'border-gray-600 hover:border-blue-500 text-gray-400 hover:text-blue-400' 
+                          : 'border-gray-300 hover:border-blue-500 text-gray-600 hover:text-blue-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <Icons.Plus />
+                        <span className="font-semibold">Create New Preset</span>
+                      </div>
+                    </button>
                     
                     {presets.length === 0 && (
                       <div className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
