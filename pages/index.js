@@ -186,15 +186,35 @@ export default function Home() {
   // Update status bar color when theme changes
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      // Update theme-color meta tag
-      let metaThemeColor = document.querySelector('meta[name="theme-color"]');
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', currentTheme.statusBar);
-      } else {
-        metaThemeColor = document.createElement('meta');
-        metaThemeColor.name = 'theme-color';
-        metaThemeColor.content = currentTheme.statusBar;
-        document.head.appendChild(metaThemeColor);
+      // Remove existing theme-color meta tags (there might be multiple)
+      const existingMetas = document.querySelectorAll('meta[name="theme-color"]');
+      existingMetas.forEach(meta => meta.remove());
+      
+      // Create fresh meta tag
+      const metaThemeColor = document.createElement('meta');
+      metaThemeColor.name = 'theme-color';
+      metaThemeColor.content = currentTheme.statusBar;
+      document.head.appendChild(metaThemeColor);
+      
+      // Also try updating Apple-specific status bar (for iOS Safari)
+      let appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (appleStatusBar) {
+        appleStatusBar.remove();
+      }
+      appleStatusBar = document.createElement('meta');
+      appleStatusBar.name = 'apple-mobile-web-app-status-bar-style';
+      // Use 'default' for light theme, 'black-translucent' for dark themes
+      appleStatusBar.content = theme === 'light' ? 'default' : 'black-translucent';
+      document.head.appendChild(appleStatusBar);
+      
+      // iOS Safari trick: Toggle viewport to force re-render of status bar
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        const viewportContent = viewport.content;
+        viewport.content = viewportContent + ', minimal-ui';
+        setTimeout(() => {
+          viewport.content = viewportContent;
+        }, 10);
       }
     }
   }, [theme, currentTheme.statusBar]);
