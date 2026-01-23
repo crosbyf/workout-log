@@ -2832,7 +2832,12 @@ export default function Home() {
                   </label>
                   
                   <button 
-                    onClick={exportCSV} 
+                    onClick={() => {
+                      exportCSV();
+                      setToastMessage('CSV file downloaded!');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }}
                     className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
                   >
                     <Icons.Download />
@@ -3245,9 +3250,11 @@ export default function Home() {
                       value={current.location}
                       onChange={(e) => {
                         const selectedPreset = presets.find(p => p.name === e.target.value);
-                        if (selectedPreset) {
+                        if (selectedPreset && editing === null) {
+                          // Only load preset exercises for NEW workouts, not when editing
                           loadPreset(selectedPreset);
                         } else {
+                          // Just change the location name, keep exercises intact
                           setCurrent({ ...current, location: e.target.value });
                         }
                       }}
