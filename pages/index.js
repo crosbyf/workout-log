@@ -106,7 +106,7 @@ export default function Home() {
   const [exercises, setExercises] = useState([]);
   const [view, setView] = useState('calendar'); // Start with calendar as home
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(true); // true = dark, false = light
+  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'midnight', 'sunset'
   const [showNew, setShowNew] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null); // For exercise detail view
   const [statsView, setStatsView] = useState('menu'); // 'menu', 'exercises', 'weight'
@@ -118,6 +118,65 @@ export default function Home() {
   const [weightCalendarMonth, setWeightCalendarMonth] = useState(new Date().getMonth());
   const [weightCalendarYear, setWeightCalendarYear] = useState(new Date().getFullYear());
   const [editing, setEditing] = useState(null);
+  
+  // Theme definitions
+  const themes = {
+    light: {
+      name: 'Light',
+      bg: 'bg-gray-50',
+      text: 'text-gray-900',
+      cardBg: 'bg-white',
+      cardBorder: 'border-gray-200',
+      inputBg: 'bg-white',
+      inputBorder: 'border-gray-300',
+      headerGradient: 'from-gray-100 to-gray-200',
+      headerBorder: 'border-gray-300',
+      accent: 'blue',
+      isDark: false
+    },
+    dark: {
+      name: 'Dark',
+      bg: 'bg-gray-900',
+      text: 'text-white',
+      cardBg: 'bg-gray-800',
+      cardBorder: 'border-gray-700',
+      inputBg: 'bg-gray-800',
+      inputBorder: 'border-gray-600',
+      headerGradient: 'from-gray-800 to-gray-900',
+      headerBorder: 'border-gray-700/50',
+      accent: 'blue',
+      isDark: true
+    },
+    midnight: {
+      name: 'Midnight Blue',
+      bg: 'bg-slate-950',
+      text: 'text-cyan-50',
+      cardBg: 'bg-slate-900',
+      cardBorder: 'border-slate-700',
+      inputBg: 'bg-slate-900',
+      inputBorder: 'border-slate-600',
+      headerGradient: 'from-slate-900 to-slate-950',
+      headerBorder: 'border-cyan-500/30',
+      accent: 'cyan',
+      isDark: true
+    },
+    sunset: {
+      name: 'Sunset',
+      bg: 'bg-purple-950',
+      text: 'text-orange-50',
+      cardBg: 'bg-purple-900',
+      cardBorder: 'border-purple-700',
+      inputBg: 'bg-purple-900',
+      inputBorder: 'border-purple-600',
+      headerGradient: 'from-purple-900 to-purple-950',
+      headerBorder: 'border-orange-500/30',
+      accent: 'orange',
+      isDark: true
+    }
+  };
+  
+  const currentTheme = themes[theme];
+  const darkMode = currentTheme.isDark; // For backwards compatibility
   const [showSettings, setShowSettings] = useState(false);
   const [sortOrder, setSortOrder] = useState('desc');
   const [search, setSearch] = useState('');
@@ -264,12 +323,18 @@ export default function Home() {
         const w = localStorage.getItem('workouts');
         const p = localStorage.getItem('presets');
         const e = localStorage.getItem('exercises');
-        const dm = localStorage.getItem('darkMode');
+        const t = localStorage.getItem('theme');
+        const dm = localStorage.getItem('darkMode'); // Legacy support
         const we = localStorage.getItem('weightEntries');
         if (w) setWorkouts(JSON.parse(w));
         if (p) setPresets(JSON.parse(p));
         if (e) setExercises(JSON.parse(e));
-        if (dm !== null) setDarkMode(JSON.parse(dm));
+        if (t) {
+          setTheme(t);
+        } else if (dm !== null) {
+          // Migrate old darkMode to new theme system
+          setTheme(JSON.parse(dm) ? 'dark' : 'light');
+        }
         if (we) setWeightEntries(JSON.parse(we));
       };
       
@@ -780,15 +845,58 @@ export default function Home() {
   };
 
   if (loading) {
+    // Combined Option C + D: Geometric shapes with minimalist text
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">GORS LOG</h1>
-          <p className="text-xs text-gray-400 mt-1 mb-4 font-medium">Be About It</p>
-          <div className="flex items-center gap-2 justify-center">
-            <div className="w-3 h-3 bg-blue-500 rounded-full loading-dot-1"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full loading-dot-2"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full loading-dot-3"></div>
+      <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text} flex flex-col items-center justify-center overflow-hidden`}>
+        <div className="text-center relative">
+          {/* Animated geometric shapes */}
+          <div className="absolute inset-0 flex items-center justify-center -mt-20">
+            <div className="relative w-40 h-40">
+              {/* Rotating hexagon */}
+              <div className="absolute inset-0 animate-spin-slow">
+                <svg viewBox="0 0 100 100" className="w-full h-full opacity-20">
+                  <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2"
+                    className={theme === 'midnight' ? 'text-cyan-500' : theme === 'sunset' ? 'text-orange-500' : 'text-blue-500'}
+                  />
+                </svg>
+              </div>
+              {/* Pulsing triangle */}
+              <div className="absolute inset-0 animate-pulse-slow">
+                <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+                  <polygon points="50,15 85,75 15,75" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2"
+                    className={theme === 'midnight' ? 'text-cyan-400' : theme === 'sunset' ? 'text-orange-400' : 'text-blue-400'}
+                  />
+                </svg>
+              </div>
+              {/* Center pulsing dot */}
+              <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full animate-pulse ${
+                theme === 'midnight' ? 'bg-cyan-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
+              }`}></div>
+            </div>
+          </div>
+          
+          {/* Minimalist text with animated underline */}
+          <div className="relative z-10 mt-32">
+            <div className="relative inline-block mb-4">
+              <h1 className="text-5xl font-black tracking-tight">
+                GORS
+              </h1>
+              {/* Animated underline */}
+              <div className="relative h-1 overflow-hidden mt-2">
+                <div className={`absolute h-full animate-slide-right ${
+                  theme === 'midnight' ? 'bg-cyan-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
+                }`} style={{ width: '100%' }}></div>
+              </div>
+            </div>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium tracking-widest`}>
+              BE ABOUT IT
+            </p>
           </div>
         </div>
       </div>
@@ -820,10 +928,35 @@ export default function Home() {
             animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
             animation-delay: 1s;
           }
+          
+          /* New loading animations */
+          @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+          }
+          
+          @keyframes pulse-slow {
+            0%, 100% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+          }
+          .animate-pulse-slow {
+            animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          }
+          
+          @keyframes slide-right {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          .animate-slide-right {
+            animation: slide-right 1.5s ease-in-out infinite;
+          }
         `}</style>
       </Head>
       
-      <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text}`}>
         {showClear && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-md border-2 border-red-500/50`}>
@@ -1553,18 +1686,20 @@ export default function Home() {
           </div>
         )}
 
-        <div className={`sticky top-0 z-10 bg-gradient-to-b ${darkMode ? 'from-gray-800 to-gray-900' : 'from-gray-100 to-gray-200'} ${darkMode ? 'border-gray-700/50' : 'border-gray-300'} border-b p-4 shadow-lg`}>
+        <div className={`sticky top-0 z-10 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
           <div className="max-w-4xl mx-auto text-center">
             <button 
               onClick={() => {
-                const newMode = !darkMode;
-                setDarkMode(newMode);
-                save(newMode, 'darkMode', setDarkMode);
+                const themeOrder = ['light', 'dark', 'midnight', 'sunset'];
+                const currentIndex = themeOrder.indexOf(theme);
+                const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
+                setTheme(nextTheme);
+                localStorage.setItem('theme', nextTheme);
               }}
               className="cursor-pointer hover:opacity-80 transition-opacity"
             >
               <h1 className={`text-2xl font-extrabold tracking-tight bg-gradient-to-r ${darkMode ? 'from-white to-gray-300' : 'from-gray-900 to-gray-700'} bg-clip-text text-transparent`}>GORS LOG</h1>
-              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It • {currentTheme.name}</p>
             </button>
           </div>
         </div>
