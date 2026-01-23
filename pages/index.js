@@ -157,6 +157,7 @@ export default function Home() {
   const [showLogCalendar, setShowLogCalendar] = useState(true); // Default to open
   const [logCalendarDate, setLogCalendarDate] = useState(new Date());
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
+  const [draggedPreset, setDraggedPreset] = useState(null);
   const [selectedLogDay, setSelectedLogDay] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -1441,7 +1442,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           {view === 'calendar' && (
-            <div className="space-y-2 h-[calc(100vh-140px)] overflow-hidden pb-2">{/* Fixed height, no scroll */}
+            <div className="space-y-2 h-[calc(100vh-140px)] overflow-y-auto pb-2">{/* Allow vertical scroll */}
               {/* Monthly Volume Section */}
               <div className="mb-3">
                 <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide mb-2`}>Monthly Volume</h3>
@@ -1598,7 +1599,18 @@ export default function Home() {
                     <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`} data-recent-workout={i}>
                       <button
                         onClick={() => {
-                          setExpandedRecent(isExpanded ? null : i);
+                          if (!isExpanded) {
+                            setExpandedRecent(i);
+                            // Scroll to show expanded content
+                            setTimeout(() => {
+                              const element = document.querySelector(`[data-recent-workout="${i}"]`);
+                              if (element) {
+                                element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                              }
+                            }, 100);
+                          } else {
+                            setExpandedRecent(null);
+                          }
                         }}
                         className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
                       >
@@ -2838,31 +2850,80 @@ export default function Home() {
                 
                 {showPresetsMenu && (
                   <div className={`p-3 space-y-2 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
-                    {presets.map((p, i) => (
-                      <div key={i} className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} p-3 rounded-lg flex items-center justify-between`}>
-                        <button
-                          onClick={() => {
-                            setEditingPreset(i);
-                            setEditPresetName(p.name);
-                            setEditPresetExercises([...p.exercises]);
-                            setEditPresetColor(p.color || 'Blue');
+                    {presets.map((p, i) => {
+                      const color = getPresetColor(p.name);
+                      return (
+                        <div 
+                          key={i} 
+                          draggable
+                          onDragStart={() => setDraggedPreset(i)}
+                          onDragEnd={() => setDraggedPreset(null)}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            if (draggedPreset !== null && draggedPreset !== i) {
+                              const updated = [...presets];
+                              const [moved] = updated.splice(draggedPreset, 1);
+                              updated.splice(i, 0, moved);
+                              save(updated, 'presets', setPresets);
+                              setDraggedPreset(i);
+                            }
                           }}
-                          className="flex-1 text-left flex items-center gap-2"
+                          className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg overflow-hidden transition-all ${
+                            draggedPreset === i ? 'opacity-50' : 'hover:shadow-md'
+                          }`}
                         >
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">{p.name}</div>
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{p.exercises.join(', ')}</div>
+                          <div className={`flex items-center border-l-4 ${color.border}`}>
+                            {/* Drag Handle */}
+                            <div className={`px-2 py-3 cursor-move ${darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'} transition-colors`}>
+                              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M7 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 2zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 7 14zm6-8a2 2 0 1 0-.001-4.001A2 2 0 0 0 13 6zm0 2a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 8zm0 6a2 2 0 1 0 .001 4.001A2 2 0 0 0 13 14z"/>
+                              </svg>
+                            </div>
+                            
+                            {/* Color Indicator & Content */}
+                            <button
+                              onClick={() => {
+                                setEditingPreset(i);
+                                setEditPresetName(p.name);
+                                setEditPresetExercises([...p.exercises]);
+                                setEditPresetColor(p.color || 'Blue');
+                              }}
+                              className="flex-1 text-left flex items-center gap-3 py-3 pr-3"
+                            >
+                              {/* Color Badge */}
+                              <div className={`w-3 h-3 rounded-full ${color.border.replace('border-', 'bg-')} flex-shrink-0`}></div>
+                              
+                              {/* Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-sm">{p.name}</div>
+                                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                                  {p.exercises.length} exercises • {color.name}
+                                </div>
+                              </div>
+                              
+                              {/* Edit Icon */}
+                              <Icons.Edit className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex-shrink-0`} />
+                            </button>
+                            
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => setDeletePreset(i)}
+                              className={`px-3 py-3 ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'} transition-colors`}
+                            >
+                              <Icons.Trash />
+                            </button>
                           </div>
-                          <Icons.Edit className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
-                        </button>
-                        <button
-                          onClick={() => setDeletePreset(i)}
-                          className="text-red-400 hover:text-red-300 ml-2"
-                        >
-                          <Icons.Trash />
-                        </button>
+                        </div>
+                      );
+                    })}
+                    
+                    {presets.length === 0 && (
+                      <div className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        <div className="text-4xl mb-2">💪</div>
+                        <div className="text-sm">No presets yet</div>
+                        <div className="text-xs mt-1">Create a Manual workout and save it as a preset!</div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 )}
               </div>
@@ -3162,22 +3223,15 @@ export default function Home() {
             <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-sm w-full`} onClick={(e) => e.stopPropagation()}>
               <h3 className="text-xl font-bold mb-4">Calendar Legend</h3>
               <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded border-l-4 border-purple-400 bg-gray-700 flex-shrink-0"></div>
-                  <div className="font-semibold text-sm">Garage 10</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded border-l-4 border-yellow-400 bg-gray-700 flex-shrink-0"></div>
-                  <div className="font-semibold text-sm">BW-only</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded border-l-4 border-blue-400 bg-gray-700 flex-shrink-0"></div>
-                  <div className="font-semibold text-sm">Garage BW</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded border-l-4 border-green-400 bg-gray-700 flex-shrink-0"></div>
-                  <div className="font-semibold text-sm">Manual</div>
-                </div>
+                {presets.map((preset, i) => {
+                  const color = getPresetColor(preset.name);
+                  return (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded border-l-4 ${color.border} ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} flex-shrink-0`}></div>
+                      <div className="font-semibold text-sm">{preset.name}</div>
+                    </div>
+                  );
+                })}
               </div>
               <button
                 onClick={() => setShowCalendarLegend(false)}
