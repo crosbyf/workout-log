@@ -1553,7 +1553,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className={`bg-gradient-to-b ${darkMode ? 'from-gray-800 to-gray-900' : 'from-gray-100 to-gray-200'} ${darkMode ? 'border-gray-700/50' : 'border-gray-300'} border-b p-4 shadow-lg`}>
+        <div className={`sticky top-0 z-10 bg-gradient-to-b ${darkMode ? 'from-gray-800 to-gray-900' : 'from-gray-100 to-gray-200'} ${darkMode ? 'border-gray-700/50' : 'border-gray-300'} border-b p-4 shadow-lg`}>
           <div className="max-w-4xl mx-auto text-center">
             <button 
               onClick={() => {
@@ -1572,7 +1572,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           {view === 'calendar' && (
-            <div id="home-scroll-container" className="space-y-2 h-[calc(100vh-140px)] overflow-y-auto pb-20">{/* Add more bottom padding */}
+            <div id="home-scroll-container" className="space-y-2 h-[calc(100vh-200px)] overflow-y-auto pb-20">{/* Adjusted for sticky header */}
               {/* Monthly Volume Section */}
               <div className="mb-3">
                 <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide mb-2`}>Monthly Volume</h3>
@@ -3426,8 +3426,6 @@ export default function Home() {
                     </button>
                   );
                 })}
-                  </button>
-                ))}
                 
                 {presets.length === 0 && (
                   <div className="text-center text-gray-500 py-8 text-sm">
