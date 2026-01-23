@@ -131,6 +131,7 @@ export default function Home() {
       inputBorder: 'border-gray-300',
       headerGradient: 'from-gray-100 to-gray-200',
       headerBorder: 'border-gray-300',
+      statusBar: '#f9fafb',
       accent: 'blue',
       isDark: false
     },
@@ -144,20 +145,22 @@ export default function Home() {
       inputBorder: 'border-gray-600',
       headerGradient: 'from-gray-800 to-gray-900',
       headerBorder: 'border-gray-700/50',
+      statusBar: '#111827',
       accent: 'blue',
       isDark: true
     },
-    midnight: {
-      name: 'Midnight Blue',
-      bg: 'bg-slate-950',
-      text: 'text-cyan-50',
-      cardBg: 'bg-slate-900',
-      cardBorder: 'border-slate-700',
-      inputBg: 'bg-slate-900',
-      inputBorder: 'border-slate-600',
-      headerGradient: 'from-slate-900 to-slate-950',
-      headerBorder: 'border-cyan-500/30',
-      accent: 'cyan',
+    neon: {
+      name: 'Neon',
+      bg: 'bg-black',
+      text: 'text-green-50',
+      cardBg: 'bg-zinc-950',
+      cardBorder: 'border-green-500/30',
+      inputBg: 'bg-zinc-950',
+      inputBorder: 'border-green-500/50',
+      headerGradient: 'from-zinc-950 to-black',
+      headerBorder: 'border-green-500/50',
+      statusBar: '#000000',
+      accent: 'green',
       isDark: true
     },
     sunset: {
@@ -170,6 +173,7 @@ export default function Home() {
       inputBorder: 'border-purple-600',
       headerGradient: 'from-purple-900 to-purple-950',
       headerBorder: 'border-orange-500/30',
+      statusBar: '#3b0764',
       accent: 'orange',
       isDark: true
     }
@@ -845,55 +849,46 @@ export default function Home() {
   };
 
   if (loading) {
-    // Combined Option C + D: Geometric shapes with minimalist text
+    // Static geometric design (no animations since they don't work in this environment)
     return (
       <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text} flex flex-col items-center justify-center overflow-hidden`}>
         <div className="text-center relative">
-          {/* Animated geometric shapes */}
-          <div className="absolute inset-0 flex items-center justify-center -mt-20">
-            <div className="relative w-40 h-40">
-              {/* Rotating hexagon */}
-              <div className="absolute inset-0 animate-spin-slow">
-                <svg viewBox="0 0 100 100" className="w-full h-full opacity-20">
-                  <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2"
-                    className={theme === 'midnight' ? 'text-cyan-500' : theme === 'sunset' ? 'text-orange-500' : 'text-blue-500'}
-                  />
-                </svg>
-              </div>
-              {/* Pulsing triangle */}
-              <div className="absolute inset-0 animate-pulse-slow">
-                <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-                  <polygon points="50,15 85,75 15,75" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2"
-                    className={theme === 'midnight' ? 'text-cyan-400' : theme === 'sunset' ? 'text-orange-400' : 'text-blue-400'}
-                  />
-                </svg>
-              </div>
-              {/* Center pulsing dot */}
-              <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full animate-pulse ${
-                theme === 'midnight' ? 'bg-cyan-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
+          {/* Static geometric shapes */}
+          <div className="mb-12">
+            <div className="relative w-32 h-32 mx-auto">
+              {/* Hexagon */}
+              <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
+                <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="3"
+                  className={theme === 'neon' ? 'text-green-500' : theme === 'sunset' ? 'text-orange-500' : 'text-blue-500'}
+                />
+              </svg>
+              {/* Triangle */}
+              <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0 opacity-50">
+                <polygon points="50,20 80,70 20,70" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="3"
+                  className={theme === 'neon' ? 'text-green-400' : theme === 'sunset' ? 'text-orange-400' : 'text-blue-400'}
+                />
+              </svg>
+              {/* Center dot */}
+              <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${
+                theme === 'neon' ? 'bg-green-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
               }`}></div>
             </div>
           </div>
           
-          {/* Minimalist text with animated underline */}
-          <div className="relative z-10 mt-32">
-            <div className="relative inline-block mb-4">
-              <h1 className="text-5xl font-black tracking-tight">
-                GORS
-              </h1>
-              {/* Animated underline */}
-              <div className="relative h-1 overflow-hidden mt-2">
-                <div className={`absolute h-full animate-slide-right ${
-                  theme === 'midnight' ? 'bg-cyan-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
-                }`} style={{ width: '100%' }}></div>
-              </div>
-            </div>
+          {/* Text */}
+          <div>
+            <h1 className="text-5xl font-black tracking-tight mb-3">
+              GORS
+            </h1>
+            <div className={`w-16 h-1 mx-auto mb-4 ${
+              theme === 'neon' ? 'bg-green-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
+            }`}></div>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium tracking-widest`}>
               BE ABOUT IT
             </p>
@@ -908,7 +903,7 @@ export default function Home() {
       <Head>
         <title>GORS LOG</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-        <meta name="theme-color" content="#111827" />
+        <meta name="theme-color" content={currentTheme.statusBar} />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <style>{`
@@ -1690,7 +1685,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center">
             <button 
               onClick={() => {
-                const themeOrder = ['light', 'dark', 'midnight', 'sunset'];
+                const themeOrder = ['light', 'dark', 'neon', 'sunset'];
                 const currentIndex = themeOrder.indexOf(theme);
                 const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
                 setTheme(nextTheme);
@@ -1699,7 +1694,7 @@ export default function Home() {
               className="cursor-pointer hover:opacity-80 transition-opacity"
             >
               <h1 className={`text-2xl font-extrabold tracking-tight bg-gradient-to-r ${darkMode ? 'from-white to-gray-300' : 'from-gray-900 to-gray-700'} bg-clip-text text-transparent`}>GORS LOG</h1>
-              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It • {currentTheme.name}</p>
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
             </button>
           </div>
         </div>
