@@ -3397,27 +3397,35 @@ export default function Home() {
               </div>
               
               <div className="p-4 space-y-2">
-                {presets.map((p, i) => (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      loadPreset(p);
-                      setShowPresetSelector(false);
-                      setShowWorkoutModal(true);
-                      setEditing(null);
-                      // Reset timer for new workout
-                      setWorkoutStarted(false);
-                      setWorkoutTimer(0);
-                      setTimerRunning(false);
-                    }}
-                    className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-4 rounded-lg text-left`}
-                  >
-                    <div className="font-medium text-base mb-1">{p.name}</div>
-                    {p.name === 'Manual' ? (
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Build your own</div>
-                    ) : p.exercises.length > 0 && (
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{p.exercises.length} exercises</div>
-                    )}
+                {presets.filter(p => p.includeInMenu !== false).map((p, i) => {
+                  const color = getPresetColor(p.name);
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        loadPreset(p);
+                        setShowPresetSelector(false);
+                        setShowWorkoutModal(true);
+                        setEditing(null);
+                        // Reset timer for new workout
+                        setWorkoutStarted(false);
+                        setWorkoutTimer(0);
+                        setTimerRunning(false);
+                      }}
+                      className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-4 rounded-lg text-left border-l-4 ${color.border} transition-all`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className={`w-3 h-3 rounded-full ${color.border.replace('border-', 'bg-')}`}></div>
+                        <div className="font-medium text-base">{p.name}</div>
+                      </div>
+                      {p.name === 'Manual' ? (
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-5`}>Build your own</div>
+                      ) : p.exercises.length > 0 && (
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-5`}>{p.exercises.length} exercises</div>
+                      )}
+                    </button>
+                  );
+                })}
                   </button>
                 ))}
                 
@@ -3575,6 +3583,7 @@ export default function Home() {
                     <div className="flex gap-2">
                       {/* Workout Dropdown */}
                       <select
+                        key={JSON.stringify(presets.map(p => ({n: p.name, m: p.includeInMenu})))}
                         value={current.location}
                         onChange={(e) => {
                           const selectedPreset = presets.find(p => p.name === e.target.value);
@@ -3591,19 +3600,9 @@ export default function Home() {
                         <option value="">Select</option>
                         {presets.filter(p => p.includeInMenu !== false).map((p, i) => {
                           const color = getPresetColor(p.name);
-                          const colorEmoji = {
-                            'Blue': '🔵',
-                            'Purple': '🟣',
-                            'Green': '🟢',
-                            'Yellow': '🟡',
-                            'Red': '🔴',
-                            'Pink': '🩷',
-                            'Orange': '🟠',
-                            'Cyan': '🔷'
-                          };
                           return (
                             <option key={i} value={p.name}>
-                              {colorEmoji[color.name] || '⚪'} {p.name}
+                              ● {p.name}
                             </option>
                           );
                         })}
