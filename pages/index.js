@@ -106,7 +106,7 @@ export default function Home() {
   const [exercises, setExercises] = useState([]);
   const [view, setView] = useState('calendar'); // Start with calendar as home
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'midnight', 'sunset'
+  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'neon', 'sunset'
   const [showNew, setShowNew] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null); // For exercise detail view
   const [statsView, setStatsView] = useState('menu'); // 'menu', 'exercises', 'weight'
@@ -179,7 +179,8 @@ export default function Home() {
     }
   };
   
-  const currentTheme = themes[theme];
+  // Safety check - if theme is invalid (e.g., old 'midnight' value), default to 'dark'
+  const currentTheme = themes[theme] || themes.dark;
   const darkMode = currentTheme.isDark; // For backwards compatibility
   const [showSettings, setShowSettings] = useState(false);
   const [sortOrder, setSortOrder] = useState('desc');
@@ -334,7 +335,12 @@ export default function Home() {
         if (p) setPresets(JSON.parse(p));
         if (e) setExercises(JSON.parse(e));
         if (t) {
-          setTheme(t);
+          // Migrate old 'midnight' to 'neon'
+          const loadedTheme = t === 'midnight' ? 'neon' : t;
+          setTheme(loadedTheme);
+          if (t === 'midnight') {
+            localStorage.setItem('theme', 'neon'); // Update storage
+          }
         } else if (dm !== null) {
           // Migrate old darkMode to new theme system
           setTheme(JSON.parse(dm) ? 'dark' : 'light');
