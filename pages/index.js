@@ -164,6 +164,7 @@ export default function Home() {
   const [editingPreset, setEditingPreset] = useState(null);
   const [editPresetName, setEditPresetName] = useState('');
   const [editPresetExercises, setEditPresetExercises] = useState([]);
+  const [editPresetColor, setEditPresetColor] = useState('Blue');
   const [showSaveAsPreset, setShowSaveAsPreset] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [volumeWidgetDate, setVolumeWidgetDate] = useState(new Date());
@@ -203,6 +204,34 @@ export default function Home() {
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+  
+  // Color palette for workout presets
+  const presetColors = [
+    { name: 'Blue', border: 'border-blue-400', bg: 'bg-blue-500/10', text: 'text-blue-400' },
+    { name: 'Purple', border: 'border-purple-400', bg: 'bg-purple-500/10', text: 'text-purple-400' },
+    { name: 'Green', border: 'border-green-400', bg: 'bg-green-500/10', text: 'text-green-400' },
+    { name: 'Yellow', border: 'border-yellow-400', bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
+    { name: 'Red', border: 'border-red-400', bg: 'bg-red-500/10', text: 'text-red-400' },
+    { name: 'Pink', border: 'border-pink-400', bg: 'bg-pink-500/10', text: 'text-pink-400' },
+    { name: 'Orange', border: 'border-orange-400', bg: 'bg-orange-500/10', text: 'text-orange-400' },
+    { name: 'Cyan', border: 'border-cyan-400', bg: 'bg-cyan-500/10', text: 'text-cyan-400' },
+  ];
+  
+  // Get color classes for a preset
+  const getPresetColor = (presetName) => {
+    const preset = presets.find(p => p.name === presetName);
+    if (preset && preset.color) {
+      return presetColors.find(c => c.name === preset.color) || presetColors[0];
+    }
+    // Legacy fallback for old presets without colors
+    const legacyColors = {
+      'Garage BW': presetColors[0], // Blue
+      'Manual': presetColors[2], // Green
+      'Garage 10': presetColors[1], // Purple
+      'BW-only': presetColors[3], // Yellow
+    };
+    return legacyColors[presetName] || presetColors[0];
   };
   
   // Helper to get today's date in YYYY-MM-DD format without timezone issues
@@ -1030,6 +1059,25 @@ export default function Home() {
                   />
                 </div>
                 <div>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? '' : 'text-gray-700'}`}>Color</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {presetColors.map(color => (
+                      <button
+                        key={color.name}
+                        onClick={() => setEditPresetColor(color.name)}
+                        className={`h-10 rounded-lg border-2 transition-all ${
+                          editPresetColor === color.name 
+                            ? `${color.border} border-opacity-100 scale-105` 
+                            : `${color.border} border-opacity-30 hover:border-opacity-60`
+                        } ${color.bg}`}
+                        title={color.name}
+                      >
+                        <div className={`text-xs font-semibold ${color.text}`}>{color.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
                   <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Exercises</label>
                   {editPresetExercises.map((ex, i) => (
                     <div key={i} className="flex gap-2 mb-2">
@@ -1071,7 +1119,8 @@ export default function Home() {
                     const updated = [...presets];
                     updated[editingPreset] = {
                       name: editPresetName,
-                      exercises: editPresetExercises
+                      exercises: editPresetExercises,
+                      color: editPresetColor
                     };
                     save(updated, 'presets', setPresets);
                     setEditingPreset(null);
@@ -1111,9 +1160,14 @@ export default function Home() {
                 <button
                   onClick={() => {
                     if (newPresetName.trim()) {
+                      // Find next available color
+                      const usedColors = presets.map(p => p.color).filter(Boolean);
+                      const availableColor = presetColors.find(c => !usedColors.includes(c.name)) || presetColors[0];
+                      
                       const newPreset = {
                         name: newPresetName.trim(),
-                        exercises: current.exercises.map(ex => ex.name)
+                        exercises: current.exercises.map(ex => ex.name),
+                        color: availableColor.name
                       };
                       save([...presets, newPreset], 'presets', setPresets);
                       setToastMessage('Preset saved!');
@@ -1387,7 +1441,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           {view === 'calendar' && (
-            <div className="space-y-2 pb-20">
+            <div className="space-y-2 h-[calc(100vh-140px)] overflow-hidden pb-2">{/* Fixed height, no scroll */}
               {/* Monthly Volume Section */}
               <div className="mb-3">
                 <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide mb-2`}>Monthly Volume</h3>
@@ -1537,13 +1591,8 @@ export default function Home() {
                   const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                   const isExpanded = expandedRecent === i;
                   
-                  const locationColors = {
-                    'Garage BW': 'border-blue-400',
-                    'Manual': 'border-green-400',
-                    'Garage 10': 'border-purple-400',
-                    'BW-only': 'border-yellow-400',
-                  };
-                  const borderColor = locationColors[w.location] || 'border-gray-600';
+                  const color = getPresetColor(w.location);
+                  const borderColor = color.border;
                   
                   return (
                     <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`} data-recent-workout={i}>
@@ -1551,16 +1600,23 @@ export default function Home() {
                         onClick={() => {
                           setExpandedRecent(isExpanded ? null : i);
                         }}
-                        className={`w-full p-2 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
+                        className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-medium text-xs">
+                            <div className="font-bold text-base">
                               {dayOfWeek} {month}/{day}/{year.slice(2)}
-                              {w.location && <span className={`ml-2 text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>· {w.location}</span>}
+                              {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
                             </div>
-                            <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
-                              {w.exercises.length} exercises
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
+                              {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}
+                              {w.structure && (
+                                <span className="font-semibold">
+                                  {' • '}
+                                  {w.structure === 'pairs' ? `Pairs ${w.structureDuration}'` : 'Circuit'}
+                                </span>
+                              )}
+                              {w.elapsedTime && ` • ${formatTimeHHMMSS(w.elapsedTime)}`}
                             </div>
                           </div>
                           <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
@@ -1805,15 +1861,10 @@ export default function Home() {
                           const dayWorkouts = workouts.filter(w => w.date === dateStr);
                           const hasWorkout = dayWorkouts.length > 0;
                           
-                          const locationColors = {
-                            'Garage BW': 'border-blue-400',
-                            'Manual': 'border-green-400',
-                            'Garage 10': 'border-purple-400',
-                            'BW-only': 'border-yellow-400',
-                          };
                           let borderColor = 'border-gray-600';
                           if (hasWorkout) {
-                            borderColor = locationColors[dayWorkouts[0].location] || 'border-gray-600';
+                            const color = getPresetColor(dayWorkouts[0].location);
+                            borderColor = color.border;
                           }
 
                           // Only highlight today if we're viewing the current month
@@ -1879,13 +1930,8 @@ export default function Home() {
                 const isExpanded = expandedLog.has(i);
                 
                 // Color-code by workout location
-                const locationColors = {
-                  'Garage BW': 'border-blue-400',
-                  'Manual': 'border-green-400',
-                  'Garage 10': 'border-purple-400',
-                  'BW-only': 'border-yellow-400',
-                };
-                const borderColor = locationColors[w.location] || 'border-gray-600';
+                const color = getPresetColor(w.location);
+                const borderColor = color.border;
                 
                 return (
                   <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
@@ -2799,6 +2845,7 @@ export default function Home() {
                             setEditingPreset(i);
                             setEditPresetName(p.name);
                             setEditPresetExercises([...p.exercises]);
+                            setEditPresetColor(p.color || 'Blue');
                           }}
                           className="flex-1 text-left flex items-center gap-2"
                         >
