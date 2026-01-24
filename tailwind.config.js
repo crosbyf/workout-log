@@ -49,6 +49,17 @@ module.exports = {
     'text-green-500',
     'text-green-400',
     'bg-green-500',
+    // Theme colors - Forest
+    'bg-emerald-950',
+    'bg-emerald-900',
+    'border-emerald-700',
+    'border-emerald-600',
+    'from-emerald-900',
+    'to-emerald-950',
+    'border-emerald-500/30',
+    'text-emerald-50',
+    'text-emerald-500',
+    'bg-emerald-500',
     // Theme colors - Sunset
     'bg-purple-950',
     'bg-purple-900',
