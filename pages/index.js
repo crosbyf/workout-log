@@ -215,6 +215,8 @@ export default function Home() {
   const [expandedLog, setExpandedLog] = useState(new Set());
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
+  const [showDataManagement, setShowDataManagement] = useState(false);
+  const [showDataDeletion, setShowDataDeletion] = useState(false);
   const [showLogCalendar, setShowLogCalendar] = useState(true); // Default to open
   const [logCalendarDate, setLogCalendarDate] = useState(new Date());
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
@@ -852,50 +854,19 @@ export default function Home() {
   };
 
   if (loading) {
-    // Static geometric design (no animations since they don't work in this environment)
+    // Simple text-only loading screen
     return (
-      <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text} flex flex-col items-center justify-center overflow-hidden`}>
-        <div className="text-center relative">
-          {/* Static geometric shapes */}
-          <div className="mb-12">
-            <div className="relative w-32 h-32 mx-auto">
-              {/* Hexagon */}
-              <svg viewBox="0 0 100 100" className="w-full h-full opacity-30">
-                <polygon points="50,5 90,27.5 90,72.5 50,95 10,72.5 10,27.5" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="3"
-                  className={theme === 'neon' ? 'text-green-500' : theme === 'sunset' ? 'text-orange-500' : 'text-blue-500'}
-                />
-              </svg>
-              {/* Triangle */}
-              <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0 opacity-50">
-                <polygon points="50,20 80,70 20,70" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="3"
-                  className={theme === 'neon' ? 'text-green-400' : theme === 'sunset' ? 'text-orange-400' : 'text-blue-400'}
-                />
-              </svg>
-              {/* Center dot */}
-              <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full ${
-                theme === 'neon' ? 'bg-green-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
-              }`}></div>
-            </div>
-          </div>
-          
-          {/* Text */}
-          <div>
-            <h1 className="text-5xl font-black tracking-tight mb-3">
-              GORS
-            </h1>
-            <div className={`w-16 h-1 mx-auto mb-4 ${
-              theme === 'neon' ? 'bg-green-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
-            }`}></div>
-            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium tracking-widest`}>
-              BE ABOUT IT
-            </p>
-          </div>
+      <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text} flex flex-col items-center justify-center`}>
+        <div className="text-center">
+          <h1 className="text-6xl font-black tracking-tight mb-4">
+            GORS
+          </h1>
+          <div className={`w-20 h-1 mx-auto mb-6 ${
+            theme === 'neon' ? 'bg-green-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
+          }`}></div>
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium tracking-widest`}>
+            BE ABOUT IT
+          </p>
         </div>
       </div>
     );
@@ -3233,42 +3204,52 @@ export default function Home() {
               </div>
 
               {/* Data Import/Export Section */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                <h3 className="font-bold mb-3 flex items-center gap-2">
-                  <span className="text-lg">💾</span>
-                  Data Management
-                </h3>
-                <div className="space-y-2">
-                  <label className="cursor-pointer block">
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
-                      <Icons.Upload />
-                      Import Presets
-                    </div>
-                    <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
-                  </label>
-                  
-                  <label className="cursor-pointer block">
-                    <div className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
-                      <Icons.Upload />
-                      Import Workouts
-                    </div>
-                    <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
-                  </label>
-                  
-                  <button 
-                    onClick={() => {
-                      exportCSV();
-                      setToastMessage('CSV file downloaded!');
-                      setShowToast(true);
-                      setTimeout(() => setShowToast(false), 3000);
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
-                  >
-                    <Icons.Download />
-                    Export All Data
-                  </button>
-                  
-                  <button 
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                <button
+                  onClick={() => setShowDataManagement(!showDataManagement)}
+                  className="w-full p-4 flex items-center justify-between text-left"
+                >
+                  <h3 className="font-bold flex items-center gap-2">
+                    <span className="text-lg">💾</span>
+                    Data Management
+                  </h3>
+                  <div className={`transform transition-transform ${showDataManagement ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
+                </button>
+                
+                {showDataManagement && (
+                  <div className="px-4 pb-4 space-y-2 border-t border-gray-700">
+                    <label className="cursor-pointer block mt-2">
+                      <div className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
+                        <Icons.Upload />
+                        Import Presets
+                      </div>
+                      <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
+                    </label>
+                    
+                    <label className="cursor-pointer block">
+                      <div className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
+                        <Icons.Upload />
+                        Import Workouts
+                      </div>
+                      <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
+                    </label>
+                    
+                    <button 
+                      onClick={() => {
+                        exportCSV();
+                        setToastMessage('CSV file downloaded!');
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 3000);
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
+                    >
+                      <Icons.Download />
+                      Export All Data
+                    </button>
+                    
+                    <button 
                     onClick={async () => {
                       try {
                         const request = indexedDB.open('GorsLogBackups', 1);
@@ -3298,27 +3279,42 @@ export default function Home() {
                     </svg>
                     View Backups
                   </button>
+                  
+                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 px-1`}>
+                    Auto-backups every 7 days • Last 5 backups kept
+                  </div>
                 </div>
-                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 px-1`}>
-                  Auto-backups every 7 days • Last 5 backups kept
-                </div>
+                )}
               </div>
 
               {/* Data Deletion Section */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md border-2 ${darkMode ? 'border-red-900/30' : 'border-red-200'}`}>
-                <h3 className="font-bold mb-3 flex items-center gap-2 text-red-400">
-                  <span className="text-lg">⚠️</span>
-                  Data Deletion
-                </h3>
-                <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3`}>
-                  Permanently delete all workout data. This action cannot be undone.
-                </p>
-                <button 
-                  onClick={() => setShowClear(true)} 
-                  className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-3 rounded-lg text-sm font-bold shadow-md transition-all"
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md border-2 ${darkMode ? 'border-red-900/30' : 'border-red-200'} overflow-hidden`}>
+                <button
+                  onClick={() => setShowDataDeletion(!showDataDeletion)}
+                  className="w-full p-4 flex items-center justify-between text-left"
                 >
-                  Delete All Workouts
+                  <h3 className="font-bold flex items-center gap-2 text-red-400">
+                    <span className="text-lg">⚠️</span>
+                    Data Deletion
+                  </h3>
+                  <div className={`transform transition-transform ${showDataDeletion ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
                 </button>
+                
+                {showDataDeletion && (
+                  <div className="px-4 pb-4 border-t border-gray-700">
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 mt-2`}>
+                      Permanently delete all workout data. This action cannot be undone.
+                    </p>
+                    <button 
+                      onClick={() => setShowClear(true)} 
+                      className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-3 rounded-lg text-sm font-bold shadow-md transition-all"
+                    >
+                      Delete All Workouts
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
