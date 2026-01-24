@@ -160,6 +160,19 @@ export default function Home() {
       accent: 'green',
       isDark: true
     },
+    forest: {
+      name: 'Forest',
+      bg: 'bg-emerald-950',
+      text: 'text-emerald-50',
+      cardBg: 'bg-emerald-900',
+      cardBorder: 'border-emerald-700',
+      inputBg: 'bg-emerald-900',
+      inputBorder: 'border-emerald-600',
+      headerGradient: 'from-emerald-900 to-emerald-950',
+      headerBorder: 'border-emerald-500/30',
+      accent: 'emerald',
+      isDark: true
+    },
     sunset: {
       name: 'Sunset',
       bg: 'bg-purple-950',
@@ -862,7 +875,10 @@ export default function Home() {
             GORS
           </h1>
           <div className={`w-20 h-1 mx-auto mb-6 ${
-            theme === 'neon' ? 'bg-green-500' : theme === 'sunset' ? 'bg-orange-500' : 'bg-blue-500'
+            theme === 'neon' ? 'bg-green-500' : 
+            theme === 'forest' ? 'bg-emerald-500' : 
+            theme === 'sunset' ? 'bg-orange-500' : 
+            'bg-blue-500'
           }`}></div>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium tracking-widest`}>
             BE ABOUT IT
@@ -1658,7 +1674,7 @@ export default function Home() {
           <div className="max-w-4xl mx-auto text-center">
             <button 
               onClick={() => {
-                const themeOrder = ['light', 'dark', 'neon', 'sunset'];
+                const themeOrder = ['light', 'dark', 'neon', 'forest', 'sunset'];
                 const currentIndex = themeOrder.indexOf(theme);
                 const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
                 setTheme(nextTheme);
