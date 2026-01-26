@@ -1684,8 +1684,8 @@ export default function Home() {
               
               {showLogCalendar && (
                 <div key={JSON.stringify(presets.map(p => ({n: p.name, c: p.color})))} className={`mb-2 ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-200'} rounded-2xl shadow-lg overflow-hidden`}>
-                    {/* Month/Year header - compressed and refined */}
-                    <div className={`sticky top-0 ${darkMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-200'} backdrop-blur-sm border-b px-2.5 py-2 z-10`}>
+                    {/* Month/Year header - stays below GORS LOG header */}
+                    <div className={`sticky top-[72px] ${darkMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-200'} backdrop-blur-sm border-b px-2.5 py-2 z-[5]`}>
                       <div className="flex items-center justify-between gap-1">
                         {/* Info button for legend - left aligned */}
                         <button
@@ -1862,8 +1862,10 @@ export default function Home() {
                   <button
                     onClick={() => {
                       setSearchExpanded(true);
-                      // Scroll to top when search opens
-                      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+                      // Scroll to absolute top of page
+                      requestAnimationFrame(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      });
                     }}
                     className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
                     title="Search workouts"
@@ -1949,13 +1951,12 @@ export default function Home() {
                   </button>
                 )}
                 
-                {/* Filter dropdown - dynamic width */}
+                {/* Filter dropdown - fits content */}
                 {!searchExpanded && (
                   <select
                     value={historyFilter}
                     onChange={(e) => setHistoryFilter(e.target.value)}
-                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm`}
-                    style={{ width: 'auto' }}
+                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-2 py-2 pr-6 text-xs font-medium cursor-pointer transition-colors shadow-sm`}
                   >
                     <option value="all">All Time</option>
                     <option value="day">Today</option>
@@ -2185,7 +2186,7 @@ export default function Home() {
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2 w-full">
                   {[
                     { name: 'Pull-ups', icon: '💪', key: 'Pull-ups' },
                     { name: 'Dips', icon: '🔥', key: 'Dips' },
@@ -3586,10 +3587,17 @@ export default function Home() {
         
         {/* Calendar Legend Modal - Improved */}
         {showCalendarLegend && (
-          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowCalendarLegend(false)}>
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-6 max-w-md w-full shadow-2xl`} onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-xl font-bold">Workout Colors</h3>
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-hidden"
+            onClick={() => setShowCalendarLegend(false)}
+            onTouchMove={(e) => e.preventDefault()}
+          >
+            <div 
+              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 max-w-sm w-full shadow-2xl max-h-[80vh] flex flex-col`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-bold">Workout Colors</h3>
                 <button
                   onClick={() => setShowCalendarLegend(false)}
                   className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-1`}
@@ -3598,19 +3606,19 @@ export default function Home() {
                 </button>
               </div>
               
-              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-                Each workout preset has a unique color shown on the calendar and in your workout list.
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3`}>
+                Each workout preset has a unique color.
               </p>
               
-              <div className="space-y-2.5 max-h-[400px] overflow-y-auto">
+              <div className="space-y-2 overflow-y-auto flex-1">
                 {presets.map((preset, i) => {
                   const color = getPresetColor(preset.name);
                   return (
-                    <div key={i} className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
-                      <div className={`w-12 h-12 rounded-lg border-l-4 ${color.border} ${darkMode ? 'bg-gray-600' : 'bg-white'} flex-shrink-0 shadow-sm`}></div>
-                      <div className="flex-1">
-                        <div className="font-semibold">{preset.name}</div>
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <div key={i} className={`flex items-center gap-2.5 p-2.5 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                      <div className={`w-10 h-10 rounded-lg border-l-[3px] ${color.border} ${darkMode ? 'bg-gray-600' : 'bg-white'} flex-shrink-0 shadow-sm`}></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm truncate">{preset.name}</div>
+                        <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           {preset.exercises.length} exercise{preset.exercises.length !== 1 ? 's' : ''}
                         </div>
                       </div>
