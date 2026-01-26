@@ -104,7 +104,7 @@ export default function Home() {
   const [workouts, setWorkouts] = useState([]);
   const [presets, setPresets] = useState([]);
   const [exercises, setExercises] = useState([]);
-  const [view, setView] = useState('calendar'); // Start with calendar as home
+  const [view, setView] = useState('home'); // 'home' (calendar/log), 'stats', 'settings'
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'neon', 'sunset'
   const [showNew, setShowNew] = useState(false);
@@ -209,22 +209,8 @@ export default function Home() {
   const [selectedDay, setSelectedDay] = useState(null);
   const [showDayModal, setShowDayModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [expandedRecent, setExpandedRecent] = useState(null);
   
   // Scroll to expanded recent workout
-  useEffect(() => {
-    if (expandedRecent !== null && view === 'calendar') {
-      setTimeout(() => {
-        const element = document.querySelector(`[data-recent-workout="${expandedRecent}"]`);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          const targetY = rect.top + scrollTop - 80;
-          window.scrollTo({ top: targetY, behavior: 'smooth' });
-        }
-      }, 100);
-    }
-  }, [expandedRecent, view]);
   const [expandedLog, setExpandedLog] = useState(new Set());
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
@@ -1690,285 +1676,8 @@ export default function Home() {
 
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
-          {view === 'calendar' && (
-            <div id="home-scroll-container" className="space-y-2 h-[calc(100vh-200px)] overflow-y-auto pb-20">{/* Adjusted for sticky header */}
-              {/* Monthly Volume Section */}
-              <div className="mb-3">
-                <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide mb-2`}>Monthly Volume</h3>
-                <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-2 shadow-xl border-2`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <button
-                      onClick={() => {
-                        const newDate = new Date(volumeWidgetDate);
-                        newDate.setMonth(newDate.getMonth() - 1);
-                        setVolumeWidgetDate(newDate);
-                      }}
-                      className={`p-1 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded transition-colors`}
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                      {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </h3>
-                    <button
-                      onClick={() => {
-                        const newDate = new Date(volumeWidgetDate);
-                      newDate.setMonth(newDate.getMonth() + 1);
-                      setVolumeWidgetDate(newDate);
-                    }}
-                    className={`p-1 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded transition-colors`}
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="space-y-1.5">
-                  {[
-                    { name: 'Pull-ups', color: 'from-blue-500 to-blue-600', icon: '💪' },
-                    { name: 'Dips', color: 'from-green-500 to-green-600', icon: '🔥' },
-                    { name: 'Chin-ups', color: 'from-purple-500 to-purple-600', icon: '⚡' }
-                  ].map(({ name, color, icon }) => {
-                    const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
-                    
-                    // Calculate current month volume
-                    const monthlyVolume = workouts
-                      .filter(w => w.date.startsWith(monthStr))
-                      .reduce((total, w) => {
-                        const exercise = w.exercises.find(ex => ex.name === name);
-                        if (exercise) {
-                          return total + exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                        }
-                        return total;
-                      }, 0);
-                    
-                    // Calculate previous month volume (as goal)
-                    const prevMonth = new Date(volumeWidgetDate);
-                    prevMonth.setMonth(prevMonth.getMonth() - 1);
-                    const prevMonthStr = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
-                    const prevMonthVolume = workouts
-                      .filter(w => w.date.startsWith(prevMonthStr))
-                      .reduce((total, w) => {
-                        const exercise = w.exercises.find(ex => ex.name === name);
-                        if (exercise) {
-                          return total + exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                        }
-                        return total;
-                      }, 0);
-                    
-                    // Use previous month as goal, or fall back to current max
-                    const goalVolume = prevMonthVolume > 0 ? prevMonthVolume : Math.max(
-                      ...['Pull-ups', 'Dips', 'Chin-ups'].map(ex => {
-                        return workouts
-                          .filter(w => w.date.startsWith(monthStr))
-                          .reduce((total, w) => {
-                            const exercise = w.exercises.find(e => e.name === ex);
-                            return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
-                          }, 0);
-                      })
-                    );
-                    
-                    const percentage = goalVolume > 0 ? Math.min((monthlyVolume / goalVolume) * 100, 100) : 0;
-                    const isOverGoal = monthlyVolume > goalVolume && goalVolume > 0;
-                    
-                    // Calculate on pace / off pace
-                    const now = new Date();
-                    const isCurrentMonth = volumeWidgetDate.getMonth() === now.getMonth() && 
-                                          volumeWidgetDate.getFullYear() === now.getFullYear();
-                    let paceStatus = '';
-                    if (isCurrentMonth && prevMonthVolume > 0) {
-                      const daysInMonth = new Date(volumeWidgetDate.getFullYear(), volumeWidgetDate.getMonth() + 1, 0).getDate();
-                      const dayOfMonth = now.getDate();
-                      const expectedVolume = (prevMonthVolume / daysInMonth) * dayOfMonth;
-                      const difference = Math.round(monthlyVolume - expectedVolume);
-                      if (difference >= 0) {
-                        paceStatus = `🟢 +${difference}`;
-                      } else {
-                        paceStatus = `🔴 ${difference}`;
-                      }
-                    }
-                    
-                    return (
-                      <div key={name} className={`space-y-0.5 p-1.5 rounded ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'}`}>
-                        <div className="flex items-center justify-between text-xs">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-base">{icon}</span>
-                            <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name}</span>
-                          </div>
-                          <div className="text-right flex flex-col items-end">
-                            <div className="flex items-baseline gap-0.5">
-                              <span className={`font-bold text-base ${isOverGoal ? 'text-green-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
-                                {monthlyVolume}
-                              </span>
-                              {prevMonthVolume > 0 && (
-                                <>
-                                  <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>/</span>
-                                  <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{prevMonthVolume}</span>
-                                </>
-                              )}
-                            </div>
-                            {paceStatus && (
-                              <div className="text-[9px] font-bold mt-0">{paceStatus}</div>
-                            )}
-                          </div>
-                        </div>
-                        <div className={`h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full overflow-hidden relative shadow-inner`}>
-                          <div 
-                            className={`h-full bg-gradient-to-r ${color} transition-all duration-500 ease-out ${isOverGoal ? 'animate-pulse' : ''}`}
-                            style={{ width: `${percentage}%` }}
-                          />
-                          {isOverGoal && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-[7px] font-bold text-white drop-shadow-lg">GOAL! 🎉</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-              
-              {/* Recent Workouts */}
-              <div className="space-y-2">
-                <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide`}>Recent Workouts</h3>
-                {[...workouts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3).map((w, i) => {
-                  const [year, month, day] = w.date.split('-');
-                  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                  const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                  const isExpanded = expandedRecent === i;
-                  
-                  const color = getPresetColor(w.location);
-                  const borderColor = color.border;
-                  
-                  return (
-                    <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-xl border-l-[6px] ${borderColor} overflow-hidden shadow-md hover:shadow-xl transition-all`} data-recent-workout={i}>
-                      <button
-                        onClick={() => {
-                          if (!isExpanded) {
-                            setExpandedRecent(i);
-                            // Scroll to show expanded content without hiding header
-                            setTimeout(() => {
-                              const card = document.querySelector(`[data-recent-workout="${i}"]`);
-                              const container = document.getElementById('home-scroll-container');
-                              
-                              if (card && container) {
-                                setTimeout(() => {
-                                  const cardTop = card.offsetTop;
-                                  const containerScroll = container.scrollTop;
-                                  
-                                  // Keep 100px margin from top to ensure header stays visible
-                                  const targetScroll = Math.max(0, cardTop - 100);
-                                  
-                                  // Only scroll if we need to
-                                  if (containerScroll > targetScroll + 20 || containerScroll < targetScroll - 20) {
-                                    container.scrollTo({
-                                      top: targetScroll,
-                                      behavior: 'smooth'
-                                    });
-                                  }
-                                }, 150);
-                              }
-                            }, 50);
-                          } else {
-                            setExpandedRecent(null);
-                          }
-                        }}
-                        className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-bold text-base">
-                              {dayOfWeek} {month}/{day}/{year.slice(2)}
-                              {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
-                            </div>
-                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
-                              {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}
-                              {w.structure && (
-                                <span className="font-semibold">
-                                  {' • '}
-                                  {w.structure === 'pairs' ? `Pairs ${w.structureDuration}'` : 'Circuit'}
-                                </span>
-                              )}
-                              {w.elapsedTime && ` • ${formatTimeHHMMSS(w.elapsedTime)}`}
-                            </div>
-                          </div>
-                          <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                            <Icons.ChevronDown />
-                          </div>
-                        </div>
-                      </button>
-                      
-                      {isExpanded && (
-                        <div 
-                          className="px-2 pb-2 space-y-1.5 border-t border-gray-700 pt-2"
-                        >
-                          {w.location === 'Day Off' && w.notes ? (
-                            <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700/50' : 'bg-yellow-50 border-yellow-300'} border rounded-lg p-3`}>
-                              <div className="text-sm font-semibold text-yellow-600 mb-2">Rest Day</div>
-                              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
-                            </div>
-                          ) : (
-                            <>
-                          {w.exercises.map((ex, ei) => {
-                            const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                            return (
-                              <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-1.5 py-1 mb-1`}>
-                                <div className="grid grid-cols-[100px_1fr_40px] gap-1.5 items-start text-[11px]">
-                                  <div className="font-medium truncate">{ex.name}</div>
-                                  <div className="flex items-center gap-1 flex-wrap">
-                                    {ex.sets.map((s, si) => (
-                                      <span 
-                                        key={si} 
-                                        className={`${
-                                          darkMode 
-                                            ? 'bg-gray-800 text-blue-300 border border-gray-600' 
-                                            : 'bg-white text-gray-900 border border-gray-400'
-                                        } px-1.5 py-0.5 rounded font-mono text-[11px] font-semibold`}
-                                      >
-                                        {s.reps}
-                                      </span>
-                                    ))}
-                                  </div>
-                                  <div className={`text-right font-bold text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                                    ({totalReps})
-                                  </div>
-                                </div>
-                                {ex.notes && (
-                                  <div className="text-[9px] text-gray-400 mt-0.5 text-right">{ex.notes}</div>
-                                )}
-                              </div>
-                            );
-                          })}
-                          {w.notes && w.location !== 'Day Off' && (
-                            <div className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-700">
-                              {w.notes}
-                            </div>
-                          )}
-                            </>
-                          )}
-                          
-                          {/* Collapse button at bottom */}
-                          <button
-                            onClick={() => setExpandedRecent(null)}
-                            className={`w-full mt-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2`}
-                          >
-                            <Icons.ChevronDown />
-                            Collapse
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
           
-          {view === 'list' && (
+          {view === 'home' && (
             <div className="space-y-2.5">
               {/* Single row with all controls */}
               <div className="flex items-center gap-2 mb-3">
@@ -2554,7 +2263,7 @@ export default function Home() {
                           onClick={() => {
                             const weekDate = new Date(week);
                             setLogCalendarDate(weekDate);
-                            setView('list');
+                            setView('home');
                             setTimeout(() => {
                               const weekStart = new Date(week);
                               const weekEnd = new Date(weekStart);
@@ -4147,7 +3856,7 @@ export default function Home() {
         {/* Bottom Navigation */}
         <div className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-gray-100/95 border-gray-300'} backdrop-blur-sm border-t safe-area-pb shadow-2xl pb-2`}>
           {/* New Workout Button - only on Home */}
-          {view === 'calendar' && (
+          {view === 'home' && (
             <div className="max-w-4xl mx-auto px-3 pt-2 pb-1">
               <button
                 onClick={() => setShowPresetSelector(true)}
@@ -4162,26 +3871,14 @@ export default function Home() {
           <div className="max-w-4xl mx-auto flex">
             <button
               onClick={() => {
-                setView('calendar');
+                setView('home');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`flex-1 py-4 transition-colors ${view === 'calendar' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+              className={`flex-1 py-4 transition-colors ${view === 'home' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
             >
               <div className="flex flex-col items-center">
-                <Icons.Calendar className={view === 'calendar' ? 'scale-110' : ''} />
-                <span className={`text-xs mt-1 font-medium ${view === 'calendar' ? 'font-bold' : ''}`}>Home</span>
-              </div>
-            </button>
-            <button
-              onClick={() => {
-                setView('list');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex-1 py-4 transition-colors ${view === 'list' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
-            >
-              <div className="flex flex-col items-center">
-                <Icons.Calendar className={view === 'list' ? 'scale-110' : ''} />
-                <span className={`text-xs mt-1 font-medium ${view === 'list' ? 'font-bold' : ''}`}>Log</span>
+                <Icons.Calendar className={view === 'home' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'home' ? 'font-bold' : ''}`}>Home</span>
               </div>
             </button>
             <button
