@@ -803,13 +803,24 @@ export default function Home() {
         if (historyFilter === 'day') {
           return workoutDate.getTime() === today.getTime();
         } else if (historyFilter === 'week') {
-          const weekAgo = new Date(today);
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          return workoutDate >= weekAgo;
+          // Get start of current week (Monday)
+          const dayOfWeek = now.getDay();
+          const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days; otherwise back to Monday
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() + diff);
+          weekStart.setHours(0, 0, 0, 0);
+          
+          return workoutDate >= weekStart && workoutDate <= today;
         } else if (historyFilter === 'month') {
-          const monthAgo = new Date(today);
-          monthAgo.setMonth(monthAgo.getMonth() - 1);
-          return workoutDate >= monthAgo;
+          // Get start of current month
+          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+          
+          return workoutDate >= monthStart && workoutDate <= today;
+        } else if (historyFilter === 'year') {
+          // Get start of current year
+          const yearStart = new Date(now.getFullYear(), 0, 1);
+          
+          return workoutDate >= yearStart && workoutDate <= today;
         }
         return true;
       });
@@ -1684,8 +1695,8 @@ export default function Home() {
               
               {showLogCalendar && (
                 <div key={JSON.stringify(presets.map(p => ({n: p.name, c: p.color})))} className={`mb-2 ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-200'} rounded-2xl shadow-lg overflow-hidden`}>
-                    {/* Month/Year header - stays below GORS LOG header */}
-                    <div className={`sticky top-[72px] ${darkMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-200'} backdrop-blur-sm border-b px-2.5 py-2 z-[5]`}>
+                    {/* Month/Year header - sticky at top */}
+                    <div className={`sticky top-0 ${darkMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-200'} backdrop-blur-sm border-b px-2.5 py-2 z-[5]`}>
                       <div className="flex items-center justify-between gap-1">
                         {/* Info button for legend - left aligned */}
                         <button
@@ -1862,10 +1873,11 @@ export default function Home() {
                   <button
                     onClick={() => {
                       setSearchExpanded(true);
-                      // Scroll to absolute top of page
-                      requestAnimationFrame(() => {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      });
+                      // Force scroll to absolute top
+                      setTimeout(() => {
+                        document.documentElement.scrollTop = 0;
+                        document.body.scrollTop = 0;
+                      }, 50);
                     }}
                     className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
                     title="Search workouts"
@@ -1951,12 +1963,12 @@ export default function Home() {
                   </button>
                 )}
                 
-                {/* Filter dropdown - fits content */}
+                {/* Filter dropdown - minimal width */}
                 {!searchExpanded && (
                   <select
                     value={historyFilter}
                     onChange={(e) => setHistoryFilter(e.target.value)}
-                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-2 py-2 pr-6 text-xs font-medium cursor-pointer transition-colors shadow-sm`}
+                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl pl-2 pr-5 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm min-w-0`}
                   >
                     <option value="all">All Time</option>
                     <option value="day">Today</option>
@@ -2154,9 +2166,10 @@ export default function Home() {
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-3">Statistics</h2>
               
-              {/* Monthly Volume Widget */}
+              {/* Monthly Volume Widget - Simplified */}
               <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-3 shadow-xl border-2 mb-4`}>
-                <div className="flex items-center justify-between mb-2">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-3">
                   <button
                     onClick={() => {
                       const newDate = new Date(volumeWidgetDate);
@@ -2186,93 +2199,109 @@ export default function Home() {
                   </button>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-2 w-full">
-                  {[
-                    { name: 'Pull-ups', icon: '💪', key: 'Pull-ups' },
-                    { name: 'Dips', icon: '🔥', key: 'Dips' },
-                    { name: 'Chin-ups', icon: '⚡', key: 'Chin-ups' }
-                  ].map(({ name, icon, key }) => {
+                {/* Exercise Cards - Explicit Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Pull-ups */}
+                  {(() => {
                     const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
-                    const monthlyVolume = workouts
-                      .filter(w => w.date.startsWith(monthStr))
-                      .reduce((total, w) => {
-                        const exercise = w.exercises.find(e => e.name === key);
-                        return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
-                      }, 0);
-                  
-                  const prevMonthDate = new Date(volumeWidgetDate);
-                  prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-                  const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
-                  const prevMonthVolume = workouts
-                    .filter(w => w.date.startsWith(prevMonthStr))
-                    .reduce((total, w) => {
-                      const exercise = w.exercises.find(e => e.name === key);
+                    const monthlyVolume = workouts.filter(w => w.date.startsWith(monthStr)).reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === 'Pull-ups');
                       return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
                     }, 0);
-                  
-                  const goalVolume = prevMonthVolume > 0 ? prevMonthVolume : Math.max(
-                    ...['Pull-ups', 'Dips', 'Chin-ups'].map(ex => {
-                      return workouts
-                        .filter(w => w.date.startsWith(monthStr))
-                        .reduce((total, w) => {
-                          const exercise = w.exercises.find(e => e.name === ex);
-                          return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
-                        }, 0);
-                    })
-                  );
-                  
-                  const percentage = goalVolume > 0 ? Math.min((monthlyVolume / goalVolume) * 100, 100) : 0;
-                  const isOverGoal = monthlyVolume > goalVolume && goalVolume > 0;
-                  
-                  const now = new Date();
-                  const isCurrentMonth = volumeWidgetDate.getMonth() === now.getMonth() && 
-                                        volumeWidgetDate.getFullYear() === now.getFullYear();
-                  let paceStatus = '';
-                  if (isCurrentMonth && prevMonthVolume > 0) {
-                    const daysInMonth = new Date(volumeWidgetDate.getFullYear(), volumeWidgetDate.getMonth() + 1, 0).getDate();
-                    const dayOfMonth = now.getDate();
-                    const expectedVolume = (prevMonthVolume / daysInMonth) * dayOfMonth;
-                    const difference = Math.round(monthlyVolume - expectedVolume);
-                    if (difference >= 0) {
-                      paceStatus = `🟢 +${difference}`;
-                    } else {
-                      paceStatus = `🔴 ${difference}`;
-                    }
-                  }
-                  
-                  return (
-                    <div key={name} className={`space-y-0.5 p-1.5 rounded ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'}`}>
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-base">{icon}</span>
-                          <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name}</span>
-                        </div>
-                        <div className="text-right flex flex-col items-end">
-                          <div className="flex items-baseline gap-0.5">
-                            <span className={`font-bold text-base ${isOverGoal ? 'text-green-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
-                              {monthlyVolume}
-                            </span>
-                            {prevMonthVolume > 0 && (
-                              <>
-                                <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>/</span>
-                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{prevMonthVolume}</span>
-                              </>
-                            )}
+                    
+                    const prevMonthDate = new Date(volumeWidgetDate);
+                    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+                    const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+                    const prevMonthVolume = workouts.filter(w => w.date.startsWith(prevMonthStr)).reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === 'Pull-ups');
+                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                    }, 0);
+                    
+                    const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
+                    
+                    return (
+                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded p-2`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm">💪</span>
+                            <span className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Pull-ups</span>
                           </div>
-                          {paceStatus && (
-                            <div className="text-[9px] font-medium">{paceStatus}</div>
-                          )}
+                          <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                        </div>
+                        <div className={`w-full h-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
+                          <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
                         </div>
                       </div>
-                      <div className={`w-full h-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
-                        <div 
-                          className={`h-full transition-all ${isOverGoal ? 'bg-green-400' : 'bg-blue-500'}`}
-                          style={{ width: `${percentage}%` }}
-                        ></div>
+                    );
+                  })()}
+                  
+                  {/* Dips */}
+                  {(() => {
+                    const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
+                    const monthlyVolume = workouts.filter(w => w.date.startsWith(monthStr)).reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === 'Dips');
+                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                    }, 0);
+                    
+                    const prevMonthDate = new Date(volumeWidgetDate);
+                    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+                    const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+                    const prevMonthVolume = workouts.filter(w => w.date.startsWith(prevMonthStr)).reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === 'Dips');
+                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                    }, 0);
+                    
+                    const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
+                    
+                    return (
+                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded p-2`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm">🔥</span>
+                            <span className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dips</span>
+                          </div>
+                          <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                        </div>
+                        <div className={`w-full h-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
+                          <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })()}
+                  
+                  {/* Chin-ups */}
+                  {(() => {
+                    const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
+                    const monthlyVolume = workouts.filter(w => w.date.startsWith(monthStr)).reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === 'Chin-ups');
+                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                    }, 0);
+                    
+                    const prevMonthDate = new Date(volumeWidgetDate);
+                    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+                    const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+                    const prevMonthVolume = workouts.filter(w => w.date.startsWith(prevMonthStr)).reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === 'Chin-ups');
+                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                    }, 0);
+                    
+                    const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
+                    
+                    return (
+                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded p-2`}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm">⚡</span>
+                            <span className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Chin-ups</span>
+                          </div>
+                          <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                        </div>
+                        <div className={`w-full h-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
+                          <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
               
