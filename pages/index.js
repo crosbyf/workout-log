@@ -1887,12 +1887,12 @@ export default function Home() {
                 ) : (
                   <div className="relative flex-1">
                     <input
+                      ref={(el) => el && el.focus()}
                       type="text"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search workouts..."
                       className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 pl-9 text-sm shadow-sm`}
-                      autoFocus
                       onBlur={() => {
                         if (!search) setSearchExpanded(false);
                       }}
@@ -1963,18 +1963,18 @@ export default function Home() {
                   </button>
                 )}
                 
-                {/* Filter dropdown - minimal width */}
+                {/* Filter dropdown - compact labels */}
                 {!searchExpanded && (
                   <select
                     value={historyFilter}
                     onChange={(e) => setHistoryFilter(e.target.value)}
                     className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl pl-2 pr-5 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm min-w-0`}
                   >
-                    <option value="all">All Time</option>
+                    <option value="all">All</option>
                     <option value="day">Today</option>
-                    <option value="week">This Week</option>
-                    <option value="month">This Month</option>
-                    <option value="year">This Year</option>
+                    <option value="week">Week</option>
+                    <option value="month">Month</option>
+                    <option value="year">Year</option>
                   </select>
                 )}
                 
@@ -2166,7 +2166,7 @@ export default function Home() {
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-3">Statistics</h2>
               
-              {/* Monthly Volume Widget - Simplified */}
+              {/* Monthly Volume Widget - Stacked Vertically */}
               <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-3 shadow-xl border-2 mb-4`}>
                 {/* Header */}
                 <div className="flex items-center justify-between mb-3">
@@ -2199,8 +2199,8 @@ export default function Home() {
                   </button>
                 </div>
                 
-                {/* Exercise Cards - Explicit Grid */}
-                <div className="grid grid-cols-3 gap-2">
+                {/* Exercise Cards - Stacked Vertically */}
+                <div className="space-y-2">
                   {/* Pull-ups */}
                   {(() => {
                     const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
@@ -2220,15 +2220,20 @@ export default function Home() {
                     const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
                     
                     return (
-                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded p-2`}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm">💪</span>
-                            <span className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Pull-ups</span>
+                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">💪</span>
+                            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Pull-ups</span>
                           </div>
-                          <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                          <div className="text-right">
+                            <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                            {prevMonthVolume > 0 && (
+                              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}> / {prevMonthVolume}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className={`w-full h-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
+                        <div className={`w-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
                           <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
                         </div>
                       </div>
@@ -2254,15 +2259,20 @@ export default function Home() {
                     const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
                     
                     return (
-                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded p-2`}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm">🔥</span>
-                            <span className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dips</span>
+                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">🔥</span>
+                            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dips</span>
                           </div>
-                          <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                          <div className="text-right">
+                            <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                            {prevMonthVolume > 0 && (
+                              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}> / {prevMonthVolume}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className={`w-full h-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
+                        <div className={`w-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
                           <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
                         </div>
                       </div>
@@ -2288,15 +2298,20 @@ export default function Home() {
                     const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
                     
                     return (
-                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded p-2`}>
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center gap-1">
-                            <span className="text-sm">⚡</span>
-                            <span className={`text-xs font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Chin-ups</span>
+                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">⚡</span>
+                            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Chin-ups</span>
                           </div>
-                          <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                          <div className="text-right">
+                            <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                            {prevMonthVolume > 0 && (
+                              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}> / {prevMonthVolume}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className={`w-full h-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
+                        <div className={`w-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
                           <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
                         </div>
                       </div>
