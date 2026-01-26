@@ -216,6 +216,7 @@ export default function Home() {
   const [showPresetSelector, setShowPresetSelector] = useState(false);
   const [showDataManagement, setShowDataManagement] = useState(false);
   const [showDataDeletion, setShowDataDeletion] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const [showLogCalendar, setShowLogCalendar] = useState(true); // Default to open
   const [logCalendarDate, setLogCalendarDate] = useState(new Date());
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
@@ -1679,20 +1680,7 @@ export default function Home() {
           
           {view === 'home' && (
             <div className="space-y-2.5">
-              {/* Sort button only - at top */}
-              <div className="flex items-center justify-end gap-2">
-                <button
-                  onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm`}
-                  title="Sort order"
-                >
-                  <div className="flex flex-col text-[10px] leading-none">
-                    <span>↑</span>
-                    <span>↓</span>
-                  </div>
-                  <span className="text-xs">{sortOrder === 'desc' ? 'Newest' : 'Oldest'}</span>
-                </button>
-              </div>
+              {/* No controls at top - cleaner! */}
               
               {showLogCalendar && (
                 <div key={JSON.stringify(presets.map(p => ({n: p.name, c: p.color})))} className={`mb-2 ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-200'} rounded-2xl shadow-lg overflow-hidden`}>
@@ -1867,59 +1855,113 @@ export default function Home() {
                 </div>
               )}
               
-              {/* Control buttons below calendar */}
+              {/* Control buttons below calendar - improved */}
               <div className="flex items-center gap-2 mb-3">
-                {/* Search */}
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search workouts..."
-                    className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 pl-9 text-sm shadow-sm`}
-                  />
-                  <div className={`absolute left-3 top-2.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                {/* Search - icon only, expands on tap */}
+                {!searchExpanded ? (
+                  <button
+                    onClick={() => setSearchExpanded(true)}
+                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
+                    title="Search workouts"
+                  >
                     <Icons.Search className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search workouts..."
+                      className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 pl-9 text-sm shadow-sm`}
+                      autoFocus
+                      onBlur={() => {
+                        if (!search) setSearchExpanded(false);
+                      }}
+                    />
+                    <div className={`absolute left-3 top-2.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      <Icons.Search className="w-4 h-4" />
+                    </div>
+                    {search && (
+                      <button
+                        onClick={() => {
+                          setSearch('');
+                          setSearchExpanded(false);
+                        }}
+                        className={`absolute right-2 top-2 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-0.5`}
+                      >
+                        <Icons.X className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                </div>
+                )}
                 
-                {/* Expand/Collapse All */}
-                <button
-                  onClick={() => {
-                    const allIndices = filtered().map((_, i) => i);
-                    if (expandedLog.size === allIndices.length) {
-                      setExpandedLog(new Set());
-                    } else {
-                      setExpandedLog(new Set(allIndices));
-                    }
-                  }}
-                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border px-3 py-2 rounded-xl text-xs font-medium transition-colors whitespace-nowrap shadow-sm`}
-                >
-                  {expandedLog.size === filtered().length ? 'Collapse' : 'Expand'}
-                </button>
+                {/* Sort - moved to this row */}
+                {!searchExpanded && (
+                  <button
+                    onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
+                    title={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
+                  >
+                    <div className="flex flex-col text-[9px] leading-none">
+                      <span>↑</span>
+                      <span>↓</span>
+                    </div>
+                  </button>
+                )}
                 
-                {/* Filter dropdown */}
-                <select
-                  value={historyFilter}
-                  onChange={(e) => setHistoryFilter(e.target.value)}
-                  className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm`}
-                >
-                  <option value="all">All Time</option>
-                  <option value="day">Today</option>
-                  <option value="week">This Week</option>
-                  <option value="month">This Month</option>
-                  <option value="year">This Year</option>
-                </select>
+                {/* Expand/Collapse All - better icons */}
+                {!searchExpanded && (
+                  <button
+                    onClick={() => {
+                      const allIndices = filtered().map((_, i) => i);
+                      if (expandedLog.size === allIndices.length) {
+                        setExpandedLog(new Set());
+                      } else {
+                        setExpandedLog(new Set(allIndices));
+                      }
+                    }}
+                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
+                    title={expandedLog.size === filtered().length ? 'Collapse all' : 'Expand all'}
+                  >
+                    {expandedLog.size === filtered().length ? (
+                      // Collapse icon - arrows pointing at each other
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7l4-4m0 0l4 4m-4-4v18m0 0l-4-4m4 4l4-4" />
+                      </svg>
+                    ) : (
+                      // Expand icon - up/down arrows
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                      </svg>
+                    )}
+                  </button>
+                )}
                 
-                {/* Toggle calendar button */}
-                {!showLogCalendar && (
+                {/* Filter dropdown - dynamic width */}
+                {!searchExpanded && (
+                  <select
+                    value={historyFilter}
+                    onChange={(e) => setHistoryFilter(e.target.value)}
+                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm`}
+                    style={{ width: 'auto' }}
+                  >
+                    <option value="all">All Time</option>
+                    <option value="day">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="year">This Year</option>
+                  </select>
+                )}
+                
+                {/* Toggle calendar button - condensed when collapsed */}
+                {!showLogCalendar && !searchExpanded && (
                   <button
                     onClick={() => setShowLogCalendar(true)}
-                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm`}
+                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border px-2 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm`}
                     title="Show calendar"
                   >
                     <Icons.Calendar className="w-4 h-4" />
-                    <span className="text-xs font-medium">Calendar</span>
                   </button>
                 )}
               </div>
@@ -2098,7 +2140,129 @@ export default function Home() {
           
           {view === 'stats' && statsView === 'menu' && (
             <div className="space-y-3">
-              <h2 className="text-base font-semibold mb-2">Statistics</h2>
+              <h2 className="text-base font-semibold mb-3">Statistics</h2>
+              
+              {/* Monthly Volume Widget */}
+              <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-3 shadow-xl border-2 mb-4`}>
+                <div className="flex items-center justify-between mb-2">
+                  <button
+                    onClick={() => {
+                      const newDate = new Date(volumeWidgetDate);
+                      newDate.setMonth(newDate.getMonth() - 1);
+                      setVolumeWidgetDate(newDate);
+                    }}
+                    className={`p-1 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded transition-colors`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      const newDate = new Date(volumeWidgetDate);
+                      newDate.setMonth(newDate.getMonth() + 1);
+                      setVolumeWidgetDate(newDate);
+                    }}
+                    className={`p-1 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded transition-colors`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { name: 'Pull-ups', icon: '💪', key: 'Pull-ups' },
+                    { name: 'Dips', icon: '🔥', key: 'Dips' },
+                    { name: 'Chin-ups', icon: '⚡', key: 'Chin-ups' }
+                  ].map(({ name, icon, key }) => {
+                    const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
+                    const monthlyVolume = workouts
+                      .filter(w => w.date.startsWith(monthStr))
+                      .reduce((total, w) => {
+                        const exercise = w.exercises.find(e => e.name === key);
+                        return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                      }, 0);
+                  
+                  const prevMonthDate = new Date(volumeWidgetDate);
+                  prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+                  const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+                  const prevMonthVolume = workouts
+                    .filter(w => w.date.startsWith(prevMonthStr))
+                    .reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === key);
+                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                    }, 0);
+                  
+                  const goalVolume = prevMonthVolume > 0 ? prevMonthVolume : Math.max(
+                    ...['Pull-ups', 'Dips', 'Chin-ups'].map(ex => {
+                      return workouts
+                        .filter(w => w.date.startsWith(monthStr))
+                        .reduce((total, w) => {
+                          const exercise = w.exercises.find(e => e.name === ex);
+                          return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                        }, 0);
+                    })
+                  );
+                  
+                  const percentage = goalVolume > 0 ? Math.min((monthlyVolume / goalVolume) * 100, 100) : 0;
+                  const isOverGoal = monthlyVolume > goalVolume && goalVolume > 0;
+                  
+                  const now = new Date();
+                  const isCurrentMonth = volumeWidgetDate.getMonth() === now.getMonth() && 
+                                        volumeWidgetDate.getFullYear() === now.getFullYear();
+                  let paceStatus = '';
+                  if (isCurrentMonth && prevMonthVolume > 0) {
+                    const daysInMonth = new Date(volumeWidgetDate.getFullYear(), volumeWidgetDate.getMonth() + 1, 0).getDate();
+                    const dayOfMonth = now.getDate();
+                    const expectedVolume = (prevMonthVolume / daysInMonth) * dayOfMonth;
+                    const difference = Math.round(monthlyVolume - expectedVolume);
+                    if (difference >= 0) {
+                      paceStatus = `🟢 +${difference}`;
+                    } else {
+                      paceStatus = `🔴 ${difference}`;
+                    }
+                  }
+                  
+                  return (
+                    <div key={name} className={`space-y-0.5 p-1.5 rounded ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'}`}>
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-base">{icon}</span>
+                          <span className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{name}</span>
+                        </div>
+                        <div className="text-right flex flex-col items-end">
+                          <div className="flex items-baseline gap-0.5">
+                            <span className={`font-bold text-base ${isOverGoal ? 'text-green-400' : darkMode ? 'text-white' : 'text-gray-900'}`}>
+                              {monthlyVolume}
+                            </span>
+                            {prevMonthVolume > 0 && (
+                              <>
+                                <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>/</span>
+                                <span className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{prevMonthVolume}</span>
+                              </>
+                            )}
+                          </div>
+                          {paceStatus && (
+                            <div className="text-[9px] font-medium">{paceStatus}</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className={`w-full h-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
+                        <div 
+                          className={`h-full transition-all ${isOverGoal ? 'bg-green-400' : 'bg-blue-500'}`}
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  );
+                })}
+                </div>
+              </div>
               
               {/* Progress Charts Card */}
               <button
@@ -2179,7 +2343,44 @@ export default function Home() {
           
           {/* Exercise List View */}
           {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
-            <div className="space-y-3">
+            <div 
+              className="space-y-3"
+              onTouchStart={(e) => {
+                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
+                e.currentTarget.dataset.swipeStartY = e.touches[0].clientY;
+              }}
+              onTouchMove={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const startY = parseFloat(e.currentTarget.dataset.swipeStartY);
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const diffX = currentX - startX;
+                const diffY = Math.abs(currentY - startY);
+                
+                if (Math.abs(diffX) > diffY && diffX > 20) {
+                  e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
+                  e.currentTarget.style.transition = 'none';
+                }
+              }}
+              onTouchEnd={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const currentX = e.changedTouches[0].clientX;
+                const diffX = currentX - startX;
+                
+                e.currentTarget.style.transition = 'transform 0.2s ease-out';
+                
+                if (diffX > 100) {
+                  e.currentTarget.style.transform = 'translateX(100%)';
+                  setTimeout(() => {
+                    setStatsView('menu');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    e.currentTarget.style.transform = '';
+                  }, 200);
+                } else {
+                  e.currentTarget.style.transform = '';
+                }
+              }}
+            >
               <button
                 onClick={() => {
                   setStatsView('menu');
@@ -2367,7 +2568,44 @@ export default function Home() {
           
           {/* Body Weight View */}
           {view === 'stats' && statsView === 'weight' && (
-            <div className="space-y-3">
+            <div 
+              className="space-y-3"
+              onTouchStart={(e) => {
+                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
+                e.currentTarget.dataset.swipeStartY = e.touches[0].clientY;
+              }}
+              onTouchMove={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const startY = parseFloat(e.currentTarget.dataset.swipeStartY);
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const diffX = currentX - startX;
+                const diffY = Math.abs(currentY - startY);
+                
+                if (Math.abs(diffX) > diffY && diffX > 20) {
+                  e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
+                  e.currentTarget.style.transition = 'none';
+                }
+              }}
+              onTouchEnd={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const currentX = e.changedTouches[0].clientX;
+                const diffX = currentX - startX;
+                
+                e.currentTarget.style.transition = 'transform 0.2s ease-out';
+                
+                if (diffX > 100) {
+                  e.currentTarget.style.transform = 'translateX(100%)';
+                  setTimeout(() => {
+                    setStatsView('menu');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    e.currentTarget.style.transform = '';
+                  }, 200);
+                } else {
+                  e.currentTarget.style.transform = '';
+                }
+              }}
+            >
               <button
                 onClick={() => {
                   setStatsView('menu');
@@ -2648,7 +2886,46 @@ export default function Home() {
           
           {/* Progress Charts View */}
           {view === 'stats' && statsView === 'progress' && (
-            <div className="space-y-3">
+            <div 
+              className="space-y-3"
+              onTouchStart={(e) => {
+                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
+                e.currentTarget.dataset.swipeStartY = e.touches[0].clientY;
+              }}
+              onTouchMove={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const startY = parseFloat(e.currentTarget.dataset.swipeStartY);
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const diffX = currentX - startX;
+                const diffY = Math.abs(currentY - startY);
+                
+                // Only swipe if horizontal movement is greater than vertical
+                if (Math.abs(diffX) > diffY && diffX > 20) {
+                  e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
+                  e.currentTarget.style.transition = 'none';
+                }
+              }}
+              onTouchEnd={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const currentX = e.changedTouches[0].clientX;
+                const diffX = currentX - startX;
+                
+                e.currentTarget.style.transition = 'transform 0.2s ease-out';
+                
+                if (diffX > 100) {
+                  // Swipe right to go back
+                  e.currentTarget.style.transform = 'translateX(100%)';
+                  setTimeout(() => {
+                    setStatsView('menu');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    e.currentTarget.style.transform = '';
+                  }, 200);
+                } else {
+                  e.currentTarget.style.transform = '';
+                }
+              }}
+            >
               <div className="flex items-center gap-2 mb-3">
                 <button
                   onClick={() => {
