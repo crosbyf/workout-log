@@ -1679,137 +1679,113 @@ export default function Home() {
           
           {view === 'home' && (
             <div className="space-y-2.5">
-              {/* Single row with all controls */}
-              <div className="flex items-center gap-2 mb-3">
-                {/* Search - shorter */}
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search..."
-                    className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded-lg px-2 py-1.5 pl-8 text-sm`}
-                  />
-                  <div className={`absolute left-2 top-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <Icons.Search />
-                  </div>
-                </div>
-                
-                {/* Sort button */}
+              {/* Sort button only - at top */}
+              <div className="flex items-center justify-end gap-2">
                 <button
                   onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors`}
+                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm`}
                   title="Sort order"
                 >
                   <div className="flex flex-col text-[10px] leading-none">
                     <span>↑</span>
                     <span>↓</span>
                   </div>
-                </button>
-                
-                {/* Expand/Collapse All */}
-                <button
-                  onClick={() => {
-                    const allIndices = filtered().map((_, i) => i);
-                    if (expandedLog.size === allIndices.length) {
-                      setExpandedLog(new Set());
-                    } else {
-                      setExpandedLog(new Set(allIndices));
-                    }
-                  }}
-                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-2.5 py-1.5 rounded-lg text-[10px] font-medium transition-colors whitespace-nowrap leading-tight`}
-                >
-                  {expandedLog.size === filtered().length ? 'Collapse' : 'Expand'}
-                </button>
-                
-                {/* Calendar toggle */}
-                <button
-                  onClick={() => setShowLogCalendar(!showLogCalendar)}
-                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1`}
-                  title="Toggle calendar"
-                >
-                  <Icons.Calendar className="w-4 h-4" />
-                  <div className={`transform transition-transform ${showLogCalendar ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown className="w-3 h-3" />
-                  </div>
+                  <span className="text-xs">{sortOrder === 'desc' ? 'Newest' : 'Oldest'}</span>
                 </button>
               </div>
               
               {showLogCalendar && (
-                <div key={JSON.stringify(presets.map(p => ({n: p.name, c: p.color})))} className={`mb-4 mt-3 ${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
-                    {/* Month/Year header - sticky */}
-                    <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 py-3 z-10`}>
-                      <div className="flex items-center justify-between">
-                        {/* Info button for legend */}
+                <div key={JSON.stringify(presets.map(p => ({n: p.name, c: p.color})))} className={`mb-2 ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-200'} rounded-2xl shadow-lg overflow-hidden`}>
+                    {/* Month/Year header - compressed and refined */}
+                    <div className={`sticky top-0 ${darkMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-200'} backdrop-blur-sm border-b px-2.5 py-2 z-10`}>
+                      <div className="flex items-center justify-between gap-1">
+                        {/* Info button for legend - left aligned */}
                         <button
                           onClick={() => setShowCalendarLegend(true)}
-                          className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-700'} p-1`}
+                          className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-1 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors flex-shrink-0`}
                           title="Calendar legend"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </button>
-                        <button
-                          onClick={() => {
-                            const newDate = new Date(logCalendarDate);
-                            newDate.setMonth(newDate.getMonth() - 1);
-                            setLogCalendarDate(newDate);
-                          }}
-                          className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} p-2 rounded-lg transition-colors`}
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-                        <div className="flex items-center gap-2 flex-1 justify-center">
-                          <h3 className="font-bold text-lg whitespace-nowrap">
-                            {logCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                          </h3>
-                          {(() => {
-                            const now = new Date();
-                            const isCurrentMonth = logCalendarDate.getMonth() === now.getMonth() && 
-                                                  logCalendarDate.getFullYear() === now.getFullYear();
-                            if (!isCurrentMonth) {
-                              return (
-                                <button
-                                  onClick={() => setLogCalendarDate(new Date())}
-                                  className="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs font-medium whitespace-nowrap"
-                                >
-                                  Today
-                                </button>
-                              );
-                            }
-                          })()}
+                        
+                        {/* Month navigation - centered */}
+                        <div className="flex items-center gap-1.5 flex-1 justify-center">
+                          <button
+                            onClick={() => {
+                              const newDate = new Date(logCalendarDate);
+                              newDate.setMonth(newDate.getMonth() - 1);
+                              setLogCalendarDate(newDate);
+                            }}
+                            className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-1 rounded-lg transition-colors flex-shrink-0`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          
+                          <div className="text-center min-w-[130px]">
+                            <div className="font-bold text-sm">
+                              {logCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                            </div>
+                            {(() => {
+                              const now = new Date();
+                              const isCurrentMonth = logCalendarDate.getMonth() === now.getMonth() && 
+                                                    logCalendarDate.getFullYear() === now.getFullYear();
+                              if (!isCurrentMonth) {
+                                return (
+                                  <button
+                                    onClick={() => setLogCalendarDate(new Date())}
+                                    className="bg-blue-600 hover:bg-blue-700 px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap mt-0.5"
+                                  >
+                                    Today
+                                  </button>
+                                );
+                              }
+                            })()}
+                          </div>
+                          
+                          <button
+                            onClick={() => {
+                              const newDate = new Date(logCalendarDate);
+                              newDate.setMonth(newDate.getMonth() + 1);
+                              setLogCalendarDate(newDate);
+                            }}
+                            className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-1 rounded-lg transition-colors flex-shrink-0`}
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
                         </div>
+                        
+                        {/* Collapse button - right aligned */}
                         <button
-                          onClick={() => {
-                            const newDate = new Date(logCalendarDate);
-                            newDate.setMonth(newDate.getMonth() + 1);
-                            setLogCalendarDate(newDate);
-                          }}
-                          className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} p-2 rounded-lg transition-colors`}
+                          onClick={() => setShowLogCalendar(false)}
+                          className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-1 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors flex-shrink-0`}
+                          title="Hide calendar"
                         >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                          <div className="transform rotate-180">
+                            <Icons.ChevronDown className="w-4 h-4" />
+                          </div>
                         </button>
                       </div>
                     </div>
                     
-                    {/* Scrollable calendar content */}
-                    <div className="p-3 max-h-[350px] overflow-y-auto">
+                    {/* Scrollable calendar content - compressed */}
+                    <div className="p-2 max-h-[300px] overflow-y-auto">
                       {/* Day headers */}
-                      <div className="grid grid-cols-7 gap-1 mb-2">
+                      <div className="grid grid-cols-7 gap-0.5 mb-1">
                         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                          <div key={day} className="text-center text-xs text-gray-500 font-bold uppercase tracking-wider">
+                          <div key={day} className={`text-center text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} font-bold uppercase tracking-wide py-0.5`}>
                             {day}
                           </div>
                         ))}
                       </div>
 
                       {/* Calendar days */}
-                      <div className="grid grid-cols-7 gap-1">
+                      <div className="grid grid-cols-7 gap-0.5">
                       {(() => {
                         const now = new Date();
                         const year = logCalendarDate.getFullYear();
@@ -1890,6 +1866,63 @@ export default function Home() {
                   {/* Close outer container */}
                 </div>
               )}
+              
+              {/* Control buttons below calendar */}
+              <div className="flex items-center gap-2 mb-3">
+                {/* Search */}
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search workouts..."
+                    className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 pl-9 text-sm shadow-sm`}
+                  />
+                  <div className={`absolute left-3 top-2.5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <Icons.Search className="w-4 h-4" />
+                  </div>
+                </div>
+                
+                {/* Expand/Collapse All */}
+                <button
+                  onClick={() => {
+                    const allIndices = filtered().map((_, i) => i);
+                    if (expandedLog.size === allIndices.length) {
+                      setExpandedLog(new Set());
+                    } else {
+                      setExpandedLog(new Set(allIndices));
+                    }
+                  }}
+                  className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border px-3 py-2 rounded-xl text-xs font-medium transition-colors whitespace-nowrap shadow-sm`}
+                >
+                  {expandedLog.size === filtered().length ? 'Collapse' : 'Expand'}
+                </button>
+                
+                {/* Filter dropdown */}
+                <select
+                  value={historyFilter}
+                  onChange={(e) => setHistoryFilter(e.target.value)}
+                  className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm`}
+                >
+                  <option value="all">All Time</option>
+                  <option value="day">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="year">This Year</option>
+                </select>
+                
+                {/* Toggle calendar button */}
+                {!showLogCalendar && (
+                  <button
+                    onClick={() => setShowLogCalendar(true)}
+                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-sm`}
+                    title="Show calendar"
+                  >
+                    <Icons.Calendar className="w-4 h-4" />
+                    <span className="text-xs font-medium">Calendar</span>
+                  </button>
+                )}
+              </div>
 
               {filtered().map((w, i) => {
                 // Parse date without timezone issues
@@ -3163,37 +3196,52 @@ export default function Home() {
             <div 
               className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[60vh] overflow-y-auto pb-8`} 
               onClick={(e) => e.stopPropagation()}
-              onTouchStart={(e) => {
-                e.currentTarget.dataset.startY = e.touches[0].clientY;
-              }}
-              onTouchMove={(e) => {
-                const startY = parseFloat(e.currentTarget.dataset.startY);
-                const currentY = e.touches[0].clientY;
-                const diff = currentY - startY;
-                
-                if (diff > 0) {
-                  e.preventDefault();
-                  e.currentTarget.style.transform = `translateY(${diff}px)`;
-                  e.currentTarget.style.transition = 'none';
-                }
-              }}
-              onTouchEnd={(e) => {
-                const startY = parseFloat(e.currentTarget.dataset.startY);
-                const currentY = e.changedTouches[0].clientY;
-                const diff = currentY - startY;
-                
-                e.currentTarget.style.transition = 'transform 0.2s ease-out';
-                
-                if (diff > 100) {
-                  e.currentTarget.style.transform = 'translateY(100%)';
-                  setTimeout(() => setShowPresetSelector(false), 200);
-                } else {
-                  e.currentTarget.style.transform = '';
-                }
-              }}
             >
-              <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}>
-                <div className="flex justify-center pb-2">
+              <div 
+                className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}
+                onTouchStart={(e) => {
+                  e.currentTarget.dataset.startY = e.touches[0].clientY;
+                  e.currentTarget.dataset.modalParent = 'true';
+                }}
+                onTouchMove={(e) => {
+                  if (e.currentTarget.dataset.modalParent !== 'true') return;
+                  
+                  const startY = parseFloat(e.currentTarget.dataset.startY);
+                  const currentY = e.touches[0].clientY;
+                  const diff = currentY - startY;
+                  
+                  // Only allow dragging down from the handle area
+                  if (diff > 0) {
+                    const modal = e.currentTarget.closest('.rounded-t-2xl');
+                    if (modal) {
+                      modal.style.transform = `translateY(${diff}px)`;
+                      modal.style.transition = 'none';
+                    }
+                  }
+                }}
+                onTouchEnd={(e) => {
+                  if (e.currentTarget.dataset.modalParent !== 'true') return;
+                  
+                  const startY = parseFloat(e.currentTarget.dataset.startY);
+                  const currentY = e.changedTouches[0].clientY;
+                  const diff = currentY - startY;
+                  
+                  const modal = e.currentTarget.closest('.rounded-t-2xl');
+                  if (modal) {
+                    modal.style.transition = 'transform 0.2s ease-out';
+                    
+                    if (diff > 100) {
+                      modal.style.transform = 'translateY(100%)';
+                      setTimeout(() => setShowPresetSelector(false), 200);
+                    } else {
+                      modal.style.transform = '';
+                    }
+                  }
+                  
+                  delete e.currentTarget.dataset.modalParent;
+                }}
+              >
+                <div className="flex justify-center pb-2 cursor-grab active:cursor-grabbing">
                   <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
                 </div>
                 <div className="flex items-center justify-between px-4">
