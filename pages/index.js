@@ -1679,7 +1679,7 @@ export default function Home() {
 
           
           {view === 'home' && (
-            <div className="space-y-2.5">
+            <div className="space-y-2.5 pb-32">
               {/* No controls at top - cleaner! */}
               
               {showLogCalendar && (
@@ -1860,7 +1860,11 @@ export default function Home() {
                 {/* Search - icon only, expands on tap */}
                 {!searchExpanded ? (
                   <button
-                    onClick={() => setSearchExpanded(true)}
+                    onClick={() => {
+                      setSearchExpanded(true);
+                      // Scroll to top when search opens
+                      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+                    }}
                     className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
                     title="Search workouts"
                   >
@@ -1896,21 +1900,28 @@ export default function Home() {
                   </div>
                 )}
                 
-                {/* Sort - moved to this row */}
+                {/* Sort - single arrow (down = newest, up = oldest) */}
                 {!searchExpanded && (
                   <button
                     onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
                     className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
-                    title={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
+                    title={sortOrder === 'desc' ? 'Showing newest first' : 'Showing oldest first'}
                   >
-                    <div className="flex flex-col text-[9px] leading-none">
-                      <span>↑</span>
-                      <span>↓</span>
-                    </div>
+                    {sortOrder === 'desc' ? (
+                      // Down arrow for newest first
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      // Up arrow for oldest first
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                    )}
                   </button>
                 )}
                 
-                {/* Expand/Collapse All - better icons */}
+                {/* Expand/Collapse All - clearer vertical arrows */}
                 {!searchExpanded && (
                   <button
                     onClick={() => {
@@ -1922,17 +1933,17 @@ export default function Home() {
                       }
                     }}
                     className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
-                    title={expandedLog.size === filtered().length ? 'Collapse all' : 'Expand all'}
+                    title={expandedLog.size === filtered().length ? 'Collapse all workouts' : 'Expand all workouts'}
                   >
                     {expandedLog.size === filtered().length ? (
-                      // Collapse icon - arrows pointing at each other
+                      // Collapse: arrows pointing at each other vertically
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7l4-4m0 0l4 4m-4-4v18m0 0l-4-4m4 4l4-4" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m10 12V8m0 0l-4 4m4-4l4 4" />
                       </svg>
                     ) : (
-                      // Expand icon - up/down arrows
+                      // Expand: arrows pointing away from each other vertically
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v12m0 0l-4-4m4 4l4-4m10 4V8m0 0l-4 4m4-4l4 4" />
                       </svg>
                     )}
                   </button>
@@ -3573,28 +3584,40 @@ export default function Home() {
           </div>
         )}
         
-        {/* Calendar Legend Modal */}
+        {/* Calendar Legend Modal - Improved */}
         {showCalendarLegend && (
           <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowCalendarLegend(false)}>
-            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-sm w-full`} onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-xl font-bold mb-4">Calendar Legend</h3>
-              <div className="space-y-3">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-6 max-w-md w-full shadow-2xl`} onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-xl font-bold">Workout Colors</h3>
+                <button
+                  onClick={() => setShowCalendarLegend(false)}
+                  className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-1`}
+                >
+                  <Icons.X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                Each workout preset has a unique color shown on the calendar and in your workout list.
+              </p>
+              
+              <div className="space-y-2.5 max-h-[400px] overflow-y-auto">
                 {presets.map((preset, i) => {
                   const color = getPresetColor(preset.name);
                   return (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded border-l-4 ${color.border} ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} flex-shrink-0`}></div>
-                      <div className="font-semibold text-sm">{preset.name}</div>
+                    <div key={i} className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                      <div className={`w-12 h-12 rounded-lg border-l-4 ${color.border} ${darkMode ? 'bg-gray-600' : 'bg-white'} flex-shrink-0 shadow-sm`}></div>
+                      <div className="flex-1">
+                        <div className="font-semibold">{preset.name}</div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {preset.exercises.length} exercise{preset.exercises.length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
               </div>
-              <button
-                onClick={() => setShowCalendarLegend(false)}
-                className="mt-6 w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold transition-colors"
-              >
-                Got it
-              </button>
             </div>
           </div>
         )}
@@ -3736,7 +3759,7 @@ export default function Home() {
                           const color = getPresetColor(p.name);
                           return (
                             <option key={i} value={p.name}>
-                              ● {p.name}
+                              {p.name}
                             </option>
                           );
                         })}
