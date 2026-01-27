@@ -1669,7 +1669,7 @@ export default function Home() {
         )}
 
         <div className={`sticky top-0 z-10 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
             <button 
               onClick={() => {
                 const themeOrder = ['light', 'dark', 'neon', 'forest', 'sunset'];
@@ -1678,11 +1678,22 @@ export default function Home() {
                 setTheme(nextTheme);
                 localStorage.setItem('theme', nextTheme);
               }}
-              className="cursor-pointer hover:opacity-80 transition-opacity"
+              className="cursor-pointer hover:opacity-80 transition-opacity flex-1"
             >
               <h1 className={`text-2xl font-extrabold tracking-tight bg-gradient-to-r ${darkMode ? 'from-white to-gray-300' : 'from-gray-900 to-gray-700'} bg-clip-text text-transparent`}>GORS LOG</h1>
               <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
             </button>
+            
+            {/* Start Workout Button - only on Home */}
+            {view === 'home' && (
+              <button
+                onClick={() => setShowPresetSelector(true)}
+                className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+              >
+                <Icons.Plus className="w-5 h-5" />
+                Start
+              </button>
+            )}
           </div>
         </div>
 
@@ -1772,8 +1783,8 @@ export default function Home() {
                       </div>
                     </div>
                     
-                    {/* Scrollable calendar content - 30% compressed */}
-                    <div className="p-1.5 max-h-[210px] overflow-y-auto">
+                    {/* Scrollable calendar content - further compressed */}
+                    <div className="p-1.5 max-h-[180px] overflow-y-auto">
                       {/* Day headers - smaller */}
                       <div className="grid grid-cols-7 gap-0.5 mb-0.5">
                         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
@@ -2068,8 +2079,8 @@ export default function Home() {
                 return sortedWeeks.map(([weekKey, { label, workouts }]) => (
                   <div key={weekKey} className="mb-4">
                     {/* Week Header - Sticky */}
-                    <div className={`sticky top-[72px] ${darkMode ? 'bg-gray-900/95 border-gray-700' : 'bg-gray-50/95 border-gray-300'} backdrop-blur-sm border-b z-[4] py-2 px-3 -mx-3`}>
-                      <h3 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <div className={`sticky top-[72px] bg-gray-900/95 backdrop-blur-sm border-b border-gray-700 z-[4] py-2 px-3 -mx-3`}>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
                         {label}
                       </h3>
                     </div>
@@ -2099,14 +2110,14 @@ export default function Home() {
                           newExpanded.add(i);
                           setExpandedLog(newExpanded);
                           
-                          // Scroll this workout to top when expanding - wait for DOM update
+                          // Scroll this workout to top when expanding - account for week header
                           requestAnimationFrame(() => {
                             requestAnimationFrame(() => {
                               setTimeout(() => {
                                 if (element) {
                                   const rect = element.getBoundingClientRect();
                                   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                  const targetY = rect.top + scrollTop - 80; // 80px offset from top
+                                  const targetY = rect.top + scrollTop - 120; // 120px offset (72px header + 48px week header)
                                   window.scrollTo({ top: targetY, behavior: 'smooth' });
                                 }
                               }, 100);
@@ -4344,20 +4355,7 @@ export default function Home() {
         )}
         
         {/* Bottom Navigation */}
-        <div className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-gray-100/95 border-gray-300'} backdrop-blur-sm border-t safe-area-pb shadow-2xl pb-2`}>
-          {/* New Workout Button - only on Home */}
-          {view === 'home' && (
-            <div className="max-w-4xl mx-auto px-3 pt-2 pb-1">
-              <button
-                onClick={() => setShowPresetSelector(true)}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-3 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
-              >
-                <Icons.Plus className="w-6 h-6" />
-                New Workout
-              </button>
-            </div>
-          )}
-          
+        <div className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-gray-100/95 border-gray-300'} backdrop-blur-sm border-t safe-area-pb shadow-2xl pb-2 z-20`}>
           <div className="max-w-4xl mx-auto flex">
             <button
               onClick={() => {
