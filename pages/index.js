@@ -1789,8 +1789,8 @@ export default function Home() {
                       </div>
                     </div>
                     
-                    {/* Scrollable calendar content - further compressed */}
-                    <div className="p-1.5 max-h-[180px] overflow-y-auto">
+                    {/* Scrollable calendar content - expand slightly */}
+                    <div className="p-1.5 max-h-[200px] overflow-y-auto">
                       {/* Day headers - smaller */}
                       <div className="grid grid-cols-7 gap-0.5 mb-0.5">
                         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
