@@ -1670,6 +1670,10 @@ export default function Home() {
 
         <div className={`sticky top-0 z-10 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
+            {/* Spacer for balance */}
+            <div className="w-10"></div>
+            
+            {/* Centered GORS LOG */}
             <button 
               onClick={() => {
                 const themeOrder = ['light', 'dark', 'neon', 'forest', 'sunset'];
@@ -1678,21 +1682,23 @@ export default function Home() {
                 setTheme(nextTheme);
                 localStorage.setItem('theme', nextTheme);
               }}
-              className="cursor-pointer hover:opacity-80 transition-opacity flex-1"
+              className="cursor-pointer hover:opacity-80 transition-opacity text-center"
             >
               <h1 className={`text-2xl font-extrabold tracking-tight bg-gradient-to-r ${darkMode ? 'from-white to-gray-300' : 'from-gray-900 to-gray-700'} bg-clip-text text-transparent`}>GORS LOG</h1>
               <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
             </button>
             
-            {/* Start Workout Button - only on Home */}
-            {view === 'home' && (
+            {/* Start Workout Button - just icon */}
+            {view === 'home' ? (
               <button
                 onClick={() => setShowPresetSelector(true)}
-                className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg px-4 py-2 flex items-center gap-2 text-sm font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg p-2 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                title="Start Workout"
               >
                 <Icons.Plus className="w-5 h-5" />
-                Start
               </button>
+            ) : (
+              <div className="w-10"></div>
             )}
           </div>
         </div>
@@ -1807,7 +1813,7 @@ export default function Home() {
 
                         // Empty cells
                         for (let i = 0; i < firstDay; i++) {
-                          days.push(<div key={`empty-${i}`} className="aspect-square" />);
+                          days.push(<div key={`empty-${i}`} className="h-8" />);
                         }
 
                         // Days
@@ -1855,7 +1861,7 @@ export default function Home() {
                                   }
                                 }
                               }}
-                              className={`aspect-square rounded border flex items-center justify-center text-xs
+                              className={`h-8 w-full rounded border flex items-center justify-center text-xs
                                 ${hasWorkout ? `${borderColor} ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} font-bold` : darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'}
                                 ${isToday ? 'ring-2 ring-blue-400' : ''}
                                 ${selectedLogDay === dateStr ? 'ring-2 ring-white' : ''}
@@ -2078,9 +2084,9 @@ export default function Home() {
                 
                 return sortedWeeks.map(([weekKey, { label, workouts }]) => (
                   <div key={weekKey} className="mb-4">
-                    {/* Week Header - Sticky */}
-                    <div className={`sticky top-[72px] bg-gray-900/95 backdrop-blur-sm border-b border-gray-700 z-[4] py-2 px-3 -mx-3`}>
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                    {/* Week Header - Transparent and subtle */}
+                    <div className="sticky top-[72px] backdrop-blur-sm border-b border-gray-500/20 z-[4] py-2 px-3 -mx-3">
+                      <h3 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                         {label}
                       </h3>
                     </div>
