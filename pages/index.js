@@ -106,7 +106,9 @@ export default function Home() {
   const [exercises, setExercises] = useState([]);
   const [view, setView] = useState('home'); // 'home' (calendar/log), 'stats', 'settings', 'test'
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'neon', 'sunset'
+  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'neon', 'forest'
+  const [showHomeV1, setShowHomeV1] = useState(false); // Toggle for old Home view
+  const [showHomeV1, setShowHomeV1] = useState(false); // Toggle for old Home view
   const [showNew, setShowNew] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null); // For exercise detail view
   const [statsView, setStatsView] = useState('menu'); // 'menu', 'exercises', 'weight'
@@ -317,6 +319,7 @@ export default function Home() {
         const t = localStorage.getItem('theme');
         const dm = localStorage.getItem('darkMode'); // Legacy support
         const we = localStorage.getItem('weightEntries');
+        const hv1 = localStorage.getItem('showHomeV1');
         if (w) setWorkouts(JSON.parse(w));
         if (p) setPresets(JSON.parse(p));
         if (e) setExercises(JSON.parse(e));
@@ -332,6 +335,7 @@ export default function Home() {
           setTheme(JSON.parse(dm) ? 'dark' : 'light');
         }
         if (we) setWeightEntries(JSON.parse(we));
+        if (hv1) setShowHomeV1(JSON.parse(hv1));
       };
       
       // Load data immediately
@@ -1692,6 +1696,476 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           
+          {/* HOME V1 - Original layout (optional, toggle in settings) */}
+          {view === 'homev1' && showHomeV1 && (
+            <div className="space-y-2.5 pb-32">
+              
+              {/* Calendar (same as Home) */}
+              {showLogCalendar && (
+                <div key={JSON.stringify(presets.map(p => ({n: p.name, c: p.color})))} className={`mb-2 ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-200'} rounded-2xl shadow-lg overflow-hidden`}>
+                    <div className={`sticky top-0 ${darkMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-200'} backdrop-blur-sm border-b px-2 py-1.5 z-[5]`}>
+                      <div className="flex items-center justify-between gap-1">
+                        <button
+                          onClick={() => setShowCalendarLegend(true)}
+                          className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-0.5 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors flex-shrink-0`}
+                          title="Calendar legend"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
+                        
+                        <div className="flex items-center gap-1 flex-1 justify-center">
+                          <button
+                            onClick={() => {
+                              const newDate = new Date(logCalendarDate);
+                              newDate.setMonth(newDate.getMonth() - 1);
+                              setLogCalendarDate(newDate);
+                            }}
+                            className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-0.5 rounded transition-colors flex-shrink-0`}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          
+                          <div className="text-center min-w-[120px]">
+                            <div className="font-bold text-xs">
+                              {logCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                            </div>
+                            {(() => {
+                              const now = new Date();
+                              const isCurrentMonth = logCalendarDate.getMonth() === now.getMonth() && 
+                                                    logCalendarDate.getFullYear() === now.getFullYear();
+                              if (!isCurrentMonth) {
+                                return (
+                                  <button
+                                    onClick={() => setLogCalendarDate(new Date())}
+                                    className="bg-blue-600 hover:bg-blue-700 px-1 py-0.5 rounded text-[9px] font-medium whitespace-nowrap"
+                                  >
+                                    Today
+                                  </button>
+                                );
+                              }
+                            })()}
+                          </div>
+                          
+                          <button
+                            onClick={() => {
+                              const newDate = new Date(logCalendarDate);
+                              newDate.setMonth(newDate.getMonth() + 1);
+                              setLogCalendarDate(newDate);
+                            }}
+                            className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-0.5 rounded transition-colors flex-shrink-0`}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        <button
+                          onClick={() => setShowLogCalendar(false)}
+                          className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-0.5 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors flex-shrink-0`}
+                          title="Hide calendar"
+                        >
+                          <div className="transform rotate-180">
+                            <Icons.ChevronDown className="w-3.5 h-3.5" />
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-1.5 max-h-[200px] overflow-y-auto">
+                      <div className="grid grid-cols-7 gap-0.5 mb-0.5">
+                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                          <div key={day} className={`text-center text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} font-bold uppercase tracking-wide py-0.5`}>
+                            {day}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-7 gap-0.5">
+                      {(() => {
+                        const now = new Date();
+                        const year = logCalendarDate.getFullYear();
+                        const month = logCalendarDate.getMonth();
+                        let firstDay = new Date(year, month, 1).getDay();
+                        firstDay = firstDay === 0 ? 6 : firstDay - 1;
+                        const daysInMonth = new Date(year, month + 1, 0).getDate();
+                        const days = [];
+
+                        for (let i = 0; i < firstDay; i++) {
+                          days.push(<div key={`empty-${i}`} className="h-8" />);
+                        }
+
+                        for (let day = 1; day <= daysInMonth; day++) {
+                          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const hasWorkout = workouts.some(w => w.date === dateStr);
+                          const isToday = dateStr === new Date().toISOString().split('T')[0];
+                          
+                          const workout = workouts.find(w => w.date === dateStr);
+                          const color = workout ? getPresetColor(workout.location) : null;
+                          const borderColor = color ? color.border : '';
+
+                          days.push(
+                            <button
+                              key={day}
+                              onClick={() => {
+                                if (hasWorkout) {
+                                  setSelectedLogDay(dateStr);
+                                  const element = document.querySelector(`[data-workout-date="${dateStr}"]`);
+                                  if (element) {
+                                    setTimeout(() => {
+                                      const rect = element.getBoundingClientRect();
+                                      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                      const targetY = rect.top + scrollTop - 80;
+                                      window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                    }, 300);
+                                  }
+                                }
+                              }}
+                              className={`h-8 w-full rounded border flex items-center justify-center text-xs
+                                ${hasWorkout ? `${borderColor} ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} font-bold` : darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'}
+                                ${isToday ? 'ring-2 ring-blue-400' : ''}
+                                ${selectedLogDay === dateStr ? 'ring-2 ring-white' : ''}
+                                ${hasWorkout ? darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200' : ''}
+                                transition-colors
+                              `}
+                            >
+                              {day}
+                            </button>
+                          );
+                        }
+
+                        return days;
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Control buttons */}
+              <div className="flex items-center gap-2 mb-3">
+                {!searchExpanded ? (
+                  <button
+                    onClick={() => {
+                      setSearchExpanded(true);
+                      setTimeout(() => {
+                        document.documentElement.scrollTop = 0;
+                        document.body.scrollTop = 0;
+                      }, 50);
+                    }}
+                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
+                    title="Search workouts"
+                  >
+                    <Icons.Search className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <div className="relative flex-1">
+                    <input
+                      ref={(el) => el && el.focus()}
+                      type="text"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder="Search workouts..."
+                      className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 pl-9 text-sm shadow-sm`}
+                      onBlur={() => {
+                        if (!search) setSearchExpanded(false);
+                      }}
+                    />
+                    <Icons.Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
+                    {search && (
+                      <button
+                        onClick={() => {
+                          setSearch('');
+                          setSearchExpanded(false);
+                        }}
+                        className={`absolute right-2 top-2 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-0.5`}
+                      >
+                        <Icons.X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+                
+                {!searchExpanded && (
+                  <button
+                    onClick={() => {
+                      const allIndices = filtered().map((_, i) => i);
+                      if (expandedLog.size === allIndices.length) {
+                        setExpandedLog(new Set());
+                      } else {
+                        setExpandedLog(new Set(allIndices));
+                      }
+                    }}
+                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
+                    title={expandedLog.size === filtered().length ? 'Collapse all workouts' : 'Expand all workouts'}
+                  >
+                    {expandedLog.size === filtered().length ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m10 12V8m0 0l-4 4m4-4l4 4" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v12m0 0l-4-4m4 4l4-4m10 4V8m0 0l-4 4m4-4l4 4" />
+                      </svg>
+                    )}
+                  </button>
+                )}
+                
+                {!searchExpanded && (
+                  <select
+                    value={historyFilter}
+                    onChange={(e) => setHistoryFilter(e.target.value)}
+                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl pl-2 pr-5 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm min-w-0`}
+                  >
+                    <option value="all">All</option>
+                    <option value="day">Today</option>
+                    <option value="week">Week</option>
+                    <option value="month">Month</option>
+                    <option value="year">Year</option>
+                  </select>
+                )}
+                
+                {!showLogCalendar && !searchExpanded && (
+                  <button
+                    onClick={() => setShowLogCalendar(true)}
+                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
+                    title="Show calendar"
+                  >
+                    <Icons.Calendar className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              
+              {/* Workout List with Sidebar Labels */}
+              {(() => {
+                const workoutList = filtered();
+                const now = new Date();
+                
+                const getWeekStart = (date) => {
+                  const d = new Date(date);
+                  const day = d.getDay();
+                  const diff = day === 0 ? -6 : 1 - day;
+                  const weekStart = new Date(d);
+                  weekStart.setDate(d.getDate() + diff);
+                  weekStart.setHours(0, 0, 0, 0);
+                  return weekStart;
+                };
+                
+                const getWeekLabel = (weekStart) => {
+                  const weekEnd = new Date(weekStart);
+                  weekEnd.setDate(weekStart.getDate() + 6);
+                  
+                  const currentWeekStart = getWeekStart(now);
+                  const lastWeekStart = new Date(currentWeekStart);
+                  lastWeekStart.setDate(currentWeekStart.getDate() - 7);
+                  
+                  const weekStartTime = weekStart.getTime();
+                  
+                  if (weekStartTime === currentWeekStart.getTime()) {
+                    return 'THIS WEEK';
+                  }
+                  
+                  if (weekStartTime === lastWeekStart.getTime()) {
+                    return 'LAST WEEK';
+                  }
+                  
+                  const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
+                  const startDay = weekStart.getDate();
+                  const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+                  const endDay = weekEnd.getDate();
+                  
+                  if (startMonth === endMonth) {
+                    return `${startMonth.toUpperCase()} ${startDay}-${endDay}`;
+                  } else {
+                    return `${startMonth.toUpperCase()} ${startDay}-${endMonth.toUpperCase()} ${endDay}`;
+                  }
+                };
+                
+                const workoutsByWeek = {};
+                workoutList.forEach((w, i) => {
+                  const [year, month, day] = w.date.split('-');
+                  const workoutDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                  const weekStart = getWeekStart(workoutDate);
+                  const weekKey = weekStart.toISOString().split('T')[0];
+                  
+                  if (!workoutsByWeek[weekKey]) {
+                    workoutsByWeek[weekKey] = {
+                      weekStart,
+                      label: getWeekLabel(weekStart),
+                      workouts: []
+                    };
+                  }
+                  
+                  workoutsByWeek[weekKey].workouts.push({ workout: w, index: i });
+                });
+                
+                const sortedWeeks = Object.entries(workoutsByWeek).sort((a, b) => {
+                  return new Date(b[0]).getTime() - new Date(a[0]).getTime();
+                });
+                
+                return sortedWeeks.map(([weekKey, { label, workouts }]) => (
+                  <div key={weekKey} className="flex gap-0 mb-6">
+                    {/* Week Label Sidebar - Theme-aware colors for maximum visibility */}
+                    <div className={`w-[25px] flex-shrink-0 flex items-center justify-center border-r-[8px] rounded-l-xl ${
+                      darkMode ? 'bg-white border-white' : 'bg-black border-black'
+                    }`}>
+                      <div className="text-center py-2">
+                        <div className={`text-[8px] font-black leading-tight tracking-wider ${
+                          darkMode ? 'text-black' : 'text-white'
+                        }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                          {label}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Workouts for this week */}
+                    <div className="flex-1 space-y-2">
+                      {workouts.map(({ workout: w, index: i }) => {
+                        const [year, month, day] = w.date.split('-');
+                        const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                        const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                        const isExpanded = expandedLog.has(i);
+                        
+                        const color = getPresetColor(w.location);
+                        const borderColor = color.border;
+                        
+                        return (
+                          <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-r-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
+                            <button
+                              onClick={(e) => {
+                                const newExpanded = new Set(expandedLog);
+                                if (newExpanded.has(i)) {
+                                  newExpanded.delete(i);
+                                } else {
+                                  const element = e.currentTarget.closest('[data-workout-date]');
+                                  newExpanded.add(i);
+                                  setExpandedLog(newExpanded);
+                                  
+                                  // Scroll this workout to top when expanding
+                                  requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                      setTimeout(() => {
+                                        if (element) {
+                                          const rect = element.getBoundingClientRect();
+                                          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                          const targetY = rect.top + scrollTop - 120;
+                                          window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                        }
+                                      }, 100);
+                                    });
+                                  });
+                                  return;
+                                }
+                                setExpandedLog(newExpanded);
+                              }}
+                              className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="font-bold text-base">
+                                    {dayOfWeek} {month}/{day}/{year.slice(2)}
+                                    {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
+                                  </div>
+                                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
+                                    {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}
+                                    {w.structure && (
+                                      <span className="font-semibold">
+                                        {' • '}
+                                        {w.structure === 'pairs' ? `Pairs ${w.structureDuration}'` : 'Circuit'}
+                                      </span>
+                                    )}
+                                    {w.elapsedTime && ` • ${formatTimeHHMMSS(w.elapsedTime)}`}
+                                  </div>
+                                </div>
+                                <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                  <Icons.ChevronDown />
+                                </div>
+                              </div>
+                            </button>
+                            
+                            {isExpanded && (
+                              <div className="px-3 pb-3 space-y-2">
+                                {w.location === 'Day Off' && w.notes ? (
+                                  <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700/50' : 'bg-yellow-50 border-yellow-300'} border rounded-lg p-3`}>
+                                    <div className="text-sm font-semibold text-yellow-600 mb-2">Rest Day</div>
+                                    <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <div className="space-y-1">
+                                      {w.exercises.map((ex, ei) => {
+                                        const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                                        return (
+                                          <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5`}>
+                                            <div className="grid grid-cols-[110px_1fr_40px] gap-2 items-start text-xs">
+                                              <div className="font-medium truncate">{ex.name}</div>
+                                              <div className="flex items-center gap-1 flex-wrap min-w-0">
+                                                {ex.sets.map((s, si) => (
+                                                  <span 
+                                                    key={si} 
+                                                    className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} whitespace-nowrap`}
+                                                  >
+                                                    {s.reps}
+                                                    {si < ex.sets.length - 1 && <span className={`${darkMode ? 'text-gray-600' : 'text-gray-400'} mx-0.5`}>·</span>}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                              <div className="font-bold text-right">{totalReps}</div>
+                                            </div>
+                                            {ex.notes && (
+                                              <div className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} mt-1`}>{ex.notes}</div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                    
+                                    {w.notes && (
+                                      <div className={`${darkMode ? 'bg-blue-900/20 border-blue-700/50' : 'bg-blue-50 border-blue-300'} border rounded-lg p-2`}>
+                                        <div className="text-xs font-semibold text-blue-600 mb-1">Notes</div>
+                                        <div className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
+                                      </div>
+                                    )}
+                                    
+                                    {/* Collapse Button */}
+                                    <button
+                                      onClick={() => {
+                                        const newExpanded = new Set(expandedLog);
+                                        newExpanded.delete(i);
+                                        setExpandedLog(newExpanded);
+                                      }}
+                                      className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1`}
+                                    >
+                                      <div className="transform rotate-180">
+                                        <Icons.ChevronDown className="w-3 h-3" />
+                                      </div>
+                                      Collapse
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ));
+              })()}
+
+              {filtered().length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  {search ? 'No workouts found' : 'No workouts yet'}
+                </div>
+              )}
+            </div>
+          )}
+          
+          
+          {/* HOME - New sidebar layout (was test) */}
           {view === 'home' && (
             <div className="space-y-2.5 pb-32">
               {/* No controls at top - cleaner! */}
@@ -2233,475 +2707,6 @@ export default function Home() {
               )}
             </div>
           )}
-          
-          {/* TEST VIEW - Sidebar Layout */}
-          {view === 'test' && (
-            <div className="space-y-2.5 pb-32">
-              
-              {/* Calendar (same as Home) */}
-              {showLogCalendar && (
-                <div key={JSON.stringify(presets.map(p => ({n: p.name, c: p.color})))} className={`mb-2 ${darkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : 'bg-gradient-to-br from-white to-gray-50 border border-gray-200'} rounded-2xl shadow-lg overflow-hidden`}>
-                    <div className={`sticky top-0 ${darkMode ? 'bg-gray-800/95 border-gray-700' : 'bg-white/95 border-gray-200'} backdrop-blur-sm border-b px-2 py-1.5 z-[5]`}>
-                      <div className="flex items-center justify-between gap-1">
-                        <button
-                          onClick={() => setShowCalendarLegend(true)}
-                          className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-0.5 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors flex-shrink-0`}
-                          title="Calendar legend"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </button>
-                        
-                        <div className="flex items-center gap-1 flex-1 justify-center">
-                          <button
-                            onClick={() => {
-                              const newDate = new Date(logCalendarDate);
-                              newDate.setMonth(newDate.getMonth() - 1);
-                              setLogCalendarDate(newDate);
-                            }}
-                            className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-0.5 rounded transition-colors flex-shrink-0`}
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                            </svg>
-                          </button>
-                          
-                          <div className="text-center min-w-[120px]">
-                            <div className="font-bold text-xs">
-                              {logCalendarDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                            </div>
-                            {(() => {
-                              const now = new Date();
-                              const isCurrentMonth = logCalendarDate.getMonth() === now.getMonth() && 
-                                                    logCalendarDate.getFullYear() === now.getFullYear();
-                              if (!isCurrentMonth) {
-                                return (
-                                  <button
-                                    onClick={() => setLogCalendarDate(new Date())}
-                                    className="bg-blue-600 hover:bg-blue-700 px-1 py-0.5 rounded text-[9px] font-medium whitespace-nowrap"
-                                  >
-                                    Today
-                                  </button>
-                                );
-                              }
-                            })()}
-                          </div>
-                          
-                          <button
-                            onClick={() => {
-                              const newDate = new Date(logCalendarDate);
-                              newDate.setMonth(newDate.getMonth() + 1);
-                              setLogCalendarDate(newDate);
-                            }}
-                            className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-0.5 rounded transition-colors flex-shrink-0`}
-                          >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                          </button>
-                        </div>
-                        
-                        <button
-                          onClick={() => setShowLogCalendar(false)}
-                          className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-0.5 rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-200'} transition-colors flex-shrink-0`}
-                          title="Hide calendar"
-                        >
-                          <div className="transform rotate-180">
-                            <Icons.ChevronDown className="w-3.5 h-3.5" />
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="p-1.5 max-h-[200px] overflow-y-auto">
-                      <div className="grid grid-cols-7 gap-0.5 mb-0.5">
-                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                          <div key={day} className={`text-center text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} font-bold uppercase tracking-wide py-0.5`}>
-                            {day}
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="grid grid-cols-7 gap-0.5">
-                      {(() => {
-                        const now = new Date();
-                        const year = logCalendarDate.getFullYear();
-                        const month = logCalendarDate.getMonth();
-                        let firstDay = new Date(year, month, 1).getDay();
-                        firstDay = firstDay === 0 ? 6 : firstDay - 1;
-                        const daysInMonth = new Date(year, month + 1, 0).getDate();
-                        const days = [];
-
-                        for (let i = 0; i < firstDay; i++) {
-                          days.push(<div key={`empty-${i}`} className="h-8" />);
-                        }
-
-                        for (let day = 1; day <= daysInMonth; day++) {
-                          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                          const hasWorkout = workouts.some(w => w.date === dateStr);
-                          const isToday = dateStr === new Date().toISOString().split('T')[0];
-                          
-                          const workout = workouts.find(w => w.date === dateStr);
-                          const color = workout ? getPresetColor(workout.location) : null;
-                          const borderColor = color ? color.border : '';
-
-                          days.push(
-                            <button
-                              key={day}
-                              onClick={() => {
-                                if (hasWorkout) {
-                                  setSelectedLogDay(dateStr);
-                                  const element = document.querySelector(`[data-workout-date="${dateStr}"]`);
-                                  if (element) {
-                                    setTimeout(() => {
-                                      const rect = element.getBoundingClientRect();
-                                      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                      const targetY = rect.top + scrollTop - 80;
-                                      window.scrollTo({ top: targetY, behavior: 'smooth' });
-                                    }, 300);
-                                  }
-                                }
-                              }}
-                              className={`h-8 w-full rounded border flex items-center justify-center text-xs
-                                ${hasWorkout ? `${borderColor} ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} font-bold` : darkMode ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-white'}
-                                ${isToday ? 'ring-2 ring-blue-400' : ''}
-                                ${selectedLogDay === dateStr ? 'ring-2 ring-white' : ''}
-                                ${hasWorkout ? darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200' : ''}
-                                transition-colors
-                              `}
-                            >
-                              {day}
-                            </button>
-                          );
-                        }
-
-                        return days;
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Control buttons */}
-              <div className="flex items-center gap-2 mb-3">
-                {!searchExpanded ? (
-                  <button
-                    onClick={() => {
-                      setSearchExpanded(true);
-                      setTimeout(() => {
-                        document.documentElement.scrollTop = 0;
-                        document.body.scrollTop = 0;
-                      }, 50);
-                    }}
-                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
-                    title="Search workouts"
-                  >
-                    <Icons.Search className="w-4 h-4" />
-                  </button>
-                ) : (
-                  <div className="relative flex-1">
-                    <input
-                      ref={(el) => el && el.focus()}
-                      type="text"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      placeholder="Search workouts..."
-                      className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-3 py-2 pl-9 text-sm shadow-sm`}
-                      onBlur={() => {
-                        if (!search) setSearchExpanded(false);
-                      }}
-                    />
-                    <Icons.Search className="absolute left-2.5 top-2.5 w-4 h-4 text-gray-400" />
-                    {search && (
-                      <button
-                        onClick={() => {
-                          setSearch('');
-                          setSearchExpanded(false);
-                        }}
-                        className={`absolute right-2 top-2 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-0.5`}
-                      >
-                        <Icons.X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                )}
-                
-                {!searchExpanded && (
-                  <button
-                    onClick={() => {
-                      const allIndices = filtered().map((_, i) => i);
-                      if (expandedLog.size === allIndices.length) {
-                        setExpandedLog(new Set());
-                      } else {
-                        setExpandedLog(new Set(allIndices));
-                      }
-                    }}
-                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
-                    title={expandedLog.size === filtered().length ? 'Collapse all workouts' : 'Expand all workouts'}
-                  >
-                    {expandedLog.size === filtered().length ? (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m10 12V8m0 0l-4 4m4-4l4 4" />
-                      </svg>
-                    ) : (
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v12m0 0l-4-4m4 4l4-4m10 4V8m0 0l-4 4m4-4l4 4" />
-                      </svg>
-                    )}
-                  </button>
-                )}
-                
-                {!searchExpanded && (
-                  <select
-                    value={historyFilter}
-                    onChange={(e) => setHistoryFilter(e.target.value)}
-                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl pl-2 pr-5 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm min-w-0`}
-                  >
-                    <option value="all">All</option>
-                    <option value="day">Today</option>
-                    <option value="week">Week</option>
-                    <option value="month">Month</option>
-                    <option value="year">Year</option>
-                  </select>
-                )}
-                
-                {!showLogCalendar && !searchExpanded && (
-                  <button
-                    onClick={() => setShowLogCalendar(true)}
-                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
-                    title="Show calendar"
-                  >
-                    <Icons.Calendar className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-              
-              {/* Workout List with Sidebar Labels */}
-              {(() => {
-                const workoutList = filtered();
-                const now = new Date();
-                
-                const getWeekStart = (date) => {
-                  const d = new Date(date);
-                  const day = d.getDay();
-                  const diff = day === 0 ? -6 : 1 - day;
-                  const weekStart = new Date(d);
-                  weekStart.setDate(d.getDate() + diff);
-                  weekStart.setHours(0, 0, 0, 0);
-                  return weekStart;
-                };
-                
-                const getWeekLabel = (weekStart) => {
-                  const weekEnd = new Date(weekStart);
-                  weekEnd.setDate(weekStart.getDate() + 6);
-                  
-                  const currentWeekStart = getWeekStart(now);
-                  const lastWeekStart = new Date(currentWeekStart);
-                  lastWeekStart.setDate(currentWeekStart.getDate() - 7);
-                  
-                  const weekStartTime = weekStart.getTime();
-                  
-                  if (weekStartTime === currentWeekStart.getTime()) {
-                    return 'THIS WEEK';
-                  }
-                  
-                  if (weekStartTime === lastWeekStart.getTime()) {
-                    return 'LAST WEEK';
-                  }
-                  
-                  const startMonth = weekStart.toLocaleDateString('en-US', { month: 'short' });
-                  const startDay = weekStart.getDate();
-                  const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
-                  const endDay = weekEnd.getDate();
-                  
-                  if (startMonth === endMonth) {
-                    return `${startMonth.toUpperCase()} ${startDay}-${endDay}`;
-                  } else {
-                    return `${startMonth.toUpperCase()} ${startDay}-${endMonth.toUpperCase()} ${endDay}`;
-                  }
-                };
-                
-                const workoutsByWeek = {};
-                workoutList.forEach((w, i) => {
-                  const [year, month, day] = w.date.split('-');
-                  const workoutDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                  const weekStart = getWeekStart(workoutDate);
-                  const weekKey = weekStart.toISOString().split('T')[0];
-                  
-                  if (!workoutsByWeek[weekKey]) {
-                    workoutsByWeek[weekKey] = {
-                      weekStart,
-                      label: getWeekLabel(weekStart),
-                      workouts: []
-                    };
-                  }
-                  
-                  workoutsByWeek[weekKey].workouts.push({ workout: w, index: i });
-                });
-                
-                const sortedWeeks = Object.entries(workoutsByWeek).sort((a, b) => {
-                  return new Date(b[0]).getTime() - new Date(a[0]).getTime();
-                });
-                
-                return sortedWeeks.map(([weekKey, { label, workouts }]) => (
-                  <div key={weekKey} className="flex gap-0 mb-6">
-                    {/* Week Label Sidebar - Theme-aware colors for maximum visibility */}
-                    <div className={`w-[25px] flex-shrink-0 flex items-center justify-center border-r-[8px] rounded-l-xl ${
-                      darkMode ? 'bg-white border-white' : 'bg-black border-black'
-                    }`}>
-                      <div className="text-center py-2">
-                        <div className={`text-[8px] font-black leading-tight tracking-wider ${
-                          darkMode ? 'text-black' : 'text-white'
-                        }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
-                          {label}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Workouts for this week */}
-                    <div className="flex-1 space-y-2">
-                      {workouts.map(({ workout: w, index: i }) => {
-                        const [year, month, day] = w.date.split('-');
-                        const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                        const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                        const isExpanded = expandedLog.has(i);
-                        
-                        const color = getPresetColor(w.location);
-                        const borderColor = color.border;
-                        
-                        return (
-                          <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-r-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
-                            <button
-                              onClick={(e) => {
-                                const newExpanded = new Set(expandedLog);
-                                if (newExpanded.has(i)) {
-                                  newExpanded.delete(i);
-                                } else {
-                                  const element = e.currentTarget.closest('[data-workout-date]');
-                                  newExpanded.add(i);
-                                  setExpandedLog(newExpanded);
-                                  
-                                  // Scroll this workout to top when expanding
-                                  requestAnimationFrame(() => {
-                                    requestAnimationFrame(() => {
-                                      setTimeout(() => {
-                                        if (element) {
-                                          const rect = element.getBoundingClientRect();
-                                          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                          const targetY = rect.top + scrollTop - 120;
-                                          window.scrollTo({ top: targetY, behavior: 'smooth' });
-                                        }
-                                      }, 100);
-                                    });
-                                  });
-                                  return;
-                                }
-                                setExpandedLog(newExpanded);
-                              }}
-                              className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <div className="font-bold text-base">
-                                    {dayOfWeek} {month}/{day}/{year.slice(2)}
-                                    {w.location && <span className="ml-2 text-sm font-medium">· {w.location}</span>}
-                                  </div>
-                                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
-                                    {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}
-                                    {w.structure && (
-                                      <span className="font-semibold">
-                                        {' • '}
-                                        {w.structure === 'pairs' ? `Pairs ${w.structureDuration}'` : 'Circuit'}
-                                      </span>
-                                    )}
-                                    {w.elapsedTime && ` • ${formatTimeHHMMSS(w.elapsedTime)}`}
-                                  </div>
-                                </div>
-                                <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                                  <Icons.ChevronDown />
-                                </div>
-                              </div>
-                            </button>
-                            
-                            {isExpanded && (
-                              <div className="px-3 pb-3 space-y-2">
-                                {w.location === 'Day Off' && w.notes ? (
-                                  <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700/50' : 'bg-yellow-50 border-yellow-300'} border rounded-lg p-3`}>
-                                    <div className="text-sm font-semibold text-yellow-600 mb-2">Rest Day</div>
-                                    <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
-                                  </div>
-                                ) : (
-                                  <>
-                                    <div className="space-y-1">
-                                      {w.exercises.map((ex, ei) => {
-                                        const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                                        return (
-                                          <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5`}>
-                                            <div className="grid grid-cols-[110px_1fr_40px] gap-2 items-start text-xs">
-                                              <div className="font-medium truncate">{ex.name}</div>
-                                              <div className="flex items-center gap-1 flex-wrap min-w-0">
-                                                {ex.sets.map((s, si) => (
-                                                  <span 
-                                                    key={si} 
-                                                    className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} whitespace-nowrap`}
-                                                  >
-                                                    {s.reps}
-                                                    {si < ex.sets.length - 1 && <span className={`${darkMode ? 'text-gray-600' : 'text-gray-400'} mx-0.5`}>·</span>}
-                                                  </span>
-                                                ))}
-                                              </div>
-                                              <div className="font-bold text-right">{totalReps}</div>
-                                            </div>
-                                            {ex.notes && (
-                                              <div className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} mt-1`}>{ex.notes}</div>
-                                            )}
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                    
-                                    {w.notes && (
-                                      <div className={`${darkMode ? 'bg-blue-900/20 border-blue-700/50' : 'bg-blue-50 border-blue-300'} border rounded-lg p-2`}>
-                                        <div className="text-xs font-semibold text-blue-600 mb-1">Notes</div>
-                                        <div className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
-                                      </div>
-                                    )}
-                                    
-                                    {/* Collapse Button */}
-                                    <button
-                                      onClick={() => {
-                                        const newExpanded = new Set(expandedLog);
-                                        newExpanded.delete(i);
-                                        setExpandedLog(newExpanded);
-                                      }}
-                                      className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1`}
-                                    >
-                                      <div className="transform rotate-180">
-                                        <Icons.ChevronDown className="w-3 h-3" />
-                                      </div>
-                                      Collapse
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ));
-              })()}
-
-              {filtered().length === 0 && (
-                <div className="text-center text-gray-500 py-8">
-                  {search ? 'No workouts found' : 'No workouts yet'}
-                </div>
-              )}
-            </div>
-          )}
-          
           {view === 'stats' && statsView === 'menu' && (
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-3">Statistics</h2>
