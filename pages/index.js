@@ -2563,10 +2563,10 @@ export default function Home() {
                 
                 return sortedWeeks.map(([weekKey, { label, workouts }]) => (
                   <div key={weekKey} className="flex gap-0 mb-6">
-                    {/* Week Label Sidebar - Very narrow with STRONG border */}
-                    <div className={`w-[25px] flex-shrink-0 flex items-center justify-center border-r-[6px] border-gray-900 rounded-l-xl`}>
+                    {/* Week Label Sidebar - Ultra narrow with VERY STRONG visible border */}
+                    <div className="w-[25px] flex-shrink-0 flex items-center justify-center bg-black border-r-[8px] border-black rounded-l-xl">
                       <div className="text-center py-2">
-                        <div className="text-[8px] font-black leading-tight tracking-wider text-gray-900" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                        <div className="text-[8px] font-black leading-tight tracking-wider text-white" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
                           {label}
                         </div>
                       </div>
@@ -2690,7 +2690,9 @@ export default function Home() {
                                       }}
                                       className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1`}
                                     >
-                                      <Icons.ChevronUp className="w-3 h-3" />
+                                      <div className="transform rotate-180">
+                                        <Icons.ChevronDown className="w-3 h-3" />
+                                      </div>
                                       Collapse
                                     </button>
                                   </>
