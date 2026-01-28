@@ -1680,8 +1680,8 @@ export default function Home() {
               <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
             </button>
             
-            {/* Start Workout Button - only on Home and Test */}
-            {(view === 'home' || view === 'test') ? (
+            {/* Start Workout Button - only on Home and Home V1 */}
+            {(view === 'home' || view === 'homev1') ? (
               <button
                 onClick={() => setShowPresetSelector(true)}
                 className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg p-2 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
@@ -1698,8 +1698,8 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           
-          {/* HOME V1 - Original layout (optional, toggle in settings) */}
-          {view === 'homev1' && showHomeV1 && (
+          {/* HOME - New sidebar layout */}
+          {view === 'home' && (
             <div className="space-y-2.5 pb-32">
               
               {/* Calendar (same as Home) */}
@@ -2173,8 +2173,8 @@ export default function Home() {
           )}
           
           
-          {/* HOME - New sidebar layout (was test) */}
-          {view === 'home' && (
+          {/* HOME V1 - Original layout (toggle in settings) */}
+          {view === 'homev1' && showHomeV1 && (
             <div className="space-y-2.5 pb-32">
               {/* No controls at top - cleaner! */}
               
@@ -4107,6 +4107,35 @@ export default function Home() {
                 )}
               </div>
 
+              {/* Home V1 Toggle */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🏠</span>
+                    <div>
+                      <div className="font-bold">Home V1 Tab</div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Show original Home layout as extra tab</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newValue = !showHomeV1;
+                      setShowHomeV1(newValue);
+                      localStorage.setItem('showHomeV1', JSON.stringify(newValue));
+                    }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      showHomeV1 ? 'bg-blue-600' : darkMode ? 'bg-gray-700' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        showHomeV1 ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
               {/* Data Deletion Section */}
               <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md border-2 ${darkMode ? 'border-red-900/30' : 'border-red-200'} overflow-hidden`}>
                 <button
@@ -5115,20 +5144,22 @@ export default function Home() {
                 <span className={`text-xs mt-1 font-medium ${view === 'settings' ? 'font-bold' : ''}`}>Settings</span>
               </div>
             </button>
-            <button
-              onClick={() => {
-                setView('test');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex-1 py-4 transition-colors ${view === 'test' ? 'text-orange-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
-            >
-              <div className="flex flex-col items-center">
-                <svg className={`w-6 h-6 ${view === 'test' ? 'scale-110' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                </svg>
-                <span className={`text-xs mt-1 font-medium ${view === 'test' ? 'font-bold' : ''}`}>Test</span>
-              </div>
-            </button>
+            {showHomeV1 && (
+              <button
+                onClick={() => {
+                  setView('homev1');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex-1 py-4 transition-colors ${view === 'homev1' ? 'text-purple-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+              >
+                <div className="flex flex-col items-center">
+                  <svg className={`w-6 h-6 ${view === 'homev1' ? 'scale-110' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  <span className={`text-xs mt-1 font-medium ${view === 'homev1' ? 'font-bold' : ''}`}>Home V1</span>
+                </div>
+              </button>
+            )}
           </div>
         </div>
         
