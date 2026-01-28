@@ -5262,12 +5262,10 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                                         localStorage.setItem('proteinEntries', JSON.stringify(updated));
                                       }
                                     }}
-                                    }
-                                  }}
-                                  className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors"
-                                >
-                                  Delete
-                                </button>
+                                    className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors"
+                                  >
+                                    Delete
+                                  </button>
                               </div>
                             </div>
                           ))}
