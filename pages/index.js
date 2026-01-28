@@ -108,10 +108,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'neon', 'forest'
   const [showHomeV1, setShowHomeV1] = useState(false); // Toggle for old Home view
-  const [proteinEntries, setProteinEntries] = useState([]); // Protein tracking: [{date, grams, food, timestamp}]
+  const [showHomeV1, setShowHomeV1] = useState(false); // Toggle for old Home view
   const [showNew, setShowNew] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null); // For exercise detail view
-  const [statsView, setStatsView] = useState('menu'); // 'menu', 'exercises', 'weight'
+  const [statsView, setStatsView] = useState('menu'); // 'menu', 'exercises', 'weight', 'protein'
   const [weightEntries, setWeightEntries] = useState([]); // Weight tracking data
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [editingWeight, setEditingWeight] = useState(null);
@@ -209,6 +209,8 @@ export default function Home() {
   const [showLogCalendar, setShowLogCalendar] = useState(true); // Default to open
   const [logCalendarDate, setLogCalendarDate] = useState(new Date());
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
+  const [showProteinExpanded, setShowProteinExpanded] = useState(false);
+  const [editingProteinDate, setEditingProteinDate] = useState(null); // Date string for editing past protein
   const [draggedPreset, setDraggedPreset] = useState(null);
   const [selectedLogDay, setSelectedLogDay] = useState(null);
   const [showToast, setShowToast] = useState(false);
@@ -320,7 +322,6 @@ export default function Home() {
         const dm = localStorage.getItem('darkMode'); // Legacy support
         const we = localStorage.getItem('weightEntries');
         const hv1 = localStorage.getItem('showHomeV1');
-        const pe = localStorage.getItem('proteinEntries');
         if (w) setWorkouts(JSON.parse(w));
         if (p) setPresets(JSON.parse(p));
         if (e) setExercises(JSON.parse(e));
@@ -337,7 +338,6 @@ export default function Home() {
         }
         if (we) setWeightEntries(JSON.parse(we));
         if (hv1) setShowHomeV1(JSON.parse(hv1));
-        if (pe) setProteinEntries(JSON.parse(pe));
       };
       
       // Load data immediately
@@ -1680,8 +1680,8 @@ export default function Home() {
               <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
             </button>
             
-            {/* Start Workout Button - only on Home and Home V1 */}
-            {(view === 'home' || view === 'homev1') ? (
+            {/* Start Workout Button - only on Home and Test */}
+            {(view === 'home' || view === 'test') ? (
               <button
                 onClick={() => setShowPresetSelector(true)}
                 className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg p-2 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
@@ -1698,8 +1698,8 @@ export default function Home() {
         <div className="max-w-4xl mx-auto p-3 pb-24">
 
           
-          {/* HOME - New sidebar layout */}
-          {view === 'home' && (
+          {/* HOME V1 - Original layout (optional, toggle in settings) */}
+          {view === 'homev1' && showHomeV1 && (
             <div className="space-y-2.5 pb-32">
               
               {/* Calendar (same as Home) */}
@@ -2173,8 +2173,8 @@ export default function Home() {
           )}
           
           
-          {/* HOME V1 - Original layout (toggle in settings) */}
-          {view === 'homev1' && showHomeV1 && (
+          {/* HOME - New sidebar layout (was test) */}
+          {view === 'home' && (
             <div className="space-y-2.5 pb-32">
               {/* No controls at top - cleaner! */}
               
@@ -2879,15 +2879,43 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Protein Tracker */}
-              <div className={`${darkMode ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/30' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'} rounded-xl p-3 shadow-xl border-2`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-lg flex items-center gap-2">
-                    <span>🥩</span>
-                    Protein Intake
-                  </h3>
+              {/* Protein Tracker Card - Tappable */}
+              <div className={`${darkMode ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/30' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'} rounded-xl shadow-xl border-2 overflow-hidden`}>
+                <button
+                  onClick={() => {
+                    setStatsView('protein');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full p-4 text-left"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">🥩</div>
+                      <div>
+                        <h3 className="font-bold text-lg mb-1">Protein Intake</h3>
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {(() => {
+                            const today = getTodayDate();
+                            const todayTotal = proteinEntries
+                              .filter(e => e.date === today)
+                              .reduce((sum, e) => sum + e.grams, 0);
+                            const todayCount = proteinEntries.filter(e => e.date === today).length;
+                            return todayCount > 0 ? `${todayTotal}g today • ${todayCount} meal${todayCount !== 1 ? 's' : ''}` : 'Track daily protein intake';
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                    <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+                
+                {/* Quick Add Button - Always visible */}
+                <div className="px-4 pb-4">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       const grams = prompt('Enter grams of protein:');
                       if (grams && !isNaN(grams)) {
                         const food = prompt('What did you eat?') || 'Food';
@@ -2903,87 +2931,11 @@ export default function Home() {
                         localStorage.setItem('proteinEntries', JSON.stringify(updated));
                       }
                     }}
-                    className="bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors flex items-center gap-1"
+                    className="w-full bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
                   >
                     <span className="text-lg">+</span>
-                    Add
+                    Add Protein
                   </button>
-                </div>
-                
-                {/* Today's Total */}
-                {(() => {
-                  const today = getTodayDate();
-                  const todayEntries = proteinEntries.filter(e => e.date === today);
-                  const todayTotal = todayEntries.reduce((sum, e) => sum + e.grams, 0);
-                  
-                  return (
-                    <div className={`${darkMode ? 'bg-green-900/40' : 'bg-green-100'} rounded-lg p-3 mb-3`}>
-                      <div className="text-sm font-semibold text-green-600 mb-1">Today</div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-black">{todayTotal}</span>
-                        <span className="text-lg font-bold text-gray-400">g</span>
-                      </div>
-                      {todayEntries.length > 0 && (
-                        <div className="mt-2 space-y-1">
-                          {todayEntries.map((entry, i) => (
-                            <div key={entry.timestamp} className="flex items-center justify-between text-xs">
-                              <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{entry.food}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold">{entry.grams}g</span>
-                                <button
-                                  onClick={() => {
-                                    const updated = proteinEntries.filter(e => e.timestamp !== entry.timestamp);
-                                    setProteinEntries(updated);
-                                    localStorage.setItem('proteinEntries', JSON.stringify(updated));
-                                  }}
-                                  className={`${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'}`}
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
-                
-                {/* Last 7 Days */}
-                <div className="space-y-2">
-                  <div className="text-xs font-semibold text-green-600 mb-2">Last 7 Days</div>
-                  {(() => {
-                    const last7Days = [];
-                    const now = new Date();
-                    for (let i = 0; i < 7; i++) {
-                      const date = new Date(now);
-                      date.setDate(now.getDate() - i);
-                      const dateStr = date.toISOString().split('T')[0];
-                      const dayEntries = proteinEntries.filter(e => e.date === dateStr);
-                      const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
-                      const dayName = i === 0 ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' });
-                      last7Days.push({ date: dateStr, dayName, total, entries: dayEntries });
-                    }
-                    
-                    return last7Days.map(({ date, dayName, total, entries }) => (
-                      <div key={date} className={`${darkMode ? 'bg-gray-800/50' : 'bg-white'} rounded-lg p-2`}>
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-sm font-semibold">{dayName}</span>
-                              <span className="text-xs text-gray-500">{date.slice(5)}</span>
-                            </div>
-                            {entries.length > 0 && (
-                              <div className="text-[10px] text-gray-400 mt-0.5">
-                                {entries.map(e => `${e.grams}g ${e.food}`).join(' • ')}
-                              </div>
-                            )}
-                          </div>
-                          <span className="text-lg font-bold ml-2">{total}g</span>
-                        </div>
-                      </div>
-                    ));
-                  })()}
                 </div>
               </div>
               
@@ -3607,6 +3559,116 @@ export default function Home() {
             </div>
           )}
           
+          {/* Protein View */}
+          {view === 'stats' && statsView === 'protein' && (
+            <div 
+              className="space-y-3"
+              onTouchStart={(e) => {
+                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
+              }}
+              onTouchEnd={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const endX = e.changedTouches[0].clientX;
+                const diff = endX - startX;
+                if (diff > 100) {
+                  setStatsView('menu');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+              }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  onClick={() => {
+                    setStatsView('menu');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-1`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h2 className="text-xl font-bold">🥩 Protein Intake</h2>
+              </div>
+              
+              {/* Quick Add */}
+              <button
+                onClick={() => {
+                  const grams = prompt('Enter grams of protein:');
+                  if (grams && !isNaN(grams)) {
+                    const food = prompt('What did you eat?') || 'Food';
+                    const today = getTodayDate();
+                    const newEntry = {
+                      date: today,
+                      grams: parseInt(grams),
+                      food: food,
+                      timestamp: Date.now()
+                    };
+                    const updated = [...proteinEntries, newEntry];
+                    setProteinEntries(updated);
+                    localStorage.setItem('proteinEntries', JSON.stringify(updated));
+                  }
+                }}
+                className="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-xl text-base font-bold transition-colors flex items-center justify-center gap-2 shadow-md"
+              >
+                <span className="text-xl">+</span>
+                Add Protein
+              </button>
+              
+              {/* Last 14 Days with Edit */}
+              <div className="space-y-2">
+                {(() => {
+                  const last14Days = [];
+                  const now = new Date();
+                  for (let i = 0; i < 14; i++) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() - i);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const dayEntries = proteinEntries.filter(e => e.date === dateStr);
+                    const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
+                    const dayName = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dateDisplay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    last14Days.push({ date: dateStr, dayName, dateDisplay, total, entries: dayEntries });
+                  }
+                  
+                  return last14Days.map(({ date, dayName, dateDisplay, total, entries }) => (
+                    <div key={date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-3 shadow-md`}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <div className="font-bold text-base">{dayName}</div>
+                          <div className="text-xs text-gray-500">{dateDisplay}</div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="text-2xl font-black text-green-500">{total}g</div>
+                            <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
+                          </div>
+                          <button
+                            onClick={() => setEditingProteinDate(date)}
+                            className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {entries.length > 0 && (
+                        <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
+                          {entries.map((entry) => (
+                            <div key={entry.timestamp} className="flex items-center justify-between text-sm">
+                              <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{entry.food}</span>
+                              <span className="font-bold">{entry.grams}g</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ));
+                })()}
+              </div>
+            </div>
+          )}
+          
           {/* Progress Charts View */}
           {view === 'stats' && statsView === 'progress' && (
             <div 
@@ -4043,35 +4105,6 @@ export default function Home() {
                   </div>
                 </div>
                 )}
-              </div>
-
-              {/* Home V1 Toggle */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🏠</span>
-                    <div>
-                      <div className="font-bold">Home V1 Tab</div>
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Show original Home layout as extra tab</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const newValue = !showHomeV1;
-                      setShowHomeV1(newValue);
-                      localStorage.setItem('showHomeV1', JSON.stringify(newValue));
-                    }}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showHomeV1 ? 'bg-blue-600' : darkMode ? 'bg-gray-700' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showHomeV1 ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
               </div>
 
               {/* Data Deletion Section */}
@@ -4939,6 +4972,108 @@ export default function Home() {
           </div>
         )}
         
+        {/* Edit Protein Modal */}
+        {editingProteinDate && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setEditingProteinDate(null)}>
+            <div 
+              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[75vh] overflow-y-auto pb-8`} 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}>
+                <div className="flex justify-center pb-2">
+                  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                </div>
+                <div className="flex items-center justify-between px-4">
+                  <h3 className="font-bold text-lg">
+                    Edit Protein - {(() => {
+                      const date = new Date(editingProteinDate + 'T00:00:00');
+                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    })()}
+                  </h3>
+                  <button
+                    onClick={() => setEditingProteinDate(null)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 space-y-3">
+                {/* Add New Entry for this date */}
+                <button
+                  onClick={() => {
+                    const grams = prompt('Enter grams of protein:');
+                    if (grams && !isNaN(grams)) {
+                      const food = prompt('What did you eat?') || 'Food';
+                      const newEntry = {
+                        date: editingProteinDate,
+                        grams: parseInt(grams),
+                        food: food,
+                        timestamp: Date.now()
+                      };
+                      const updated = [...proteinEntries, newEntry];
+                      setProteinEntries(updated);
+                      localStorage.setItem('proteinEntries', JSON.stringify(updated));
+                    }
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <span className="text-xl">+</span>
+                  Add Entry
+                </button>
+                
+                {/* Existing Entries */}
+                {(() => {
+                  const dayEntries = proteinEntries.filter(e => e.date === editingProteinDate);
+                  const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
+                  
+                  return (
+                    <>
+                      <div className={`${darkMode ? 'bg-green-900/30' : 'bg-green-50'} rounded-lg p-3`}>
+                        <div className="text-sm font-semibold text-green-600 mb-1">Total</div>
+                        <div className="text-3xl font-black">{total}g</div>
+                      </div>
+                      
+                      {dayEntries.length > 0 ? (
+                        <div className="space-y-2">
+                          <div className="text-sm font-semibold">Meals ({dayEntries.length})</div>
+                          {dayEntries.map((entry) => (
+                            <div key={entry.timestamp} className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-3`}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="font-semibold">{entry.food}</div>
+                                  <div className="text-2xl font-bold text-green-500 mt-1">{entry.grams}g</div>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    if (confirm(`Delete ${entry.food}?`)) {
+                                      const updated = proteinEntries.filter(e => e.timestamp !== entry.timestamp);
+                                      setProteinEntries(updated);
+                                      localStorage.setItem('proteinEntries', JSON.stringify(updated));
+                                    }
+                                  }}
+                                  className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center text-gray-500 py-8">
+                          No protein entries for this day
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Bottom Navigation */}
         <div className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-gray-100/95 border-gray-300'} backdrop-blur-sm border-t safe-area-pb shadow-2xl pb-2 z-20`}>
           <div className="max-w-4xl mx-auto flex">
@@ -4980,22 +5115,20 @@ export default function Home() {
                 <span className={`text-xs mt-1 font-medium ${view === 'settings' ? 'font-bold' : ''}`}>Settings</span>
               </div>
             </button>
-            {showHomeV1 && (
-              <button
-                onClick={() => {
-                  setView('homev1');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className={`flex-1 py-4 transition-colors ${view === 'homev1' ? 'text-purple-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
-              >
-                <div className="flex flex-col items-center">
-                  <svg className={`w-6 h-6 ${view === 'homev1' ? 'scale-110' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                  </svg>
-                  <span className={`text-xs mt-1 font-medium ${view === 'homev1' ? 'font-bold' : ''}`}>Home V1</span>
-                </div>
-              </button>
-            )}
+            <button
+              onClick={() => {
+                setView('test');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex-1 py-4 transition-colors ${view === 'test' ? 'text-orange-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+            >
+              <div className="flex flex-col items-center">
+                <svg className={`w-6 h-6 ${view === 'test' ? 'scale-110' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+                <span className={`text-xs mt-1 font-medium ${view === 'test' ? 'font-bold' : ''}`}>Test</span>
+              </div>
+            </button>
           </div>
         </div>
         
