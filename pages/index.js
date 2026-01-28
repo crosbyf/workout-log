@@ -2563,10 +2563,10 @@ export default function Home() {
                 
                 return sortedWeeks.map(([weekKey, { label, workouts }]) => (
                   <div key={weekKey} className="flex gap-0 mb-6">
-                    {/* Week Label Sidebar - Narrower with stronger border */}
-                    <div className={`w-14 flex-shrink-0 flex items-center justify-center border-r-4 ${darkMode ? 'border-gray-600' : 'border-gray-400'} rounded-l-xl`}>
+                    {/* Week Label Sidebar - Very narrow with STRONG border */}
+                    <div className={`w-[25px] flex-shrink-0 flex items-center justify-center border-r-[6px] border-gray-900 rounded-l-xl`}>
                       <div className="text-center py-2">
-                        <div className={`text-[9px] font-bold leading-tight tracking-wider ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                        <div className="text-[8px] font-black leading-tight tracking-wider text-gray-900" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
                           {label}
                         </div>
                       </div>
@@ -2651,13 +2651,13 @@ export default function Home() {
                                         const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                                         return (
                                           <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5`}>
-                                            <div className="grid grid-cols-[120px_1fr_50px] gap-2 items-start text-xs">
+                                            <div className="grid grid-cols-[110px_1fr_40px] gap-2 items-start text-xs">
                                               <div className="font-medium truncate">{ex.name}</div>
-                                              <div className="flex items-center gap-1 flex-wrap">
+                                              <div className="flex items-center gap-1 flex-wrap min-w-0">
                                                 {ex.sets.map((s, si) => (
                                                   <span 
                                                     key={si} 
-                                                    className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}
+                                                    className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} whitespace-nowrap`}
                                                   >
                                                     {s.reps}
                                                     {si < ex.sets.length - 1 && <span className={`${darkMode ? 'text-gray-600' : 'text-gray-400'} mx-0.5`}>·</span>}
@@ -2680,6 +2680,19 @@ export default function Home() {
                                         <div className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
                                       </div>
                                     )}
+                                    
+                                    {/* Collapse Button */}
+                                    <button
+                                      onClick={() => {
+                                        const newExpanded = new Set(expandedLog);
+                                        newExpanded.delete(i);
+                                        setExpandedLog(newExpanded);
+                                      }}
+                                      className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1`}
+                                    >
+                                      <Icons.ChevronUp className="w-3 h-3" />
+                                      Collapse
+                                    </button>
                                   </>
                                 )}
                               </div>
