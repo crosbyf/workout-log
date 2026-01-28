@@ -162,27 +162,18 @@ export default function Home() {
     },
     forest: {
       name: 'Forest',
-      bg: 'bg-emerald-950',
-      text: 'text-emerald-50',
-      cardBg: 'bg-emerald-900',
-      cardBorder: 'border-emerald-700',
-      inputBg: 'bg-emerald-900',
-      inputBorder: 'border-emerald-600',
-      headerGradient: 'from-emerald-900 to-emerald-950',
-      headerBorder: 'border-emerald-500/30',
-      accent: 'emerald',
+      bg: 'bg-green-950',
+      text: 'text-green-50',
+      cardBg: 'bg-green-800',
+      cardBorder: 'border-green-600',
+      inputBg: 'bg-green-800',
+      inputBorder: 'border-green-500',
+      headerGradient: 'from-green-700 to-green-900',
+      headerBorder: 'border-green-400/50',
+      accent: 'green',
       isDark: true
-    },
-    sunset: {
-      name: 'Sunset',
-      bg: 'bg-purple-950',
-      text: 'text-orange-50',
-      cardBg: 'bg-purple-900',
-      cardBorder: 'border-purple-700',
-      inputBg: 'bg-purple-900',
-      inputBorder: 'border-purple-600',
-      headerGradient: 'from-purple-900 to-purple-950',
-      headerBorder: 'border-orange-500/30',
+    }
+  };
       accent: 'orange',
       isDark: true
     }
@@ -1675,7 +1666,7 @@ export default function Home() {
             {/* Centered GORS LOG */}
             <button 
               onClick={() => {
-                const themeOrder = ['light', 'dark', 'neon', 'forest', 'sunset'];
+                const themeOrder = ['light', 'dark', 'neon', 'forest'];
                 const currentIndex = themeOrder.indexOf(theme);
                 const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
                 setTheme(nextTheme);
@@ -2250,10 +2241,6 @@ export default function Home() {
           {/* TEST VIEW - Sidebar Layout */}
           {view === 'test' && (
             <div className="space-y-2.5 pb-32">
-              <div className="mb-4">
-                <h2 className="text-lg font-bold text-orange-400 mb-1">🧪 Test Layout</h2>
-                <p className="text-xs text-gray-500">Experimental sidebar design - workouts grouped by week</p>
-              </div>
               
               {/* Calendar (same as Home) */}
               {showLogCalendar && (
@@ -2563,10 +2550,14 @@ export default function Home() {
                 
                 return sortedWeeks.map(([weekKey, { label, workouts }]) => (
                   <div key={weekKey} className="flex gap-0 mb-6">
-                    {/* Week Label Sidebar - Ultra narrow with VERY STRONG visible border */}
-                    <div className="w-[25px] flex-shrink-0 flex items-center justify-center bg-black border-r-[8px] border-black rounded-l-xl">
+                    {/* Week Label Sidebar - Theme-aware colors for maximum visibility */}
+                    <div className={`w-[25px] flex-shrink-0 flex items-center justify-center border-r-[8px] rounded-l-xl ${
+                      darkMode ? 'bg-white border-white' : 'bg-black border-black'
+                    }`}>
                       <div className="text-center py-2">
-                        <div className="text-[8px] font-black leading-tight tracking-wider text-white" style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+                        <div className={`text-[8px] font-black leading-tight tracking-wider ${
+                          darkMode ? 'text-black' : 'text-white'
+                        }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
                           {label}
                         </div>
                       </div>
