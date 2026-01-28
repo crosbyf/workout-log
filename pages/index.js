@@ -108,7 +108,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'neon', 'forest'
   const [showHomeV1, setShowHomeV1] = useState(false); // Toggle for old Home view
-  const [showHomeV1, setShowHomeV1] = useState(false); // Toggle for old Home view
+  const [proteinEntries, setProteinEntries] = useState([]); // Protein tracking: [{date, grams, food, timestamp}]
   const [showNew, setShowNew] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState(null); // For exercise detail view
   const [statsView, setStatsView] = useState('menu'); // 'menu', 'exercises', 'weight', 'protein'
