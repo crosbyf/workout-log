@@ -174,10 +174,6 @@ export default function Home() {
       isDark: true
     }
   };
-      accent: 'orange',
-      isDark: true
-    }
-  };
   
   // Safety check - if theme is invalid (e.g., old 'midnight' value), default to 'dark'
   const currentTheme = themes[theme] || themes.dark;
