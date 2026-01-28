@@ -5266,6 +5266,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                                   >
                                     Delete
                                   </button>
+                                </div>
                               </div>
                             </div>
                           ))}
