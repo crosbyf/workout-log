@@ -2087,28 +2087,10 @@ export default function Home() {
                     <button
                       onClick={(e) => {
                         const newExpanded = new Set(expandedLog);
-                        const element = e.currentTarget.closest('[data-workout-date]');
-                        
                         if (newExpanded.has(i)) {
-                          // Collapsing - scroll element back into view
                           newExpanded.delete(i);
-                          setExpandedLog(newExpanded);
-                          
-                          // After collapse, scroll the workout header to a comfortable position
-                          setTimeout(() => {
-                            if (element) {
-                              const rect = element.getBoundingClientRect();
-                              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                              
-                              // If the workout is now off-screen or too high up, scroll it into view
-                              if (rect.top < 150 || rect.top > window.innerHeight) {
-                                const targetY = scrollTop + rect.top - 150; // Position it 150px from top
-                                window.scrollTo({ top: targetY, behavior: 'smooth' });
-                              }
-                            }
-                          }, 100);
                         } else {
-                          // Expanding - scroll to top as before
+                          const element = e.currentTarget.closest('[data-workout-date]');
                           newExpanded.add(i);
                           setExpandedLog(newExpanded);
                           
@@ -2125,7 +2107,9 @@ export default function Home() {
                               }, 100);
                             });
                           });
+                          return;
                         }
+                        setExpandedLog(newExpanded);
                       }}
                       className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
                     >
