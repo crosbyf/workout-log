@@ -211,6 +211,8 @@ export default function Home() {
   const [showPresetsMenu, setShowPresetsMenu] = useState(false);
   const [showProteinExpanded, setShowProteinExpanded] = useState(false);
   const [editingProteinDate, setEditingProteinDate] = useState(null); // Date string for editing past protein
+  const [showAddProtein, setShowAddProtein] = useState(false);
+  const [editingProteinEntry, setEditingProteinEntry] = useState(null); // {timestamp, grams, food} for editing
   const [draggedPreset, setDraggedPreset] = useState(null);
   const [selectedLogDay, setSelectedLogDay] = useState(null);
   const [showToast, setShowToast] = useState(false);
@@ -322,6 +324,7 @@ export default function Home() {
         const dm = localStorage.getItem('darkMode'); // Legacy support
         const we = localStorage.getItem('weightEntries');
         const hv1 = localStorage.getItem('showHomeV1');
+        const pe = localStorage.getItem('proteinEntries');
         if (w) setWorkouts(JSON.parse(w));
         if (p) setPresets(JSON.parse(p));
         if (e) setExercises(JSON.parse(e));
@@ -338,6 +341,7 @@ export default function Home() {
         }
         if (we) setWeightEntries(JSON.parse(we));
         if (hv1) setShowHomeV1(JSON.parse(hv1));
+        if (pe) setProteinEntries(JSON.parse(pe));
       };
       
       // Load data immediately
@@ -2725,10 +2729,10 @@ export default function Home() {
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-3">Statistics</h2>
               
-              {/* Monthly Volume Widget - Stacked Vertically */}
-              <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-3 shadow-xl border-2 mb-4`}>
+              {/* Monthly Volume Widget - Compressed */}
+              <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-2 shadow-xl border-2 mb-3`}>
                 {/* Header */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-1">
                   <button
                     onClick={() => {
                       const newDate = new Date(volumeWidgetDate);
@@ -2879,16 +2883,16 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Protein Tracker Card - Tappable */}
+              {/* Protein Tracker Card - Compressed */}
               <div className={`${darkMode ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/30' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'} rounded-xl shadow-xl border-2 overflow-hidden`}>
                 <button
                   onClick={() => {
                     setStatsView('protein');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className="w-full p-4 text-left"
+                  className="w-full p-3 text-left"
                 >
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <div className="text-3xl">🥩</div>
                       <div>
@@ -2899,8 +2903,7 @@ export default function Home() {
                             const todayTotal = proteinEntries
                               .filter(e => e.date === today)
                               .reduce((sum, e) => sum + e.grams, 0);
-                            const todayCount = proteinEntries.filter(e => e.date === today).length;
-                            return todayCount > 0 ? `${todayTotal}g today • ${todayCount} meal${todayCount !== 1 ? 's' : ''}` : 'Track daily protein intake';
+                            return todayTotal > 0 ? `${todayTotal}g today` : 'Track daily protein intake';
                           })()}
                         </div>
                       </div>
@@ -2912,24 +2915,11 @@ export default function Home() {
                 </button>
                 
                 {/* Quick Add Button - Always visible */}
-                <div className="px-4 pb-4">
+                <div className="px-3 pb-3">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      const grams = prompt('Enter grams of protein:');
-                      if (grams && !isNaN(grams)) {
-                        const food = prompt('What did you eat?') || 'Food';
-                        const today = getTodayDate();
-                        const newEntry = {
-                          date: today,
-                          grams: parseInt(grams),
-                          food: food,
-                          timestamp: Date.now()
-                        };
-                        const updated = [...proteinEntries, newEntry];
-                        setProteinEntries(updated);
-                        localStorage.setItem('proteinEntries', JSON.stringify(updated));
-                      }
+                      setShowAddProtein(true);
                     }}
                     className="w-full bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
                   >
