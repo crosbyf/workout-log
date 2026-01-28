@@ -2088,54 +2088,55 @@ export default function Home() {
                     <button
                       onClick={(e) => {
                         const newExpanded = new Set(expandedLog);
+                        
                         if (newExpanded.has(i)) {
                           // Collapsing - restore previous scroll position
-                          newExpanded.delete(i);
-                          
-                          // Restore scroll position if we saved one
                           const savedPosition = scrollPositions[i];
-                          
+                          newExpanded.delete(i);
                           setExpandedLog(newExpanded);
                           
                           if (savedPosition !== undefined) {
-                            // Wait for DOM to update after collapse, then scroll
-                            requestAnimationFrame(() => {
-                              requestAnimationFrame(() => {
-                                setTimeout(() => {
-                                  window.scrollTo({ top: savedPosition, behavior: 'smooth' });
-                                  // Clean up saved position
-                                  setScrollPositions(prev => {
-                                    const updated = { ...prev };
-                                    delete updated[i];
-                                    return updated;
-                                  });
-                                }, 100);
+                            // Wait for collapse animation to complete, then scroll back
+                            setTimeout(() => {
+                              window.scrollTo({ 
+                                top: savedPosition, 
+                                behavior: 'smooth' 
                               });
-                            });
+                            }, 50);
+                            
+                            // Clean up saved position after scrolling
+                            setTimeout(() => {
+                              setScrollPositions(prev => {
+                                const updated = { ...prev };
+                                delete updated[i];
+                                return updated;
+                              });
+                            }, 500);
                           }
                         } else {
-                          // Expanding - save current scroll position
+                          // Expanding - save current scroll position FIRST
                           const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                          
+                          // Save the position
                           setScrollPositions(prev => ({ ...prev, [i]: currentScroll }));
                           
                           const element = e.currentTarget.closest('[data-workout-date]');
                           newExpanded.add(i);
                           setExpandedLog(newExpanded);
                           
-                          // Scroll this workout to top when expanding - account for week header
+                          // Scroll this workout to top when expanding
                           requestAnimationFrame(() => {
                             requestAnimationFrame(() => {
                               setTimeout(() => {
                                 if (element) {
                                   const rect = element.getBoundingClientRect();
                                   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                  const targetY = rect.top + scrollTop - 120; // 120px offset (72px header + 48px week header)
+                                  const targetY = rect.top + scrollTop - 120;
                                   window.scrollTo({ top: targetY, behavior: 'smooth' });
                                 }
                               }, 100);
                             });
                           });
-                          return; // Exit early since we already called setExpandedLog
                         }
                       }}
                       className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
