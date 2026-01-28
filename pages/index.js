@@ -212,6 +212,7 @@ export default function Home() {
   
   // Scroll to expanded recent workout
   const [expandedLog, setExpandedLog] = useState(new Set());
+  const [scrollPositions, setScrollPositions] = useState({}); // Track scroll position before expanding
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
   const [showDataManagement, setShowDataManagement] = useState(false);
@@ -838,9 +839,8 @@ export default function Home() {
       );
     }
     
-    return [...f].sort((a, b) =>
-      sortOrder === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date)
-    );
+    // Always sort newest first
+    return [...f].sort((a, b) => b.date.localeCompare(a.date));
   };
 
   const trends = () => {
@@ -1931,27 +1931,6 @@ export default function Home() {
                   </div>
                 )}
                 
-                {/* Sort - single arrow (down = newest, up = oldest) */}
-                {!searchExpanded && (
-                  <button
-                    onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                    className={`${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-700' : 'bg-white hover:bg-gray-50 border-gray-200'} border p-2 rounded-xl transition-colors shadow-sm`}
-                    title={sortOrder === 'desc' ? 'Showing newest first' : 'Showing oldest first'}
-                  >
-                    {sortOrder === 'desc' ? (
-                      // Down arrow for newest first
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    ) : (
-                      // Up arrow for oldest first
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                  </button>
-                )}
-                
                 {/* Expand/Collapse All - clearer vertical arrows */}
                 {!searchExpanded && (
                   <button
@@ -2110,8 +2089,27 @@ export default function Home() {
                       onClick={(e) => {
                         const newExpanded = new Set(expandedLog);
                         if (newExpanded.has(i)) {
+                          // Collapsing - restore previous scroll position
                           newExpanded.delete(i);
+                          setExpandedLog(newExpanded);
+                          
+                          // Restore scroll position if we saved one
+                          if (scrollPositions[i] !== undefined) {
+                            setTimeout(() => {
+                              window.scrollTo({ top: scrollPositions[i], behavior: 'smooth' });
+                              // Clean up saved position
+                              setScrollPositions(prev => {
+                                const updated = { ...prev };
+                                delete updated[i];
+                                return updated;
+                              });
+                            }, 50);
+                          }
                         } else {
+                          // Expanding - save current scroll position
+                          const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                          setScrollPositions(prev => ({ ...prev, [i]: currentScroll }));
+                          
                           const element = e.currentTarget.closest('[data-workout-date]');
                           newExpanded.add(i);
                           setExpandedLog(newExpanded);
@@ -2131,7 +2129,6 @@ export default function Home() {
                           });
                           return; // Exit early since we already called setExpandedLog
                         }
-                        setExpandedLog(newExpanded);
                       }}
                       className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
                     >
@@ -4299,20 +4296,10 @@ export default function Home() {
                   const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
                   const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                   
-                  const locationColors = {
-                    'Garage BW': 'border-blue-400',
-                    'Manual': 'border-green-400',
-                    'Garage 10': 'border-purple-400',
-                    'BW-only': 'border-yellow-400',
-                  };
-                  const bgColors = {
-                    'Garage BW': 'bg-blue-900/30',
-                    'Manual': 'bg-green-900/30',
-                    'Garage 10': 'bg-purple-900/30',
-                    'BW-only': 'bg-yellow-900/30',
-                  };
-                  const borderColor = locationColors[w.location] || 'border-gray-600';
-                  const bgColor = bgColors[w.location] || 'bg-gray-700';
+                  // Use getPresetColor function for correct colors
+                  const color = getPresetColor(w.location);
+                  const borderColor = color.border;
+                  const bgColor = color.bg;
                   
                   return (
                     <div key={i} className={`${bgColor} rounded-lg p-3 border-l-4 ${borderColor}`}>
