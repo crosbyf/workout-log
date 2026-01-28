@@ -2091,19 +2091,27 @@ export default function Home() {
                         if (newExpanded.has(i)) {
                           // Collapsing - restore previous scroll position
                           newExpanded.delete(i);
-                          setExpandedLog(newExpanded);
                           
                           // Restore scroll position if we saved one
-                          if (scrollPositions[i] !== undefined) {
-                            setTimeout(() => {
-                              window.scrollTo({ top: scrollPositions[i], behavior: 'smooth' });
-                              // Clean up saved position
-                              setScrollPositions(prev => {
-                                const updated = { ...prev };
-                                delete updated[i];
-                                return updated;
+                          const savedPosition = scrollPositions[i];
+                          
+                          setExpandedLog(newExpanded);
+                          
+                          if (savedPosition !== undefined) {
+                            // Wait for DOM to update after collapse, then scroll
+                            requestAnimationFrame(() => {
+                              requestAnimationFrame(() => {
+                                setTimeout(() => {
+                                  window.scrollTo({ top: savedPosition, behavior: 'smooth' });
+                                  // Clean up saved position
+                                  setScrollPositions(prev => {
+                                    const updated = { ...prev };
+                                    delete updated[i];
+                                    return updated;
+                                  });
+                                }, 100);
                               });
-                            }, 50);
+                            });
                           }
                         } else {
                           // Expanding - save current scroll position
