@@ -212,7 +212,6 @@ export default function Home() {
   
   // Scroll to expanded recent workout
   const [expandedLog, setExpandedLog] = useState(new Set());
-  const [scrollPositions, setScrollPositions] = useState({}); // Track scroll position before expanding
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
   const [showPresetSelector, setShowPresetSelector] = useState(false);
   const [showDataManagement, setShowDataManagement] = useState(false);
@@ -2088,39 +2087,28 @@ export default function Home() {
                     <button
                       onClick={(e) => {
                         const newExpanded = new Set(expandedLog);
+                        const element = e.currentTarget.closest('[data-workout-date]');
                         
                         if (newExpanded.has(i)) {
-                          // Collapsing - restore previous scroll position
-                          const savedPosition = scrollPositions[i];
+                          // Collapsing - scroll element back into view
                           newExpanded.delete(i);
                           setExpandedLog(newExpanded);
                           
-                          if (savedPosition !== undefined) {
-                            // Wait for collapse animation to complete, then scroll back
-                            setTimeout(() => {
-                              window.scrollTo({ 
-                                top: savedPosition, 
-                                behavior: 'smooth' 
-                              });
-                            }, 50);
-                            
-                            // Clean up saved position after scrolling
-                            setTimeout(() => {
-                              setScrollPositions(prev => {
-                                const updated = { ...prev };
-                                delete updated[i];
-                                return updated;
-                              });
-                            }, 500);
-                          }
+                          // After collapse, scroll the workout header to a comfortable position
+                          setTimeout(() => {
+                            if (element) {
+                              const rect = element.getBoundingClientRect();
+                              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                              
+                              // If the workout is now off-screen or too high up, scroll it into view
+                              if (rect.top < 150 || rect.top > window.innerHeight) {
+                                const targetY = scrollTop + rect.top - 150; // Position it 150px from top
+                                window.scrollTo({ top: targetY, behavior: 'smooth' });
+                              }
+                            }
+                          }, 100);
                         } else {
-                          // Expanding - save current scroll position FIRST
-                          const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-                          
-                          // Save the position
-                          setScrollPositions(prev => ({ ...prev, [i]: currentScroll }));
-                          
-                          const element = e.currentTarget.closest('[data-workout-date]');
+                          // Expanding - scroll to top as before
                           newExpanded.add(i);
                           setExpandedLog(newExpanded);
                           
