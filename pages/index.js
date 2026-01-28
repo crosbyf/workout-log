@@ -2114,12 +2114,7 @@ export default function Home() {
                                         return (
                                           <div key={ei} className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'} rounded px-2 py-1.5`}>
                                             <div className="grid grid-cols-[110px_1fr_40px] gap-2 items-start text-xs">
-                                              <div>
-                                                <div className="font-medium truncate">{ex.name}</div>
-                                                {ex.notes && (
-                                                  <div className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} mt-0.5 text-right italic`}>{ex.notes}</div>
-                                                )}
-                                              </div>
+                                              <div className="font-medium truncate">{ex.name}</div>
                                               <div className="flex items-center gap-1 flex-wrap min-w-0">
                                                 {ex.sets.map((s, si) => (
                                                   <span 
@@ -2133,15 +2128,18 @@ export default function Home() {
                                               </div>
                                               <div className="font-bold text-right">{totalReps}</div>
                                             </div>
+                                            {ex.notes && (
+                                              <div className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} mt-0.5 text-right`}>{ex.notes}</div>
+                                            )}
                                           </div>
                                         );
                                       })}
                                     </div>
                                     
                                     {w.notes && (
-                                      <div className={`${darkMode ? 'bg-blue-900/20 border-blue-700/50' : 'bg-blue-50 border-blue-300'} border rounded-lg p-2`}>
-                                        <div className="text-xs font-semibold text-blue-600 mb-1">Notes</div>
-                                        <div className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{w.notes}</div>
+                                      <div className={`${darkMode ? 'bg-blue-900/40 border-blue-500/30' : 'bg-blue-50 border-blue-300'} border rounded-lg p-2`}>
+                                        <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>Notes</div>
+                                        <div className={`text-xs ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>{w.notes}</div>
                                       </div>
                                     )}
                                     
