@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { Icons } from '../components/Icons.js';
 import { NutritionLogic } from '../components/Nutrition.js';
+import { StatsLogic } from '../components/StatsLogic.js';
 
 export default function Home() {
   const [workouts, setWorkouts] = useState([]);
