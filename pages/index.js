@@ -330,7 +330,7 @@ export default function Home() {
       const imp = [];
       let currentWorkout = null;
       let workoutLocation = '';
-
+    };
       // First line is the location (e.g., "Garage BW")
       if (lines.length > 0 && !lines[0].toLowerCase().includes('date')) {
         workoutLocation = lines[0].split(',')[0].trim();
