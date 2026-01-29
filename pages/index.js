@@ -4,6 +4,7 @@ import { Icons } from '../components/Icons.js';
 import { NutritionLogic } from '../components/Nutrition.js';
 import { StatsLogic } from '../components/StatsLogic.js';
 import { WorkoutPresets } from '../data/WorkoutPresets.js';
+import { StorageService } from '../services/StorageService.js';
 
 export default function Home() {
   const [workouts, setWorkouts] = useState([]);
@@ -310,62 +311,15 @@ export default function Home() {
       }
     };
     
-    // Check if backup is needed
-    const lastBackup = localStorage.getItem('lastBackup');
-    const now = Date.now();
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    
-    if (!lastBackup || now - parseInt(lastBackup) > sevenDays) {
-      createBackup();
-    }
-  }, [workouts, presets, weightEntries, exercises]);
-  
-  // Disable background scroll when modals are open
-  useEffect(() => {
-    if (showDayModal || showHistoryModal || showSettings || showClear || deleteWorkout !== null || deletePreset !== null || deleteExercise !== null || showCloseConfirm || showPresetSelector || showWorkoutModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [showDayModal, showHistoryModal, showSettings, showClear, deleteWorkout, deletePreset, deleteExercise, showCloseConfirm, showPresetSelector, showWorkoutModal]);
+    // Simplified Auto-backup system
+useEffect(() => {
+  if (typeof window === 'undefined' || workouts.length === 0) return;
 
-  const save = (data, key, setter) => {
-    localStorage.setItem(key, JSON.stringify(data));
-    setter(data);
-  };
-
-  const importPresets = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const lines = ev.target.result.split('\n');
-      const ps = [], exs = new Set();
-      lines.forEach((line) => {
-        const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
-        if (!cols[0]) return;
-        ps.push({ name: cols[0], exercises: cols.slice(1).filter(e => e) });
-        cols.slice(1).filter(e => e).forEach(e => exs.add(e));
-      });
-      save(ps, 'presets', setPresets);
-      save(Array.from(exs).sort(), 'exercises', setExercises);
-      e.target.value = '';
-    };
-    reader.readAsText(file);
-  };
-
-  const parseDate = (str) => {
-    // Handle MM-DD-YYYY format
-    const parts = str.split('-');
-    if (parts.length === 3) {
-      const month = parts[0].padStart(2, '0');
-      const day = parts[1].padStart(2, '0');
-      const year = parts[2].length === 4 ? parts[2] : '2026';
-      return `${year}-${month}-${day}`;
-    }
+  if (StorageService.shouldBackup()) {
+    StorageService.createBackup({ workouts, presets, weightEntries, exercises })
+      .catch(err => console.error('Backup failed:', err));
+  }
+}, [workouts, presets, weightEntries, exercises]);
     return str;
   };
 
