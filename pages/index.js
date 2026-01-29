@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import { Icons } from '../components/Icons';
+import { Icons } from '../components/Icons.js';
 
 
 export default function Home() {
