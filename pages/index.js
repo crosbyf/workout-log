@@ -218,22 +218,21 @@ export default function Home() {
         const p = localStorage.getItem('presets');
         const e = localStorage.getItem('exercises');
         const t = localStorage.getItem('theme');
+        const dm = localStorage.getItem('darkMode'); 
         const we = localStorage.getItem('weightEntries');
         const hv1 = localStorage.getItem('showHomeV1');
         const pe = localStorage.getItem('proteinEntries');
 
         if (w) setWorkouts(JSON.parse(w));
         
-        // --- NEW PRESET LOGIC ---
+        // Updated Preset Logic
         if (p) {
           setPresets(JSON.parse(p));
         } else {
-          // If the user has no saved presets, load your Wednesday routine 
-          // and other defaults from the new WorkoutPresets file.
           setPresets(WorkoutPresets.routines);
         }
 
-        // --- EXERCISE LIBRARY FALLBACK ---
+        // Updated Exercises Logic
         if (e) {
           setExercises(JSON.parse(e));
         } else {
@@ -243,6 +242,8 @@ export default function Home() {
         if (t) {
           const loadedTheme = t === 'midnight' ? 'neon' : t;
           setTheme(loadedTheme);
+        } else if (dm !== null) {
+          setTheme(JSON.parse(dm) ? 'dark' : 'light');
         }
         if (we) setWeightEntries(JSON.parse(we));
         if (hv1) setShowHomeV1(JSON.parse(hv1));
@@ -255,17 +256,7 @@ export default function Home() {
         setLoading(false);
       }, 2000);
     }
-  }, []);
-      
-      // Load data immediately
-      loadData();
-      
-      // But keep loading screen visible for 2 seconds
-      setTimeout(() => {
-        setLoading(false);
-      }, 2000);
-    }
-  }, []);
+  }, []); // <--- Ensure this line has exactly this: }, []);
   
   // Auto-backup system (every 7 days)
   useEffect(() => {
