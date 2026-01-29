@@ -1,4 +1,4 @@
-import { Icons } from './Icons';
+import { Icons } from './Icons.js';
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 
