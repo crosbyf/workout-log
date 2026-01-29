@@ -5281,6 +5281,4 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
       </div>
     </>
   );
-} // <--- This is the brace that closes the "export default function Home()"
-
-export default Home; // If you have this line, make sure it's after the brace.
+}
