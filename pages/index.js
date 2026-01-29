@@ -5263,6 +5263,8 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
         {/* Bottom Navigation */}
         <div className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-gray-100/95 border-gray-300'} backdrop-blur-sm border-t safe-area-pb shadow-2xl pb-2 z-20`}>
           <div className="max-w-4xl mx-auto flex">
+            
+            {/* Home Tab */}
             <button
               onClick={() => {
                 setView('home');
@@ -5271,10 +5273,12 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               className={`flex-1 py-4 transition-colors ${view === 'home' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
             >
               <div className="flex flex-col items-center">
-                <Icons.Calendar className={view === 'home' ? 'scale-110' : ''} />
+                <Icons.Calendar className={`w-6 h-6 ${view === 'home' ? 'scale-110' : ''}`} />
                 <span className={`text-xs mt-1 font-medium ${view === 'home' ? 'font-bold' : ''}`}>Home</span>
               </div>
             </button>
+
+            {/* Stats Tab */}
             <button
               onClick={() => {
                 setView('stats');
@@ -5285,10 +5289,12 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               className={`flex-1 py-4 transition-colors ${view === 'stats' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
             >
               <div className="flex flex-col items-center">
-                <Icons.TrendingUp className={view === 'stats' ? 'scale-110' : ''} />
+                <Icons.TrendingUp className={`w-6 h-6 ${view === 'stats' ? 'scale-110' : ''}`} />
                 <span className={`text-xs mt-1 font-medium ${view === 'stats' ? 'font-bold' : ''}`}>Stats</span>
               </div>
             </button>
+
+            {/* Settings Tab */}
             <button
               onClick={() => {
                 setView('settings');
@@ -5297,10 +5303,12 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               className={`flex-1 py-4 transition-colors ${view === 'settings' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
             >
               <div className="flex flex-col items-center">
-                <Icons.Settings className={view === 'settings' ? 'scale-110' : ''} />
+                <Icons.Settings className={`w-6 h-6 ${view === 'settings' ? 'scale-110' : ''}`} />
                 <span className={`text-xs mt-1 font-medium ${view === 'settings' ? 'font-bold' : ''}`}>Settings</span>
               </div>
             </button>
+
+            {/* Home V1 Tab (Only shows if enabled in Settings) */}
             {showHomeV1 && (
               <button
                 onClick={() => {
@@ -5310,22 +5318,12 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 className={`flex-1 py-4 transition-colors ${view === 'homev1' ? 'text-purple-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
               >
                 <div className="flex flex-col items-center">
-                  <svg className={`w-6 h-6 ${view === 'homev1' ? 'scale-110' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                  </svg>
+                  <Icons.Home className={`w-6 h-6 ${view === 'homev1' ? 'scale-110' : ''}`} />
                   <span className={`text-xs mt-1 font-medium ${view === 'homev1' ? 'font-bold' : ''}`}>Home V1</span>
                 </div>
               </button>
             )}
           </div>
-        </div>
-        
-        {/* Hidden div to ensure Tailwind includes all color classes */}
-        <div className="hidden">
-          <div className="border-blue-400 border-purple-400 border-green-400 border-yellow-400 border-red-400 border-pink-400 border-orange-400 border-cyan-400"></div>
-          <div className="bg-blue-500/10 bg-purple-500/10 bg-green-500/10 bg-yellow-500/10 bg-red-500/10 bg-pink-500/10 bg-orange-500/10 bg-cyan-500/10"></div>
-          <div className="text-blue-400 text-purple-400 text-green-400 text-yellow-400 text-red-400 text-pink-400 text-orange-400 text-cyan-400"></div>
-          <div className="bg-blue-400 bg-purple-400 bg-green-400 bg-yellow-400 bg-red-400 bg-pink-400 bg-orange-400 bg-cyan-400"></div>
         </div>
       </div>
     </>
