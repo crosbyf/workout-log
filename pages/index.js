@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { Icons } from '../components/Icons.js';
 import { NutritionLogic } from '../components/Nutrition.js';
 import { StatsLogic } from '../components/StatsLogic.js';
+import { WorkoutPresets } from '../data/WorkoutPresets.js';
 
 export default function Home() {
   const [workouts, setWorkouts] = useState([]);
@@ -174,16 +175,7 @@ export default function Home() {
   };
   
   // Color palette for workout presets
-  const presetColors = [
-    { name: 'Blue', border: 'border-blue-400', bg: 'bg-blue-500/10', text: 'text-blue-400' },
-    { name: 'Purple', border: 'border-purple-400', bg: 'bg-purple-500/10', text: 'text-purple-400' },
-    { name: 'Green', border: 'border-green-400', bg: 'bg-green-500/10', text: 'text-green-400' },
-    { name: 'Yellow', border: 'border-yellow-400', bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
-    { name: 'Red', border: 'border-red-400', bg: 'bg-red-500/10', text: 'text-red-400' },
-    { name: 'Pink', border: 'border-pink-400', bg: 'bg-pink-500/10', text: 'text-pink-400' },
-    { name: 'Orange', border: 'border-orange-400', bg: 'bg-orange-500/10', text: 'text-orange-400' },
-    { name: 'Cyan', border: 'border-cyan-400', bg: 'bg-cyan-500/10', text: 'text-cyan-400' },
-  ];
+  const presetColors = WorkoutPresets.colors;
   
   // Get color classes for a preset
   const getPresetColor = (presetName) => {
@@ -226,28 +218,44 @@ export default function Home() {
         const p = localStorage.getItem('presets');
         const e = localStorage.getItem('exercises');
         const t = localStorage.getItem('theme');
-        const dm = localStorage.getItem('darkMode'); // Legacy support
         const we = localStorage.getItem('weightEntries');
         const hv1 = localStorage.getItem('showHomeV1');
         const pe = localStorage.getItem('proteinEntries');
+
         if (w) setWorkouts(JSON.parse(w));
-        if (p) setPresets(JSON.parse(p));
-        if (e) setExercises(JSON.parse(e));
+        
+        // --- NEW PRESET LOGIC ---
+        if (p) {
+          setPresets(JSON.parse(p));
+        } else {
+          // If the user has no saved presets, load your Wednesday routine 
+          // and other defaults from the new WorkoutPresets file.
+          setPresets(WorkoutPresets.routines);
+        }
+
+        // --- EXERCISE LIBRARY FALLBACK ---
+        if (e) {
+          setExercises(JSON.parse(e));
+        } else {
+          setExercises(WorkoutPresets.exerciseLibrary);
+        }
+
         if (t) {
-          // Migrate old 'midnight' to 'neon'
           const loadedTheme = t === 'midnight' ? 'neon' : t;
           setTheme(loadedTheme);
-          if (t === 'midnight') {
-            localStorage.setItem('theme', 'neon'); // Update storage
-          }
-        } else if (dm !== null) {
-          // Migrate old darkMode to new theme system
-          setTheme(JSON.parse(dm) ? 'dark' : 'light');
         }
         if (we) setWeightEntries(JSON.parse(we));
         if (hv1) setShowHomeV1(JSON.parse(hv1));
         if (pe) setProteinEntries(JSON.parse(pe));
       };
+      
+      loadData();
+      
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+    }
+  }, []);
       
       // Load data immediately
       loadData();
