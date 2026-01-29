@@ -320,8 +320,6 @@ export default function Home() {
         .catch(err => console.error('Backup failed:', err));
     }
   }, [workouts, presets, weightEntries, exercises]);
-    return str;
-  };
 
   const importWorkouts = (e) => {
     const file = e.target.files[0];
