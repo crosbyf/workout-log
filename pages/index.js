@@ -311,15 +311,15 @@ export default function Home() {
       }
     };
     
-    // Simplified Auto-backup system
-useEffect(() => {
-  if (typeof window === 'undefined' || workouts.length === 0) return;
-
-  if (StorageService.shouldBackup()) {
-    StorageService.createBackup({ workouts, presets, weightEntries, exercises })
-      .catch(err => console.error('Backup failed:', err));
-  }
-}, [workouts, presets, weightEntries, exercises]);
+   // Simplified Auto-backup system
+  useEffect(() => {
+    if (typeof window === 'undefined' || workouts.length === 0) return;
+    
+    if (StorageService.shouldBackup()) {
+      StorageService.createBackup({ workouts, presets, weightEntries, exercises })
+        .catch(err => console.error('Backup failed:', err));
+    }
+  }, [workouts, presets, weightEntries, exercises]);
     return str;
   };
 
