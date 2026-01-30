@@ -5,6 +5,7 @@ import { NutritionLogic } from '../components/Nutrition.js';
 import { StatsLogic } from '../components/StatsLogic.js';
 import { WorkoutPresets } from '../data/WorkoutPresets.js';
 import { StorageService } from '../services/StorageService.js';
+import { SettingsView } from '../components/SettingsView.js';
 
 export default function Home() {
   const [workouts, setWorkouts] = useState([]);
@@ -3775,349 +3776,30 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             </div>
           )}
           
-          {view === 'settings' && (
-            <div className="space-y-3">
-              <h2 className="text-base font-semibold mb-2">Settings</h2>
-              
-              {/* Workout Presets - Collapsed at top */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
-                <button
-                  onClick={() => setShowPresetsMenu(!showPresetsMenu)}
-                  className={`w-full p-4 flex items-center justify-between ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">💪</span>
-                    <span className="font-bold">Workout Presets</span>
-                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>({presets.length})</span>
-                  </div>
-                  <div className={`transform transition-transform ${showPresetsMenu ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown />
-                  </div>
-                </button>
-                
-                {showPresetsMenu && (
-                  <div className={`p-3 space-y-2 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
-                    {presets.map((p, i) => {
-                      const color = getPresetColor(p.name);
-                      return (
-                        <div 
-                          key={i} 
-                          className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg overflow-hidden transition-all hover:shadow-md`}
-                        >
-                          <div className={`flex items-center border-l-4 ${color.border}`}>
-                            {/* Reorder Buttons */}
-                            <div className="flex flex-col px-1">
-                              <button
-                                onClick={() => {
-                                  if (i > 0) {
-                                    const updated = [...presets];
-                                    [updated[i - 1], updated[i]] = [updated[i], updated[i - 1]];
-                                    save(updated, 'presets', setPresets);
-                                  }
-                                }}
-                                disabled={i === 0}
-                                className={`p-1 ${i === 0 ? 'opacity-30 cursor-not-allowed' : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}`}
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  if (i < presets.length - 1) {
-                                    const updated = [...presets];
-                                    [updated[i], updated[i + 1]] = [updated[i + 1], updated[i]];
-                                    save(updated, 'presets', setPresets);
-                                  }
-                                }}
-                                disabled={i === presets.length - 1}
-                                className={`p-1 ${i === presets.length - 1 ? 'opacity-30 cursor-not-allowed' : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}`}
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </button>
-                            </div>
-                            
-                            {/* Color Indicator & Content */}
-                            <button
-                              onClick={() => {
-                                setEditingPreset(i);
-                                setEditPresetName(p.name);
-                                setEditPresetExercises([...p.exercises]);
-                                setEditPresetColor(p.color || 'Blue');
-                                setEditPresetIncludeInMenu(p.includeInMenu !== false);
-                              }}
-                              className="flex-1 text-left flex items-center gap-3 py-3 pr-3"
-                            >
-                              {/* Color Badge */}
-                              <div className={`w-3 h-3 rounded-full ${color.border.replace('border-', 'bg-')} flex-shrink-0`}></div>
-                              
-                              {/* Info */}
-                              <div className="flex-1 min-w-0">
-                                <div className="font-semibold text-sm">{p.name}</div>
-                                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} truncate`}>
-                                  {p.exercises.length} exercises • {color.name}
-                                </div>
-                              </div>
-                              
-                              {/* Edit Icon */}
-                              <Icons.Edit className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex-shrink-0`} />
-                            </button>
-                            
-                            {/* Delete Button */}
-                            <button
-                              onClick={() => setDeletePreset(i)}
-                              className={`px-3 py-3 ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'} transition-colors`}
-                            >
-                              <Icons.Trash />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    
-                    {/* Create New Preset Button */}
-                    <button
-                      onClick={() => {
-                        setNewPresetName('');
-                        setNewPresetExercises(exercises.length > 0 ? [exercises[0]] : []);
-                        setNewPresetColor('Blue');
-                        setNewPresetIncludeInMenu(true);
-                        setShowCreatePreset(true);
-                      }}
-                      className={`w-full py-3 rounded-lg border-2 border-dashed transition-all ${
-                        darkMode 
-                          ? 'border-gray-600 hover:border-blue-500 text-gray-400 hover:text-blue-400' 
-                          : 'border-gray-300 hover:border-blue-500 text-gray-600 hover:text-blue-600'
-                      }`}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <Icons.Plus />
-                        <span className="font-semibold">Create New Preset</span>
-                      </div>
-                    </button>
-                    
-                    {presets.length === 0 && (
-                      <div className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                        <div className="text-4xl mb-2">💪</div>
-                        <div className="text-sm">No presets yet</div>
-                        <div className="text-xs mt-1">Create a Manual workout and save it as a preset!</div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Data Import/Export Section */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
-                <button
-                  onClick={() => setShowDataManagement(!showDataManagement)}
-                  className="w-full p-4 flex items-center justify-between text-left"
-                >
-                  <h3 className="font-bold flex items-center gap-2">
-                    <span className="text-lg">💾</span>
-                    Data Management
-                  </h3>
-                  <div className={`transform transition-transform ${showDataManagement ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown />
-                  </div>
-                </button>
-                
-                {showDataManagement && (
-                  <div className="px-4 pb-4 space-y-2 border-t border-gray-700">
-                    <label className="cursor-pointer block mt-2">
-                      <div className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
-                        <Icons.Upload />
-                        Import Presets
-                      </div>
-                      <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
-                    </label>
-                    
-                    <label className="cursor-pointer block">
-                      <div className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
-                        <Icons.Upload />
-                        Import Workouts
-                      </div>
-                      <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
-                    </label>
-                    
-                    <button 
-                      onClick={() => {
-                        exportCSV();
-                        setToastMessage('CSV file downloaded!');
-                        setShowToast(true);
-                        setTimeout(() => setShowToast(false), 3000);
-                      }}
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
-                    >
-                      <Icons.Download />
-                      Export All Data
-                    </button>
-                    
-                    <button 
-                    onClick={async () => {
-                      try {
-                        const request = indexedDB.open('GorsLogBackups', 1);
-                        request.onsuccess = (e) => {
-                          const db = e.target.result;
-                          const transaction = db.transaction(['backups'], 'readonly');
-                          const store = transaction.objectStore('backups');
-                          const getAllRequest = store.getAll();
-                          
-                          getAllRequest.onsuccess = () => {
-                            const backups = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
-                            setBackupsList(backups);
-                            setShowBackups(true);
-                          };
-                        };
-                      } catch (err) {
-                        console.error('Failed to load backups:', err);
-                        setToastMessage('Failed to load backups');
-                        setShowToast(true);
-                        setTimeout(() => setShowToast(false), 3000);
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    View Backups
-                  </button>
-                  
-                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 px-1`}>
-                    Auto-backups every 7 days • Last 5 backups kept
-                  </div>
-                </div>
-                )}
-              </div>
-
-              {/* Home V1 Toggle */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🏠</span>
-                    <div>
-                      <div className="font-bold">Home V1 Tab</div>
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Show original Home layout as extra tab</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const newValue = !showHomeV1;
-                      setShowHomeV1(newValue);
-                      localStorage.setItem('showHomeV1', JSON.stringify(newValue));
-                    }}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showHomeV1 ? 'bg-blue-600' : darkMode ? 'bg-gray-700' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showHomeV1 ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              {/* Exercise Presets */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
-                <button
-                  onClick={() => setShowExercisesMenu(!showExercisesMenu)}
-                  className={`w-full p-4 flex items-center justify-between ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🏋️</span>
-                    <span className="font-bold">Exercise Presets</span>
-                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>({exercises.length})</span>
-                  </div>
-                  <div className={`transform transition-transform ${showExercisesMenu ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown />
-                  </div>
-                </button>
-                
-                {showExercisesMenu && (
-                  <div className={`p-3 space-y-2 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
-                    {exercises.sort((a, b) => a.localeCompare(b)).map((ex, i) => (
-                      <div 
-                        key={i} 
-                        className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3 flex items-center justify-between`}
-                      >
-                        <span className="font-medium">{ex}</span>
-                        <button
-                          onClick={() => {
-                            if (confirm(`Delete "${ex}"?`)) {
-                              const updated = exercises.filter(e => e !== ex);
-                              setExercises(updated);
-                              localStorage.setItem('exercises', JSON.stringify(updated));
-                            }
-                          }}
-                          className="text-red-500 hover:text-red-400 p-1"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                    
-                    <button
-                      onClick={() => {
-                        const newExercise = prompt('Enter exercise name:');
-                        if (newExercise && newExercise.trim()) {
-                          const trimmed = newExercise.trim();
-                          if (!exercises.includes(trimmed)) {
-                            const updated = [...exercises, trimmed];
-                            setExercises(updated);
-                            localStorage.setItem('exercises', JSON.stringify(updated));
-                          } else {
-                            alert('Exercise already exists!');
-                          }
-                        }
-                      }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span className="text-lg">+</span>
-                      Add Exercise
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Data Deletion Section */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md border-2 ${darkMode ? 'border-red-900/30' : 'border-red-200'} overflow-hidden`}>
-                <button
-                  onClick={() => setShowDataDeletion(!showDataDeletion)}
-                  className="w-full p-4 flex items-center justify-between text-left"
-                >
-                  <h3 className="font-bold flex items-center gap-2 text-red-400">
-                    <span className="text-lg">⚠️</span>
-                    Data Deletion
-                  </h3>
-                  <div className={`transform transition-transform ${showDataDeletion ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown />
-                  </div>
-                </button>
-                
-                {showDataDeletion && (
-                  <div className="px-4 pb-4 border-t border-gray-700">
-                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 mt-2`}>
-                      Permanently delete all workout data. This action cannot be undone.
-                    </p>
-                    <button 
-                      onClick={() => setShowClear(true)} 
-                      className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-3 rounded-lg text-sm font-bold shadow-md transition-all"
-                    >
-                      Delete All Workouts
-                    </button>
-                  </div>
-                )}
-              </div>
+        {view === 'settings' && (
+          <main className="max-w-4xl mx-auto p-4">
+            <SettingsView 
+              theme={theme}
+              setTheme={setTheme}
+              themes={themes}
+              importWorkouts={importWorkouts}
+              setShowClear={setShowClear}
+              showDataDeletion={showDataDeletion}
+              setShowDataDeletion={setShowDataDeletion}
+              darkMode={darkMode}
+            />
+            <div className="mt-8 flex justify-center">
+              <button 
+                onClick={() => setView('home')}
+                className={`px-6 py-2 rounded-lg font-bold transition-all ${
+                  darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Back to Log
+              </button>
             </div>
-          )}
-        </div>
+          </main>
+        )}
         
         {/* Day Details Modal */}
         {showDayModal && selectedDay && (() => {
