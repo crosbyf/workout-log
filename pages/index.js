@@ -3884,16 +3884,37 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                   </div>
 
                   <div className="space-y-3">
-                    {workout.exercises.map((ex, ei) => {
+                   {workout.exercises.map((ex, ei) => {
                       const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                       return (
-                      </div>
+                        <div key={ei} className={`mb-4 last:mb-0 p-3 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="font-bold text-base">{ex.name}</div>
+                            <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                              {totalReps} Total Reps
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {ex.sets.map((set, si) => (
+                              <div key={si} className="text-center">
+                                <div className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Set {si + 1}</div>
+                                <div className={`text-sm font-black ${set.reps > 0 ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-400'}`}>
+                                  {set.reps || 0}
+                                  {set.weight ? <span className="text-[10px] ml-0.5 text-blue-400">{set.weight}lb</span> : ''}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {ex.notes && (
+                            <div className="text-xs text-gray-500 mt-2 italic border-l-2 border-gray-600 pl-2">{ex.notes}</div>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
                   
                   {workout.notes && (
-                    <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4">
+                    <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4 italic">
                       {workout.notes}
                     </div>
                   )}
@@ -3902,27 +3923,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             );
           })()
         }
-        
-        {/* Preset Selector Modal */}
-        {showPresetSelector && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowPresetSelector(false)}>
-            <div 
-              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[60vh] overflow-y-auto pb-8`} 
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div 
-                className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}
-                onTouchStart={(e) => {
-                  e.currentTarget.dataset.startY = e.touches[0].clientY;
-                  e.currentTarget.dataset.modalParent = 'true';
-                }}
-                onTouchMove={(e) => {
-                  if (e.currentTarget.dataset.modalParent !== 'true') return;
-                  
-                  const startY = parseFloat(e.currentTarget.dataset.startY);
-                  const currentY = e.touches[0].clientY;
-                  const diff = currentY - startY;
-                  
                   // Only allow dragging down from the handle area
                   if (diff > 0) {
                     const modal = e.currentTarget.closest('.rounded-t-2xl');
