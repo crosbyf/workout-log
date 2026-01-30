@@ -3799,7 +3799,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               </button>
             </div>
           </main>
-        }
+        )}
         
         {/* Day Details Modal */}
       {showDayModal && selectedDay &&
