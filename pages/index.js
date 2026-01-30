@@ -4950,7 +4950,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                   <span className={`text-xs mt-1 font-medium ${view === 'homev1' ? 'font-bold' : ''}`}>Home V1</span>
                 </div>
               </button>
-            )}
+         )}
           </div>
         </div>
     </>
