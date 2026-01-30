@@ -3610,6 +3610,9 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             </div>
           )}
           
+          {/* THIS FILE CONTAINS LINES FROM APPROXIMATELY 3700 TO THE END */}
+{/* Find where your Progress Charts view starts and replace from there */}
+
           {/* Progress Charts View */}
           {view === 'stats' && statsView === 'progress' && (
             <div 
@@ -3626,7 +3629,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 const diffX = currentX - startX;
                 const diffY = Math.abs(currentY - startY);
                 
-                // Only swipe if horizontal movement is greater than vertical
                 if (Math.abs(diffX) > diffY && diffX > 20) {
                   e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
                   e.currentTarget.style.transition = 'none';
@@ -3640,7 +3642,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 e.currentTarget.style.transition = 'transform 0.2s ease-out';
                 
                 if (diffX > 100) {
-                  // Swipe right to go back
                   e.currentTarget.style.transform = 'translateX(100%)';
                   setTimeout(() => {
                     setStatsView('menu');
@@ -3665,7 +3666,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 <h2 className="text-base font-semibold">Progress Charts</h2>
               </div>
               
-         {workouts.length === 0 ? (
+              {workouts.length === 0 ? (
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-8 text-center shadow-md`}>
                   <div className="text-4xl mb-3">📊</div>
                   <div className="text-lg font-semibold mb-2">No Workout Data</div>
@@ -3743,13 +3744,16 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                             );
                           })}
                         </div>
+                        
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
+                          This week: {weeklyData[weeklyData.length - 1].value} reps
+                        </div>
                       </div>
                     );
                   })()}
                   
                   {/* Workout Frequency Chart */}
                   {(() => {
-                    // Get Monday of current week
                     const now = new Date();
                     const currentDay = now.getDay();
                     const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
@@ -3777,7 +3781,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                     }
                     
                     const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
-                    const avgWorkouts = (weeklyWorkouts.reduce((sum, w) => sum + w.count, 0) / 12).toFixed(1);
                     
                     return (
                       <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-6`}>
@@ -3804,8 +3807,8 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                                     </>
                                   )}
                                 </div>
-                               <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-green-400' : ''}`}>
-                                 {week.label}
+                                <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-green-400' : ''}`}>
+                                  {week.label}
                                 </div>
                               </div>
                             );
@@ -3814,7 +3817,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       </div>
                     );
                   })()}
-                </div>
+                </>
               )}
             </div>
           )}
@@ -3842,7 +3845,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               setShowClear={setShowClear}
             />
           )}
-        </div> {/* This is the max-w-4xl container */}
+        </div>
 
         {/* Day Details Modal */}
         {showDayModal && selectedDay && (
@@ -3850,146 +3853,123 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             const workout = workouts.find(w => w.date === selectedDay);
             if (!workout) return null;
 
-          const [year, month, day] = selectedDay.split('-');
-          const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-          const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-          
-          let startY = 0;
-          let currentY = 0;
-          let scrollTop = 0;
-          
-          const handleTouchStart = (e) => {
-            startY = e.touches[0].clientY;
-            scrollTop = e.currentTarget.scrollTop;
-          };
-          
-          const handleTouchMove = (e) => {
-            currentY = e.touches[0].clientY;
-            const diff = currentY - startY;
-            if (scrollTop === 0 && diff > 0) {
-              e.preventDefault();
-              e.currentTarget.style.transform = `translateY(${diff}px)`;
-              e.currentTarget.style.transition = 'none';
-            }
-          };
-          
-          const handleTouchEnd = (e) => {
-            const diff = currentY - startY;
-            e.currentTarget.style.transition = 'transform 0.2s ease-out';
-            if (scrollTop === 0 && diff > 100) {
-              e.currentTarget.style.transform = 'translateY(100%)';
-              setTimeout(() => setShowDayModal(false), 200);
-            } else {
-              e.currentTarget.style.transform = '';
-            }
-          };
+            const [year, month, day] = selectedDay.split('-');
+            const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
 
-          return (
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" 
-              onClick={() => setShowDayModal(false)}
-              style={{ touchAction: 'none' }}
-            >
+            return (
               <div 
-                className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[80vh] overflow-y-auto pb-8`} 
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
+                className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" 
+                onClick={() => setShowDayModal(false)}
               >
-                <div className="flex justify-center pt-3 pb-2">
-                  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
-                </div>
-                
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="font-bold text-lg">
-                        {dayOfWeek}, {month}/{day}/{year}
-                      </h3>
-                      {workout.location && <div className="text-sm text-gray-400">{workout.location}</div>}
-                    </div>
-                    <button
-                      onClick={() => setShowDayModal(false)}
-                      className="text-gray-400 hover:text-white"
-                    >
-                      <Icons.X />
-                    </button>
+                <div 
+                  className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[80vh] overflow-y-auto pb-8`} 
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex justify-center pt-3 pb-2">
+                    <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
                   </div>
-                  {workout.exercises.map((ex, ei) => {
-                    const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                    return (
-                      <div key={ei} className={`mb-4 last:mb-0 p-3 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="font-bold text-base">{ex.name}</div>
-                          <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
-                            {totalReps} Total Reps
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-4 gap-2">
-                          {ex.sets.map((set, si) => (
-                            <div key={si} className="text-center">
-                              <div className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Set {si + 1}</div>
-                              <div className={`text-sm font-black ${set.reps > 0 ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-400'}`}>
-                                {set.reps || 0}
-                                {set.weight ? <span className="text-[10px] ml-0.5 text-blue-400">{set.weight}lb</span> : ''}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        {ex.notes && (
-                          <div className="text-xs text-gray-500 mt-2 italic border-l-2 border-gray-600 pl-2">{ex.notes}</div>
-                        )}
+                  
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="font-bold text-lg">
+                          {dayOfWeek}, {month}/{day}/{year}
+                        </h3>
+                        {workout.location && <div className="text-sm text-gray-400">{workout.location}</div>}
                       </div>
-                    );
-                  })}
-                  {workout.notes && (
-                    <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4 italic">
-                      {workout.notes}
+                      <button
+                        onClick={() => setShowDayModal(false)}
+                        className="text-gray-400 hover:text-white"
+                      >
+                        <Icons.X />
+                      </button>
                     </div>
-                  )}
+                    {workout.exercises.map((ex, ei) => {
+                      const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      return (
+                        <div key={ei} className={`mb-4 last:mb-0 p-3 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="font-bold text-base">{ex.name}</div>
+                            <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                              {totalReps} Total Reps
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {ex.sets.map((set, si) => (
+                              <div key={si} className="text-center">
+                                <div className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Set {si + 1}</div>
+                                <div className={`text-sm font-black ${set.reps > 0 ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-400'}`}>
+                                  {set.reps || 0}
+                                  {set.weight ? <span className="text-[10px] ml-0.5 text-blue-400">{set.weight}lb</span> : ''}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {ex.notes && (
+                            <div className="text-xs text-gray-500 mt-2 italic border-l-2 border-gray-600 pl-2">{ex.notes}</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {workout.notes && (
+                      <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4 italic">
+                        {workout.notes}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })()
-      }
+            );
+          })()
+        )}
 
-      {/* Navigation Bar */}
-      <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
-        <div className="max-w-lg mx-auto flex justify-between">
-          <button 
-            onClick={() => {
-              setView('home');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
-          >
-            <Icons.Home className="w-6 h-6" />
-            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
-          </button>
-          <button 
-            onClick={() => {
-              setView('stats');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
-          >
-            <Icons.Stats className="w-6 h-6" />
-            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
-          </button>
-          <button 
-            onClick={() => {
-              setView('settings');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
-          >
-            <Icons.Settings className="w-6 h-6" />
-            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
-          </button>
-        </div>
-      </nav>
-    </div>
+        {/* Toast Notification */}
+        {showToast && (
+          <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-50">
+            <div className="bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium">
+              {toastMessage}
+            </div>
+          </div>
+        )}
+
+        {/* Navigation Bar */}
+        <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
+          <div className="max-w-lg mx-auto flex justify-between">
+            <button 
+              onClick={() => {
+                setView('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
+            >
+              <Icons.Home className="w-6 h-6" />
+              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
+            </button>
+            <button 
+              onClick={() => {
+                setView('stats');
+                setStatsView('menu');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
+            >
+              <Icons.Stats className="w-6 h-6" />
+              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
+            </button>
+            <button 
+              onClick={() => {
+                setView('settings');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
+            >
+              <Icons.Settings className="w-6 h-6" />
+              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
+            </button>
+          </div>
+        </nav>
+      </div>
+    </>
   );
 }
