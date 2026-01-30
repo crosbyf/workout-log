@@ -3802,7 +3802,8 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
         )}
         
         {/* Day Details Modal */}
-        {showDayModal && selectedDay && (() => {
+      {showDayModal && selectedDay && (
+        (() => {
           const workout = workouts.find(w => w.date === selectedDay);
           if (!workout) return null;
 
@@ -3818,7 +3819,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             startY = e.touches[0].clientY;
             scrollTop = e.currentTarget.scrollTop;
         };
-      })()} {
           
           const handleTouchMove = (e) => {
             currentY = e.touches[0].clientY;
@@ -3911,8 +3911,9 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 </div>
               </div>
             </div>
-          );
-        })()}
+        ); // closes the return
+      })() // <--- THIS is the critical missing piece that executes the function
+    )} // closes the {showDayModal && ...}
         
         {/* Preset Selector Modal */}
         {showPresetSelector && (
