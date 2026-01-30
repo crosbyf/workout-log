@@ -3776,7 +3776,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       });
                     }
                     
-              {/* Workout Frequency Chart */}
                     const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
                     const avgWorkouts = (weeklyWorkouts.reduce((sum, w) => sum + w.count, 0) / 12).toFixed(1);
                     
