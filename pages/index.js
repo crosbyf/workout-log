@@ -310,16 +310,8 @@ export default function Home() {
         console.error('Backup failed:', err);
       }
     };
-    
-   // Simplified Auto-backup system
-  useEffect(() => {
-    if (typeof window === 'undefined' || workouts.length === 0) return;
-    
-    if (StorageService.shouldBackup()) {
-      StorageService.createBackup({ workouts, presets, weightEntries, exercises })
-        .catch(err => console.error('Backup failed:', err));
-    }
-  }, [workouts, presets, weightEntries, exercises]);
+    createBackup(); // Added this
+  }, [workouts, presets, weightEntries, exercises]); // Added this to close the first useEffect
 
   const importWorkouts = (e) => {
     const file = e.target.files[0];
@@ -424,7 +416,7 @@ export default function Home() {
 
       // Merge with existing workouts and save
       const merged = [...imp, ...workouts];
-      save(merged, 'workouts', setWorkouts);
+     save(merged, 'workouts', setWorkouts);
       e.target.value = '';
     };
     reader.readAsText(file);
