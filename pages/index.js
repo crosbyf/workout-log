@@ -3777,29 +3777,34 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
           )}
           
       {view === 'settings' && (
-        <SettingsView 
-          theme={theme}
-          setTheme={setTheme}
-          themes={themes}
-          importWorkouts={importWorkouts}
-          setShowClear={setShowClear}
-          showDataDeletion={showDataDeletion}
-          setShowDataDeletion={setShowDataDeletion}
-          darkMode={darkMode}
-        />
-      )}
-            <div className="mt-8 flex justify-center">
-              <button 
-                onClick={() => setView('home')}
-                className={`px-6 py-2 rounded-lg font-bold transition-all ${
-                  darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Back to Log
-              </button>
-            </div>
-          </main>
+          <SettingsView
+            darkMode={darkMode}
+            workouts={workouts}
+            presets={presets}
+            exercises={exercises}
+            weightEntries={weightEntries}
+            proteinEntries={proteinEntries}
+            setWorkouts={setWorkouts}
+            setPresets={setPresets}
+            setExercises={setExercises}
+            setWeightEntries={setWeightEntries}
+            setProteinEntries={setProteinEntries}
+            setTheme={setTheme}
+            theme={theme}
+            setShowHomeV1={setShowHomeV1}
+            showHomeV1={showHomeV1}
+            exportCSV={exportCSV}
+            importWorkouts={importWorkouts}
+            setShowClear={setShowClear}
+          />
         )}
+      </main>
+
+      {/* Day Details Modal */}
+      {showDayModal && selectedDay &&
+        (() => {
+          const workout = workouts.find(w => w.date === selectedDay);
+          if (!workout) return null;
         
         {/* Day Details Modal */}
       {showDayModal && selectedDay &&
