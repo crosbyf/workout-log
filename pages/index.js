@@ -3902,6 +3902,12 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       );
                     })}
                   </div>
+                </div>
+                </div>
+              </div>
+            );
+          })()
+        )}
 
                   {workout.notes && (
                     <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3">
