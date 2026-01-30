@@ -304,7 +304,7 @@ export default function Home() {
             }
           };
           
-          localStorage.setItem('lastBackup', backup.timestamp.toString());
+         localStorage.setItem('lastBackup', backup.timestamp.toString());
           console.log('Backup created:', new Date(backup.timestamp).toLocaleString());
         };
       } catch (err) {
@@ -313,7 +313,7 @@ export default function Home() {
     };
     createBackup(); // Added this
   }, [workouts, presets, weightEntries, exercises]); // Added this to close the first useEffect
-
+  
   const importWorkouts = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -3817,8 +3817,8 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
           const handleTouchStart = (e) => {
             startY = e.touches[0].clientY;
             scrollTop = e.currentTarget.scrollTop;
-          }
         };
+      })()} {
           
           const handleTouchMove = (e) => {
             currentY = e.touches[0].clientY;
@@ -4952,7 +4952,8 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 </div>
               </button>
          )}
-      </div>
+          </div>
+        </div>
       </div>
     </>
   );
