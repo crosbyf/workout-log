@@ -3609,10 +3609,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               </div>
             </div>
           )}
-          
-          {/* THIS FILE CONTAINS LINES FROM APPROXIMATELY 3700 TO THE END */}
-{/* Find where your Progress Charts view starts and replace from there */}
-
+       
           {/* Progress Charts View */}
           {view === 'stats' && statsView === 'progress' && (
             <div 
