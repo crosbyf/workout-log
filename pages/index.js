@@ -3798,7 +3798,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               setShowClear={setShowClear}
             />
           )}
-      //</div> {/* This closes the max-w-4xl container for the views */}
+          /</div> {/* This closes the max-w-4xl container for the views */}
 
       {/* Day Details Modal */}
       {showDayModal && selectedDay &&
