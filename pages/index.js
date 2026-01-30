@@ -257,21 +257,7 @@ export default function Home() {
     }
     return dateStr;
   };
-```
 
-## Folder Structure You Need
-
-Make sure these folders exist:
-```
-your-project/
-├── components/    ← create if missing
-├── data/          ← create if missing  
-├── pages/         ← should exist
-├── services/      ← create if missing
-├── styles/        ← should exist
-└── utils/         ← create if missing
-
-  
   const [current, setCurrent] = useState({
     date: getTodayDate(),
     exercises: [],
