@@ -3882,7 +3882,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       <Icons.X />
                     </button>
                   </div>
-{workout.exercises.map((ex, ei) => {
+                    {workout.exercises.map((ex, ei) => {
                       const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                       return (
                         <div key={ei} className={`mb-4 last:mb-0 p-3 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
@@ -3926,21 +3926,30 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
         <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
           <div className="max-w-lg mx-auto flex justify-between">
             <button 
-              onClick={() => setView('home')}
+              onClick={() => {
+                setView('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
             >
               <Icons.Home className="w-6 h-6" />
               <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
             </button>
             <button 
-              onClick={() => setView('stats')}
+              onClick={() => {
+                setView('stats');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
             >
               <Icons.Stats className="w-6 h-6" />
               <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
             </button>
             <button 
-              onClick={() => setView('settings')}
+              onClick={() => {
+                setView('settings');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
               className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
             >
               <Icons.Settings className="w-6 h-6" />
