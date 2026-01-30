@@ -3765,17 +3765,17 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                           })}
                         </div>
                         
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
                           Average: {avgWorkouts} workouts/week • This week: {weeklyWorkouts[weeklyWorkouts.length - 1].count}
                         </div>
                       </div>
                     );
                   })()}
-                </>
+                </div>
               )}
             </div>
           )}
-          
+
           {view === 'settings' && (
             <SettingsView
               darkMode={darkMode}
@@ -3798,7 +3798,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               setShowClear={setShowClear}
             />
           )}
-      </div> {/* This closes the max-w-4xl container for the views */}
+      //</div> {/* This closes the max-w-4xl container for the views */}
 
       {/* Day Details Modal */}
       {showDayModal && selectedDay &&
