@@ -3817,7 +3817,8 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
           const handleTouchStart = (e) => {
             startY = e.touches[0].clientY;
             scrollTop = e.currentTarget.scrollTop;
-          };
+          }
+        };
           
           const handleTouchMove = (e) => {
             currentY = e.touches[0].clientY;
