@@ -3799,10 +3799,10 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               </button>
             </div>
           </main>
-        )}
+        }
         
         {/* Day Details Modal */}
-      {showDayModal && selectedDay && (
+      {showDayModal && selectedDay &&
         (() => {
           const workout = workouts.find(w => w.date === selectedDay);
           if (!workout) return null;
