@@ -3883,81 +3883,81 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                     </button>
                   </div>
                     {workout.exercises.map((ex, ei) => {
-                      const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-                      return (
-                        <div key={ei} className={`mb-4 last:mb-0 p-3 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="font-bold text-base">{ex.name}</div>
-                            <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
-                              {totalReps} Total Reps
-                            </div>
+                    const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                    return (
+                      <div key={ei} className={`mb-4 last:mb-0 p-3 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="font-bold text-base">{ex.name}</div>
+                          <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
+                            {totalReps} Total Reps
                           </div>
-                          <div className="grid grid-cols-4 gap-2">
-                            {ex.sets.map((set, si) => (
-                              <div key={si} className="text-center">
-                                <div className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Set {si + 1}</div>
-                                <div className={`text-sm font-black ${set.reps > 0 ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-400'}`}>
-                                  {set.reps || 0}
-                                  {set.weight ? <span className="text-[10px] ml-0.5 text-blue-400">{set.weight}lb</span> : ''}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                          {ex.notes && (
-                            <div className="text-xs text-gray-500 mt-2 italic border-l-2 border-gray-600 pl-2">{ex.notes}</div>
-                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                  
-                  {workout.notes && (
-                    <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4 italic">
-                      {workout.notes}
-                    </div>
-                  )}
+                        <div className="grid grid-cols-4 gap-2">
+                          {ex.sets.map((set, si) => (
+                            <div key={si} className="text-center">
+                              <div className="text-[10px] text-gray-500 uppercase font-bold mb-0.5">Set {si + 1}</div>
+                              <div className={`text-sm font-black ${set.reps > 0 ? (darkMode ? 'text-white' : 'text-gray-900') : 'text-gray-400'}`}>
+                                {set.reps || 0}
+                                {set.weight ? <span className="text-[10px] ml-0.5 text-blue-400">{set.weight}lb</span> : ''}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {ex.notes && (
+                          <div className="text-xs text-gray-500 mt-2 italic border-l-2 border-gray-600 pl-2">{ex.notes}</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
+                
+                {workout.notes && (
+                  <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4 italic">
+                    {workout.notes}
+                  </div>
+                )}
               </div>
-            );
-          })()
-        }
+            </div>
+          );
+        })()
+      }
 
-        {/* Navigation Bar */}
-        <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
-          <div className="max-w-lg mx-auto flex justify-between">
-            <button 
-              onClick={() => {
-                setView('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
-            >
-              <Icons.Home className="w-6 h-6" />
-              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
-            </button>
-            <button 
-              onClick={() => {
-                setView('stats');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
-            >
-              <Icons.Stats className="w-6 h-6" />
-              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
-            </button>
-            <button 
-              onClick={() => {
-                setView('settings');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
-            >
-              <Icons.Settings className="w-6 h-6" />
-              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
-            </button>
-          </div>
-        </nav>
-      </div>
+      {/* Navigation Bar */}
+      <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
+        <div className="max-w-lg mx-auto flex justify-between">
+          <button 
+            onClick={() => {
+              setView('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <Icons.Home className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
+          </button>
+          <button 
+            onClick={() => {
+              setView('stats');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <Icons.Stats className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
+          </button>
+          <button 
+            onClick={() => {
+              setView('settings');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <Icons.Settings className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
+          </button>
+        </div>
+      </nav>
     </div>
+  </div>
   );
 }
