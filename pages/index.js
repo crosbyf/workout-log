@@ -3798,7 +3798,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             setShowClear={setShowClear}
           />
         )}
-      </main>
+      </div> {/* This closes the max-w-4xl container for the views */}
 
       {/* Day Details Modal */}
       {showDayModal && selectedDay &&
@@ -3904,14 +3904,11 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                             <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
                           )}
                         </div>
-                      );
-                    })}
-                </div>
                 </div>
               </div>
             );
           })()
-        )}
+        }
 
                   {workout.notes && (
                     <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3">
