@@ -3728,7 +3728,8 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       });
                     }
                     
-                  const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
+              {/* Workout Frequency Chart */}
+                    const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
                     const avgWorkouts = (weeklyWorkouts.reduce((sum, w) => sum + w.count, 0) / 12).toFixed(1);
                     
                     return (
@@ -3738,7 +3739,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                           Workouts per week (last 12 weeks)
                         </div>
                         
-                        {/* Chart */}
                         <div className="h-48 flex items-end gap-1">
                           {weeklyWorkouts.map((week, i) => {
                             const height = maxCount > 0 ? (week.count / maxCount) * 100 : 0;
@@ -3757,16 +3757,12 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                                     </>
                                   )}
                                 </div>
-                                <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-green-400' : ''}`}>
-                                  {week.label}
-                                </div>
+                               <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-green-400' : ''}`}>
+  {week.label}
+</div>
                               </div>
                             );
                           })}
-                        </div>
-                        
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
-                          Average: {avgWorkouts} workouts/week • This week: {weeklyWorkouts[weeklyWorkouts.length - 1].count}
                         </div>
                       </div>
                     );
@@ -3776,6 +3772,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             </div>
           )}
 
+          {/* Settings View */}
           {view === 'settings' && (
             <SettingsView
               darkMode={darkMode}
