@@ -3728,11 +3728,11 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       });
                     }
                     
-                    const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
+                  const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
                     const avgWorkouts = (weeklyWorkouts.reduce((sum, w) => sum + w.count, 0) / 12).toFixed(1);
                     
                     return (
-                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-6`}>
                         <h3 className="font-bold text-lg mb-1">Workout Frequency</h3>
                         <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
                           Workouts per week (last 12 weeks)
@@ -3776,37 +3776,31 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             </div>
           )}
           
-      {view === 'settings' && (
-          <SettingsView
-            darkMode={darkMode}
-            workouts={workouts}
-            presets={presets}
-            exercises={exercises}
-            weightEntries={weightEntries}
-            proteinEntries={proteinEntries}
-            setWorkouts={setWorkouts}
-            setPresets={setPresets}
-            setExercises={setExercises}
-            setWeightEntries={setWeightEntries}
-            setProteinEntries={setProteinEntries}
-            setTheme={setTheme}
-            theme={theme}
-            setShowHomeV1={setShowHomeV1}
-            showHomeV1={showHomeV1}
-            exportCSV={exportCSV}
-            importWorkouts={importWorkouts}
-            setShowClear={setShowClear}
-          />
-        )}
+          {view === 'settings' && (
+            <SettingsView
+              darkMode={darkMode}
+              workouts={workouts}
+              presets={presets}
+              exercises={exercises}
+              weightEntries={weightEntries}
+              proteinEntries={proteinEntries}
+              setWorkouts={setWorkouts}
+              setPresets={setPresets}
+              setExercises={setExercises}
+              setWeightEntries={setWeightEntries}
+              setProteinEntries={setProteinEntries}
+              setTheme={setTheme}
+              theme={theme}
+              setShowHomeV1={setShowHomeV1}
+              showHomeV1={showHomeV1}
+              exportCSV={exportCSV}
+              importWorkouts={importWorkouts}
+              setShowClear={setShowClear}
+            />
+          )}
       </div> {/* This closes the max-w-4xl container for the views */}
 
       {/* Day Details Modal */}
-      {showDayModal && selectedDay &&
-        (() => {
-          const workout = workouts.find(w => w.date === selectedDay);
-          if (!workout) return null;
-        
-        {/* Day Details Modal */}
       {showDayModal && selectedDay &&
         (() => {
           const workout = workouts.find(w => w.date === selectedDay);
@@ -3823,13 +3817,11 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
           const handleTouchStart = (e) => {
             startY = e.touches[0].clientY;
             scrollTop = e.currentTarget.scrollTop;
-        };
+          };
           
           const handleTouchMove = (e) => {
             currentY = e.touches[0].clientY;
             const diff = currentY - startY;
-            
-            // Only allow swipe down if at top of scroll
             if (scrollTop === 0 && diff > 0) {
               e.preventDefault();
               e.currentTarget.style.transform = `translateY(${diff}px)`;
@@ -3840,7 +3832,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
           const handleTouchEnd = (e) => {
             const diff = currentY - startY;
             e.currentTarget.style.transition = 'transform 0.2s ease-out';
-            
             if (scrollTop === 0 && diff > 100) {
               e.currentTarget.style.transform = 'translateY(100%)';
               setTimeout(() => setShowDayModal(false), 200);
@@ -3862,7 +3853,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                {/* Drag handle */}
                 <div className="flex justify-center pt-3 pb-2">
                   <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
                 </div>
@@ -3882,7 +3872,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       <Icons.X />
                     </button>
                   </div>
-                    {workout.exercises.map((ex, ei) => {
+                  {workout.exercises.map((ex, ei) => {
                     const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
                     return (
                       <div key={ei} className={`mb-4 last:mb-0 p-3 rounded-xl ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
@@ -3909,55 +3899,53 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       </div>
                     );
                   })}
-                </div>
-                
-                {workout.notes && (
+                  {workout.notes && (
                     <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4 italic">
                       {workout.notes}
                     </div>
                   )}
                 </div>
               </div>
-            );
-          })() // <--- This closes the self-executing function and modal logic
-        }
+            </div>
+          );
+        })()
+      }
 
-        {/* Navigation Bar */}
-        <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
-          <div className="max-w-lg mx-auto flex justify-between">
-            <button 
-              onClick={() => {
-                setView('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
-            >
-              <Icons.Home className="w-6 h-6" />
-              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
-            </button>
-            <button 
-              onClick={() => {
-                setView('stats');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
-            >
-              <Icons.Stats className="w-6 h-6" />
-              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
-            </button>
-            <button 
-              onClick={() => {
-                setView('settings');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
-            >
-              <Icons.Settings className="w-6 h-6" />
-              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
-            </button>
-          </div>
-        </nav>
-      </div>
+      {/* Navigation Bar */}
+      <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
+        <div className="max-w-lg mx-auto flex justify-between">
+          <button 
+            onClick={() => {
+              setView('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <Icons.Home className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
+          </button>
+          <button 
+            onClick={() => {
+              setView('stats');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <Icons.Stats className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
+          </button>
+          <button 
+            onClick={() => {
+              setView('settings');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <Icons.Settings className="w-6 h-6" />
+            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }
