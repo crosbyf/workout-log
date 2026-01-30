@@ -3941,7 +3941,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             </button>
             <button 
               onClick={() => setView('settings')}
-              className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-400' : 'text-gray-500'}`}
+              className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
             >
               <Icons.Settings className="w-6 h-6" />
               <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
