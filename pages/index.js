@@ -314,15 +314,16 @@ export default function Home() {
   }, [workouts, presets, weightEntries, exercises]); // Added this to close the first useEffect
 
   const importWorkouts = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const lines = ev.target.result.split('\n').map(l => l.trim()).filter(l => l);
-      const imp = [];
-      let currentWorkout = null;
-      let workoutLocation = '';
-    };
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const lines = ev.target.result.split('\n').map(l => l.trim()).filter(l => l);
+      const imp = [];
+      let currentWorkout = null;
+      let workoutLocation = '';
+      
+      // The rest of your logic follows...
       // First line is the location (e.g., "Garage BW")
       if (lines.length > 0 && !lines[0].toLowerCase().includes('date')) {
         workoutLocation = lines[0].split(',')[0].trim();
