@@ -3776,18 +3776,18 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
             </div>
           )}
           
-        {view === 'settings' && (
-          <main className="max-w-4xl mx-auto p-4">
-            <SettingsView 
-              theme={theme}
-              setTheme={setTheme}
-              themes={themes}
-              importWorkouts={importWorkouts}
-              setShowClear={setShowClear}
-              showDataDeletion={showDataDeletion}
-              setShowDataDeletion={setShowDataDeletion}
-              darkMode={darkMode}
-            />
+      {view === 'settings' && (
+        <SettingsView 
+          theme={theme}
+          setTheme={setTheme}
+          themes={themes}
+          importWorkouts={importWorkouts}
+          setShowClear={setShowClear}
+          showDataDeletion={showDataDeletion}
+          setShowDataDeletion={setShowDataDeletion}
+          darkMode={darkMode}
+        />
+      )}
             <div className="mt-8 flex justify-center">
               <button 
                 onClick={() => setView('home')}
