@@ -3912,52 +3912,52 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 </div>
                 
                 {workout.notes && (
-                  <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4 italic">
-                    {workout.notes}
-                  </div>
-                )}
+                    <div className="mt-4 text-sm text-gray-400 border-t border-gray-700 pt-3 px-4 italic">
+                      {workout.notes}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })()
-      }
+            );
+          })() // <--- This closes the self-executing function and modal logic
+        }
 
-      {/* Navigation Bar */}
-      <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
-        <div className="max-w-lg mx-auto flex justify-between">
-          <button 
-            onClick={() => {
-              setView('home');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
-          >
-            <Icons.Home className="w-6 h-6" />
-            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
-          </button>
-          <button 
-            onClick={() => {
-              setView('stats');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
-          >
-            <Icons.Stats className="w-6 h-6" />
-            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
-          </button>
-          <button 
-            onClick={() => {
-              setView('settings');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
-          >
-            <Icons.Settings className="w-6 h-6" />
-            <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
-          </button>
-        </div>
-      </nav>
+        {/* Navigation Bar */}
+        <nav className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-900/95 border-gray-800' : 'bg-white/95 border-gray-200'} backdrop-blur-md border-t px-6 pb-safe z-40`}>
+          <div className="max-w-lg mx-auto flex justify-between">
+            <button 
+              onClick={() => {
+                setView('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center py-3 px-2 ${view === 'home' ? 'text-blue-500' : 'text-gray-500'}`}
+            >
+              <Icons.Home className="w-6 h-6" />
+              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Log</span>
+            </button>
+            <button 
+              onClick={() => {
+                setView('stats');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center py-3 px-2 ${view === 'stats' ? 'text-blue-500' : 'text-gray-500'}`}
+            >
+              <Icons.Stats className="w-6 h-6" />
+              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Stats</span>
+            </button>
+            <button 
+              onClick={() => {
+                setView('settings');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center py-3 px-2 ${view === 'settings' ? 'text-blue-500' : 'text-gray-500'}`}
+            >
+              <Icons.Settings className="w-6 h-6" />
+              <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Settings</span>
+            </button>
+          </div>
+        </nav>
+      </div>
     </div>
-  </div>
   );
 }
