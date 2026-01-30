@@ -3901,9 +3901,12 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                             </div>
                           </div>
                           {ex.notes && (
-                            <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
+                        <div className="text-xs text-gray-500 ml-32 -mt-0.5">{ex.notes}</div>
                           )}
                         </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             );
