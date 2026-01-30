@@ -3615,7 +3615,7 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-8 text-center shadow-md`}>
                   <div className="text-4xl mb-3">📊</div>
                   <div className="text-lg font-semibold mb-2">No Workout Data</div>
-                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                 <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     Start logging workouts to see your progress!
                   </div>
                 </div>
