@@ -3901,7 +3901,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                         </div>
                       );
                     })}
-                  </div>
                 </div>
                 </div>
               </div>
