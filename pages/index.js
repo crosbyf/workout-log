@@ -3758,8 +3758,8 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                                   )}
                                 </div>
                                <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-green-400' : ''}`}>
-  {week.label}
-</div>
+                                 {week.label}
+                                </div>
                               </div>
                             );
                           })}
@@ -3795,14 +3795,13 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               setShowClear={setShowClear}
             />
           )}
-          </div>
-                //{/* This closes the max-w-4xl container for the views */}
+        </div> {/* This is the max-w-4xl container */}
 
-      {/* Day Details Modal */}
-      {showDayModal && selectedDay &&
-        (() => {
-          const workout = workouts.find(w => w.date === selectedDay);
-          if (!workout) return null;
+        {/* Day Details Modal */}
+        {showDayModal && selectedDay && (
+          (() => {
+            const workout = workouts.find(w => w.date === selectedDay);
+            if (!workout) return null;
 
           const [year, month, day] = selectedDay.split('-');
           const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
