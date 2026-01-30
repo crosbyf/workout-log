@@ -3746,49 +3746,6 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                       </div>
                     );
                   })()}
-                    
-                    const maxVolume = Math.max(...weeklyData.map(d => d.value), 1);
-                    
-                    return (
-                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                        <h3 className="font-bold text-lg mb-1">Volume Trend</h3>
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-                          Total reps per week (last 12 weeks)
-                        </div>
-                        
-                        {/* Chart */}
-                        <div className="h-48 flex items-end gap-1">
-                          {weeklyData.map((week, i) => {
-                            const height = maxVolume > 0 ? (week.value / maxVolume) * 100 : 0;
-                            return (
-                              <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                                <div className="w-full flex flex-col justify-end relative" style={{ height: '170px' }}>
-                                  {week.value > 0 && (
-                                    <>
-                                      <div 
-                                        className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:opacity-80"
-                                        style={{ height: `${height}%` }}
-                                      />
-                                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                        {week.value}
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                                <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-blue-400' : ''}`}>
-                                  {week.label}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
-                          This week: {weeklyData[weeklyData.length - 1].value} reps
-                        </div>
-                      </div>
-                    );
-                  })()}
                   
                   {/* Workout Frequency Chart */}
                   {(() => {
