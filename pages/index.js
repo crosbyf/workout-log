@@ -305,33 +305,7 @@ export default function Home() {
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-  // Helper function to save data to localStorage and update state
-  const save = (data, key, setter) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(key, JSON.stringify(data));
-    }
-    setter(data);
-  };
-
-  // Helper function to parse date strings from CSV import
-  const parseDate = (dateStr) => {
-    if (!dateStr) return '';
-    const parts = dateStr.split('-');
-    if (parts.length >= 2) {
-      const month = parts[0].padStart(2, '0');
-      const day = parts[1].padStart(2, '0');
-      let year;
-      if (parts[2] && /^\d{4}$/.test(parts[2])) {
-        year = parts[2];
-      } else if (parts[2] && /^\d{2}$/.test(parts[2])) {
-        year = '20' + parts[2];
-      } else {
-        year = new Date().getFullYear();
-      }
-      return `${year}-${month}-${day}`;
-    }
-    return dateStr;
-  };
+  
   const [current, setCurrent] = useState({
     date: getTodayDate(),
     exercises: [],
