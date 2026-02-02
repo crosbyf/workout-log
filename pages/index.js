@@ -122,6 +122,7 @@ export default function Home() {
   const [editing, setEditing] = useState(null);
   const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
   const [showVolumeFilter, setShowVolumeFilter] = useState(false);
+  const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
   
   // Theme definitions
   const themes = {
@@ -2214,11 +2215,8 @@ export default function Home() {
               )}
             </div>
           )}
-          
-          
          
           {/* ==================== STATS VIEWS ==================== */}
-          
           {/* Stats Menu */}
           {view === 'stats' && statsView === 'menu' && (
             <div className="space-y-3">
@@ -2483,31 +2481,47 @@ export default function Home() {
               </button>
               
               {/* Body Weight Card */}
-              <button
-                onClick={() => {
-                  setStatsView('weight');
-                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
-                }}
-                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">⚖️</div>
-                    <div>
-                      <h3 className="font-bold text-lg mb-1">Body Weight</h3>
-                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {weightEntries.length > 0 
-                          ? `${weightEntries[weightEntries.length - 1].weight} lbs • ${weightEntries.length} entries`
-                          : 'Track your weight over time'
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
+<button
+  onClick={() => {
+    setStatsView('weight');
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+  }}
+  className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+>
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <div className="text-3xl">⚖️</div>
+      <div>
+        <h3 className="font-bold text-lg mb-1">Body Weight</h3>
+        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          {weightEntries.length > 0 
+            ? `${weightEntries[weightEntries.length - 1].weight} lbs • ${weightEntries.length} entries`
+            : 'Track your weight over time'
+          }
+        </div>
+      </div>
+    </div>
+    <div className="flex items-center gap-2">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          const today = new Date();
+          setCurrentWeight({ date: getTodayDate(), weight: '', notes: '' });
+          setEditingWeight(null);
+          setWeightCalendarMonth(today.getMonth());
+          setWeightCalendarYear(today.getFullYear());
+          setShowWeightModal(true);
+        }}
+        className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+      >
+        + Add
+      </button>
+      <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </div>
+  </div>
+</button>
               
               {/* Exercise Stats Card */}
               <button
@@ -3187,75 +3201,185 @@ export default function Home() {
                 Add Protein
               </button>
               
-              {/* Last 14 Days with Edit */}
-              <div className="space-y-2">
-                {(() => {
-                  const last14Days = [];
-                  const now = new Date();
-                  for (let i = 0; i < 14; i++) {
-                    const date = new Date(now);
-                    date.setDate(now.getDate() - i);
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const dateStr = `${year}-${month}-${day}`;
-                    const dayEntries = proteinEntries.filter(e => e.date === dateStr);
-                    const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
-                    const dayName = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
-                    const dateDisplay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    last14Days.push({ date: dateStr, dayName, dateDisplay, total, entries: dayEntries });
-                  }
-                  
-                  return last14Days.map(({ date, dayName, dateDisplay, total, entries }) => (
-                    <div key={date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-3 shadow-md`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <div>
-                          <div className="font-bold text-base">{dayName}</div>
-                          <div className="text-xs text-gray-500">{dateDisplay}</div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <div className="text-2xl font-black text-green-500">{total}g</div>
-                            <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
-                          </div>
-                          <button
-                            onClick={() => setEditingProteinDate(date)}
-                            className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-2`}
-                            title="Edit"
-                          >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                      
-                      {entries.length > 0 && (
-                        <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
-                          {entries.map((entry) => {
-                            // Format timestamp to readable time
-                            const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { 
-                              hour: 'numeric', 
-                              minute: '2-digit',
-                              hour12: true 
-                            }).toLowerCase() : '';
-                            
-                            return (
-                              <div key={entry.timestamp} className="flex items-center text-sm">
-                                <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
-                                <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
-                                <span className="w-12 text-right font-bold">{entry.grams}g</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+              {/* Last 30 Days - Today expanded, past days collapsible */}
+<div className="space-y-2">
+  {(() => {
+    const last30Days = [];
+    const now = new Date();
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      const dayEntries = proteinEntries.filter(e => e.date === dateStr);
+      const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
+      const dayName = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
+      const dateDisplay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      last30Days.push({ date: dateStr, dayName, dateDisplay, total, entries: dayEntries, isToday: i === 0 });
+    }
+    
+    return last30Days.map(({ date, dayName, dateDisplay, total, entries, isToday }) => {
+      const isExpanded = isToday || expandedProteinDays.has(date);
+      
+      return (
+        <div key={date} data-protein-date={date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+          {isToday ? (
+            // Today - always expanded, not collapsible
+            <>
+              <div className="p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <div className="font-bold text-base">{dayName}</div>
+                    <div className="text-xs text-gray-500">{dateDisplay}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="text-2xl font-black text-green-500">{total}g</div>
+                      <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
                     </div>
-                  ));
-                })()}
+                    <button
+                      onClick={() => setEditingProteinDate(date)}
+                      className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-2`}
+                      title="Edit"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                
+                {entries.length > 0 && (
+                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
+                    {entries.map((entry) => {
+                      const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { 
+                        hour: 'numeric', 
+                        minute: '2-digit',
+                        hour12: true 
+                      }).toLowerCase() : '';
+                      
+                      return (
+                        <div key={entry.timestamp} className="flex items-center text-sm">
+                          <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
+                          <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
+                          <span className="w-12 text-right font-bold">{entry.grams}g</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
+            </>
+          ) : (
+            // Past days - collapsible
+            <>
+              <button
+                onClick={(e) => {
+                  const newExpanded = new Set(expandedProteinDays);
+                  if (newExpanded.has(date)) {
+                    newExpanded.delete(date);
+                  } else {
+                    newExpanded.add(date);
+                    // Scroll to this card
+                    const element = e.currentTarget.closest('[data-protein-date]');
+                    requestAnimationFrame(() => {
+                      requestAnimationFrame(() => {
+                        setTimeout(() => {
+                          if (element) {
+                            const rect = element.getBoundingClientRect();
+                            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                            const targetY = rect.top + scrollTop - 120;
+                            window.scrollTo({ top: targetY, behavior: 'smooth' });
+                          }
+                        }, 100);
+                      });
+                    });
+                  }
+                  setExpandedProteinDays(newExpanded);
+                }}
+                className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-bold text-base">{dayName}</div>
+                    <div className="text-xs text-gray-500">{dateDisplay}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="text-2xl font-black text-green-500">{total}g</div>
+                      <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
+                    </div>
+                    <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                      <Icons.ChevronDown />
+                    </div>
+                  </div>
+                </div>
+              </button>
+              
+              {isExpanded && (
+                <div className="px-3 pb-3">
+                  <div className="flex justify-end mb-2">
+                    <button
+                      onClick={() => setEditingProteinDate(date)}
+                      className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-1 text-xs flex items-center gap-1`}
+                      title="Edit"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                  </div>
+                  
+                  {entries.length > 0 ? (
+                    <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
+                      {entries.map((entry) => {
+                        const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { 
+                          hour: 'numeric', 
+                          minute: '2-digit',
+                          hour12: true 
+                        }).toLowerCase() : '';
+                        
+                        return (
+                          <div key={entry.timestamp} className="flex items-center text-sm">
+                            <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
+                            <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
+                            <span className="w-12 text-right font-bold">{entry.grams}g</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-center py-2`}>
+                      No entries
+                    </div>
+                  )}
+                  
+                  {/* Collapse Button */}
+                  <button
+                    onClick={() => {
+                      const newExpanded = new Set(expandedProteinDays);
+                      newExpanded.delete(date);
+                      setExpandedProteinDays(newExpanded);
+                    }}
+                    className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 mt-2`}
+                  >
+                    <div className="transform rotate-180">
+                      <Icons.ChevronDown className="w-3 h-3" />
+                    </div>
+                    Collapse
+                  </button>
+                </div>
+              )}
+            </>
           )}
+        </div>
+      );
+    });
+  })()}
+</div>
           
           {/* ==================== END STATS VIEWS ==================== */}
           
