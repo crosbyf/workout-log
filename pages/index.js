@@ -5177,6 +5177,9 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                 >
                   Add Entry
                 </button>
+                
+                {/* Extra padding for keyboard */}
+                <div className="h-32"></div>
               </form>
             </div>
           </div>
