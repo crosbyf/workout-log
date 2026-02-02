@@ -1993,21 +1993,23 @@ export default function Home() {
                 
                 const workoutsByWeek = {};
                 workoutList.forEach((w, i) => {
-                  const [year, month, day] = w.date.split('-');
-                  const workoutDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                  const weekStart = getWeekStart(workoutDate);
-                  const weekKey = weekStart.toISOString().split('T')[0];
-                  
-                  if (!workoutsByWeek[weekKey]) {
-                    workoutsByWeek[weekKey] = {
-                      weekStart,
-                      label: getWeekLabel(weekStart),
-                      workouts: []
-                    };
-                  }
-                  
-                  workoutsByWeek[weekKey].workouts.push({ workout: w, index: i });
-                });
+  const [year, month, day] = w.date.split('-');
+  const workoutDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  const weekStart = getWeekStart(workoutDate);
+  const weekKey = weekStart.toISOString().split('T')[0];
+  
+  if (!workoutsByWeek[weekKey]) {
+    workoutsByWeek[weekKey] = {
+      weekStart,
+      label: getWeekLabel(weekStart),
+      workouts: []
+    };
+  }
+  
+  // Find the actual index in the original workouts array
+  const actualIndex = workouts.findIndex(original => original.date === w.date && original.location === w.location && JSON.stringify(original.exercises) === JSON.stringify(w.exercises));
+  workoutsByWeek[weekKey].workouts.push({ workout: w, index: actualIndex });
+});
                 
                 const sortedWeeks = Object.entries(workoutsByWeek).sort((a, b) => {
                   return new Date(b[0]).getTime() - new Date(a[0]).getTime();
@@ -2179,21 +2181,15 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                                         </svg>
                                         <span className="text-[10px]">Share</span>
                                       </button>
-                                     <button
-                                        onClick={() => {
-                                          // Find the actual index in the full workouts array
-                                          const actualIndex = workouts.findIndex(workout => workout.date === w.date && workout.location === w.location);
-                                          if (actualIndex !== -1) {
-                                            editWorkout(actualIndex);
-                                          }
-                                        }}
-                                        className={`flex flex-col items-center gap-1 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
-                                      >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                        <span className="text-[10px]">Edit</span>
-                                      </button>
+                                    <button
+  onClick={() => editWorkout(i)}
+  className={`flex flex-col items-center gap-1 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
+>
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+  </svg>
+  <span className="text-[10px]">Edit</span>
+</button>
                                       <button
                                         onClick={() => setDeleteWorkout(i)}
                                         className={`flex flex-col items-center gap-1 ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-600 hover:text-red-700'} transition-colors`}
