@@ -3653,11 +3653,14 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
               <div className="space-y-2">
                 {(() => {
                   const last14Days = [];
-                  const now = new Date();
-                  for (let i = 0; i < 14; i++) {
-                    const date = new Date(now);
-                    date.setDate(now.getDate() - i);
-                    const dateStr = date.toISOString().split('T')[0];
+const now = new Date();
+for (let i = 0; i < 14; i++) {
+  const date = new Date(now);
+  date.setDate(now.getDate() - i);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const dateStr = `${year}-${month}-${day}`;
                     const dayEntries = proteinEntries.filter(e => e.date === dateStr);
                     const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
                     const dayName = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
