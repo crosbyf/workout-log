@@ -2179,10 +2179,13 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                                         </svg>
                                         <span className="text-[10px]">Share</span>
                                       </button>
-                                      <button
+                                     <button
                                         onClick={() => {
-                                          setCurrent(w);
-                                          setShowNew(true);
+                                          // Find the actual index in the full workouts array
+                                          const actualIndex = workouts.findIndex(workout => workout.date === w.date && workout.location === w.location);
+                                          if (actualIndex !== -1) {
+                                            editWorkout(actualIndex);
+                                          }
                                         }}
                                         className={`flex flex-col items-center gap-1 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
                                       >
