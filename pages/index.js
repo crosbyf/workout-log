@@ -2676,38 +2676,39 @@ ${ex.sets.map(s => s.reps).join(' · ')} = ${ex.sets.reduce((sum, s) => sum + (s
                     
                     {isExpanded && (
                       <div className={`px-3 pb-3 space-y-2 ${darkMode ? 'border-gray-700' : 'border-gray-200'} border-t pt-2`}>
-                        <div className="flex gap-3 mb-2">
-                          <button
-                            onClick={() => copyToSheets(w)}
-                            className="text-blue-400 hover:text-blue-300 p-1 text-xs flex items-center gap-1"
-                            title="Copy to clipboard"
-                          >
-                            <Icons.Copy className="w-4 h-4" />
-                            Copy
-                          </button>
-                          <button
-                            onClick={() => shareWorkout(w)}
-                            className="text-purple-400 hover:text-purple-300 p-1 text-xs flex items-center gap-1"
-                            title="Share workout"
-                          >
-                            <Icons.Share className="w-4 h-4" />
-                            Share
-                          </button>
-                          <button
-                            onClick={() => editWorkout(i)}
-                            className="text-green-400 hover:text-green-300 p-1 text-xs flex items-center gap-1"
-                          >
-                            <Icons.Edit className="w-4 h-4" />
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => setDeleteWorkout(i)}
-                            className="text-red-400 hover:text-red-300 p-1 text-xs flex items-center gap-1"
-                          >
-                            <Icons.Trash className="w-4 h-4" />
-                            Delete
-                          </button>
-                        </div>
+                        {/* Action Buttons */}
+                                    <div className="flex gap-3 mb-2">
+                                      <button
+                                        onClick={() => copyToSheets(w)}
+                                        className="text-blue-400 hover:text-blue-300 p-1 text-xs flex items-center gap-1"
+                                        title="Copy to clipboard"
+                                      >
+                                        <Icons.Copy className="w-4 h-4" />
+                                        Copy
+                                      </button>
+                                      <button
+                                        onClick={() => shareWorkout(w)}
+                                        className="text-purple-400 hover:text-purple-300 p-1 text-xs flex items-center gap-1"
+                                        title="Share workout"
+                                      >
+                                        <Icons.Share className="w-4 h-4" />
+                                        Share
+                                      </button>
+                                      <button
+                                        onClick={() => editWorkout(i)}
+                                        className="text-green-400 hover:text-green-300 p-1 text-xs flex items-center gap-1"
+                                      >
+                                        <Icons.Edit className="w-4 h-4" />
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => setDeleteWorkout(i)}
+                                        className="text-red-400 hover:text-red-300 p-1 text-xs flex items-center gap-1"
+                                      >
+                                        <Icons.Trash className="w-4 h-4" />
+                                        Delete
+                                      </button>
+                                    </div>
                     
                     {w.location === 'Day Off' && w.notes ? (
                       <div className={`${darkMode ? 'bg-yellow-900/20 border-yellow-700/50' : 'bg-yellow-50 border-yellow-300'} border rounded-lg p-3`}>
