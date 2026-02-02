@@ -120,6 +120,8 @@ export default function Home() {
   const [weightCalendarMonth, setWeightCalendarMonth] = useState(new Date().getMonth());
   const [weightCalendarYear, setWeightCalendarYear] = useState(new Date().getFullYear());
   const [editing, setEditing] = useState(null);
+  const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
+  const [showVolumeFilter, setShowVolumeFilter] = useState(false);
   
   // Theme definitions
   const themes = {
@@ -2215,11 +2217,383 @@ export default function Home() {
           
           
          
+          {/* ==================== STATS VIEWS ==================== */}
+          
+          {/* Stats Menu */}
           {view === 'stats' && statsView === 'menu' && (
             <div className="space-y-3">
-              <h2 className="text-base font-semibold mb-3">Statistics</h2>
               
-              {/* Monthly Volume Widget - Compressed */}
+              {/* Volume Trend Chart - NOW AT TOP with Exercise Filter */}
+              {(() => {
+                // Get all unique exercises for the filter
+                const allExercises = [...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].sort();
+                
+                // Get Monday of current week using local time
+                const now = new Date();
+                const currentDay = now.getDay();
+                const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+                const thisMonday = new Date(now);
+                thisMonday.setDate(now.getDate() - daysToMonday);
+                thisMonday.setHours(0, 0, 0, 0);
+                
+                // Build weekly data
+                const weeklyData = [];
+                for (let i = 11; i >= 0; i--) {
+                  const weekStart = new Date(thisMonday);
+                  weekStart.setDate(thisMonday.getDate() - (i * 7));
+                  const weekEnd = new Date(weekStart);
+                  weekEnd.setDate(weekStart.getDate() + 6);
+                  weekEnd.setHours(23, 59, 59, 999);
+                  
+                  // Format date range for filtering
+                  const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
+                  const weekEndStr = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
+                  
+                  const weekWorkouts = workouts.filter(w => {
+                    return w.date >= weekStartStr && w.date <= weekEndStr;
+                  });
+                  
+                  // Calculate reps per exercise for stacked bars
+                  const exerciseReps = {};
+                  let totalReps = 0;
+                  
+                  weekWorkouts.forEach(w => {
+                    w.exercises.forEach(ex => {
+                      const reps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      // If filtering by exercises, only count selected ones
+                      if (!selectedVolumeExercises || selectedVolumeExercises.length === 0 || selectedVolumeExercises.includes(ex.name)) {
+                        exerciseReps[ex.name] = (exerciseReps[ex.name] || 0) + reps;
+                        totalReps += reps;
+                      }
+                    });
+                  });
+                  
+                  weeklyData.push({
+                    label: `${weekStart.getMonth() + 1}/${weekStart.getDate()}`,
+                    value: totalReps,
+                    exerciseReps,
+                    isCurrentWeek: i === 0
+                  });
+                }
+                
+                const maxVolume = Math.max(...weeklyData.map(d => d.value), 1);
+                
+                // Colors for stacked bars
+                const exerciseColors = [
+                  'from-blue-600 to-blue-400',
+                  'from-purple-600 to-purple-400',
+                  'from-green-600 to-green-400',
+                  'from-orange-600 to-orange-400',
+                  'from-pink-600 to-pink-400',
+                  'from-cyan-600 to-cyan-400',
+                  'from-yellow-600 to-yellow-400',
+                  'from-red-600 to-red-400',
+                ];
+                
+                // Get exercises to show in chart (either selected or all that have data)
+                const exercisesInChart = selectedVolumeExercises && selectedVolumeExercises.length > 0
+                  ? selectedVolumeExercises
+                  : [...new Set(weeklyData.flatMap(w => Object.keys(w.exerciseReps)))];
+                
+                return (
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-bold text-lg">Volume Trend</h3>
+                      <button
+                        onClick={() => setShowVolumeFilter(!showVolumeFilter)}
+                        className={`text-xs px-2 py-1 rounded-lg ${
+                          selectedVolumeExercises && selectedVolumeExercises.length > 0
+                            ? 'bg-blue-600 text-white'
+                            : darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {selectedVolumeExercises && selectedVolumeExercises.length > 0
+                          ? `${selectedVolumeExercises.length} selected`
+                          : 'Filter'}
+                      </button>
+                    </div>
+                    
+                    {/* Exercise Filter Dropdown */}
+                    {showVolumeFilter && (
+                      <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-3 mb-3`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-semibold">Filter by Exercise</span>
+                          {selectedVolumeExercises && selectedVolumeExercises.length > 0 && (
+                            <button
+                              onClick={() => setSelectedVolumeExercises([])}
+                              className="text-xs text-blue-400 hover:text-blue-300"
+                            >
+                              Clear all
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                          {allExercises.map((exercise, idx) => {
+                            const isSelected = selectedVolumeExercises && selectedVolumeExercises.includes(exercise);
+                            const colorClass = exerciseColors[idx % exerciseColors.length];
+                            return (
+                              <button
+                                key={exercise}
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setSelectedVolumeExercises(selectedVolumeExercises.filter(e => e !== exercise));
+                                  } else {
+                                    setSelectedVolumeExercises([...(selectedVolumeExercises || []), exercise]);
+                                  }
+                                }}
+                                className={`text-xs px-2 py-1 rounded-full transition-all ${
+                                  isSelected
+                                    ? `bg-gradient-to-r ${colorClass} text-white`
+                                    : darkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-700'
+                                }`}
+                              >
+                                {exercise}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                      Total reps per week (last 12 weeks)
+                    </div>
+                    
+                    {/* Chart */}
+                    <div className="h-48 flex items-end gap-1">
+                      {weeklyData.map((week, i) => {
+                        const height = maxVolume > 0 ? (week.value / maxVolume) * 100 : 0;
+                        
+                        // Build stacked segments if multiple exercises selected
+                        const segments = [];
+                        if (selectedVolumeExercises && selectedVolumeExercises.length > 1) {
+                          let cumulative = 0;
+                          selectedVolumeExercises.forEach((exercise, idx) => {
+                            const reps = week.exerciseReps[exercise] || 0;
+                            if (reps > 0) {
+                              const segmentHeight = (reps / week.value) * 100;
+                              segments.push({
+                                exercise,
+                                reps,
+                                height: segmentHeight,
+                                color: exerciseColors[allExercises.indexOf(exercise) % exerciseColors.length]
+                              });
+                            }
+                          });
+                        }
+                        
+                        return (
+                          <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                            <div className="w-full flex flex-col justify-end relative" style={{ height: '170px' }}>
+                              {week.value > 0 && (
+                                <>
+                                  {segments.length > 1 ? (
+                                    // Stacked bar
+                                    <div className="w-full flex flex-col-reverse" style={{ height: `${height}%` }}>
+                                      {segments.map((seg, si) => (
+                                        <div
+                                          key={si}
+                                          className={`w-full bg-gradient-to-t ${seg.color} ${si === segments.length - 1 ? 'rounded-t' : ''}`}
+                                          style={{ height: `${seg.height}%` }}
+                                          title={`${seg.exercise}: ${seg.reps}`}
+                                        />
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    // Single color bar
+                                    <div 
+                                      className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:opacity-80"
+                                      style={{ height: `${height}%` }}
+                                    />
+                                  )}
+                                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    {week.value}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-blue-400' : ''}`}>
+                              {week.label}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Legend for stacked bars */}
+                    {selectedVolumeExercises && selectedVolumeExercises.length > 1 && (
+                      <div className="flex flex-wrap gap-2 mt-3 justify-center">
+                        {selectedVolumeExercises.map((exercise, idx) => (
+                          <div key={exercise} className="flex items-center gap-1">
+                            <div className={`w-3 h-3 rounded bg-gradient-to-r ${exerciseColors[allExercises.indexOf(exercise) % exerciseColors.length]}`} />
+                            <span className="text-xs text-gray-400">{exercise}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
+                      This week: {weeklyData[weeklyData.length - 1].value} reps
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {/* Protein Tracker Card */}
+              <div className={`${darkMode ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/30' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'} rounded-xl shadow-xl border-2 overflow-hidden`}>
+                <button
+                  onClick={() => {
+                    setStatsView('protein');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full p-3 text-left"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">🥩</div>
+                      <div>
+                        <h3 className="font-bold text-lg mb-1">Protein Intake</h3>
+                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {(() => {
+                            const today = getTodayDate();
+                            const todayTotal = proteinEntries
+                              .filter(e => e.date === today)
+                              .reduce((sum, e) => sum + e.grams, 0);
+                            return todayTotal > 0 ? `${todayTotal}g today` : 'Track daily protein intake';
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                    <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+                
+                {/* Quick Add Button */}
+                <div className="px-3 pb-3">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowAddProtein(true);
+                    }}
+                    className="w-full bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
+                  >
+                    <span className="text-lg">+</span>
+                    Add Protein
+                  </button>
+                </div>
+              </div>
+              
+              {/* Body Weight Card */}
+              <button
+                onClick={() => {
+                  setStatsView('weight');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">⚖️</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Body Weight</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {weightEntries.length > 0 
+                          ? `${weightEntries[weightEntries.length - 1].weight} lbs • ${weightEntries.length} entries`
+                          : 'Track your weight over time'
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+              
+              {/* Exercise Stats Card */}
+              <button
+                onClick={() => {
+                  setStatsView('exercises');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">📊</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Exercise Stats</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {[...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].length} exercises tracked
+                      </div>
+                    </div>
+                  </div>
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+            </div>
+          )}
+          
+          {/* Exercise List View - WITH MONTHLY VOLUME WIDGET */}
+          {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
+            <div 
+              className="space-y-3"
+              onTouchStart={(e) => {
+                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
+                e.currentTarget.dataset.swipeStartY = e.touches[0].clientY;
+              }}
+              onTouchMove={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const startY = parseFloat(e.currentTarget.dataset.swipeStartY);
+                const currentX = e.touches[0].clientX;
+                const currentY = e.touches[0].clientY;
+                const diffX = currentX - startX;
+                const diffY = Math.abs(currentY - startY);
+                
+                if (Math.abs(diffX) > diffY && diffX > 20) {
+                  e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
+                  e.currentTarget.style.transition = 'none';
+                }
+              }}
+              onTouchEnd={(e) => {
+                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
+                const currentX = e.changedTouches[0].clientX;
+                const diffX = currentX - startX;
+                
+                e.currentTarget.style.transition = 'transform 0.2s ease-out';
+                
+                if (diffX > 100) {
+                  e.currentTarget.style.transform = 'translateX(100%)';
+                  setTimeout(() => {
+                    setStatsView('menu');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    e.currentTarget.style.transform = '';
+                  }, 200);
+                } else {
+                  e.currentTarget.style.transform = '';
+                }
+              }}
+            >
+              <button
+                onClick={() => {
+                  setStatsView('menu');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} mb-2`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="font-semibold">Back to Stats</span>
+              </button>
+              
+              <h2 className="text-base font-semibold mb-2">Exercise Statistics</h2>
+              
+              {/* Monthly Volume Widget - MOVED HERE */}
               <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-2 shadow-xl border-2 mb-3`}>
                 {/* Header */}
                 <div className="flex items-center justify-between mb-1">
@@ -2252,7 +2626,7 @@ export default function Home() {
                   </button>
                 </div>
                 
-                {/* Exercise Cards - Stacked Vertically */}
+                {/* Exercise Cards */}
                 <div className="space-y-2">
                   {/* Pull-ups */}
                   {(() => {
@@ -2373,190 +2747,11 @@ export default function Home() {
                 </div>
               </div>
               
-              {/* Protein Tracker Card - Compressed */}
-              <div className={`${darkMode ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/30' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'} rounded-xl shadow-xl border-2 overflow-hidden`}>
-                <button
-                  onClick={() => {
-                    setStatsView('protein');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="w-full p-3 text-left"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="text-3xl">🥩</div>
-                      <div>
-                        <h3 className="font-bold text-lg mb-1">Protein Intake</h3>
-                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {(() => {
-                            const today = getTodayDate();
-                            const todayTotal = proteinEntries
-                              .filter(e => e.date === today)
-                              .reduce((sum, e) => sum + e.grams, 0);
-                            return todayTotal > 0 ? `${todayTotal}g` : 'Track daily protein intake';
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-                    <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-                
-                {/* Quick Add Button - Always visible */}
-                <div className="px-3 pb-3">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowAddProtein(true);
-                    }}
-                    className="w-full bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
-                  >
-                    <span className="text-lg">+</span>
-                    Add Protein
-                  </button>
-                </div>
-              </div>
-              
-              {/* Body Weight Card */}
-              <button
-                onClick={() => {
-                  setStatsView('weight');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">⚖️</div>
-                    <div>
-                      <h3 className="font-bold text-lg mb-1">Body Weight</h3>
-                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {weightEntries.length > 0 
-                          ? `${weightEntries[weightEntries.length - 1].weight} lbs • ${weightEntries.length} entries`
-                          : 'Track your weight over time'
-                        }
-                      </div>
-                    </div>
-                  </div>
-                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
-              
-              {/* Progress Charts Card */}
-              <button
-                onClick={() => {
-                  setStatsView('progress');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">📈</div>
-                    <div>
-                      <h3 className="font-bold text-lg mb-1">Progress Charts</h3>
-                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Volume trends & workout frequency
-                      </div>
-                    </div>
-                  </div>
-                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
-              
-              {/* Exercise Stats Card */}
-              <button
-                onClick={() => {
-                  setStatsView('exercises');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">📊</div>
-                    <div>
-                      <h3 className="font-bold text-lg mb-1">Exercise Stats</h3>
-                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {[...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].length} exercises tracked
-                      </div>
-                    </div>
-                  </div>
-                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
-            </div>
-          )}
-          
-          {/* Exercise List View */}
-          {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
-            <div 
-              className="space-y-3"
-              onTouchStart={(e) => {
-                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
-                e.currentTarget.dataset.swipeStartY = e.touches[0].clientY;
-              }}
-              onTouchMove={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const startY = parseFloat(e.currentTarget.dataset.swipeStartY);
-                const currentX = e.touches[0].clientX;
-                const currentY = e.touches[0].clientY;
-                const diffX = currentX - startX;
-                const diffY = Math.abs(currentY - startY);
-                
-                if (Math.abs(diffX) > diffY && diffX > 20) {
-                  e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
-                  e.currentTarget.style.transition = 'none';
-                }
-              }}
-              onTouchEnd={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const currentX = e.changedTouches[0].clientX;
-                const diffX = currentX - startX;
-                
-                e.currentTarget.style.transition = 'transform 0.2s ease-out';
-                
-                if (diffX > 100) {
-                  e.currentTarget.style.transform = 'translateX(100%)';
-                  setTimeout(() => {
-                    setStatsView('menu');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    e.currentTarget.style.transform = '';
-                  }, 200);
-                } else {
-                  e.currentTarget.style.transform = '';
-                }
-              }}
-            >
-              <button
-                onClick={() => {
-                  setStatsView('menu');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} mb-2`}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                <span className="font-semibold">Back to Stats</span>
-              </button>
-              
-              <h2 className="text-base font-semibold mb-2">Exercise Statistics</h2>
-              
+              {/* Exercise List */}
               {(() => {
-                // Get all unique exercises with total volume
                 const allExercises = [...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].sort();
                 
                 return allExercises.map(exerciseName => {
-                  // Calculate total volume
                   const totalVolume = workouts.reduce((total, w) => {
                     const exercise = w.exercises.find(ex => ex.name === exerciseName);
                     if (exercise) {
@@ -2565,7 +2760,6 @@ export default function Home() {
                     return total;
                   }, 0);
                   
-                  // Count workouts
                   const workoutCount = workouts.filter(w => 
                     w.exercises.some(ex => ex.name === exerciseName)
                   ).length;
@@ -2604,14 +2798,12 @@ export default function Home() {
               const monthly = {};
               
               workouts.forEach(w => {
-                // Calculate weekly stats
                 const wDate = new Date(w.date);
                 const dayOfWeek = wDate.getDay();
                 const monday = new Date(wDate);
                 monday.setDate(wDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
                 const weekKey = monday.toISOString().split('T')[0];
                 
-                // Calculate monthly stats
                 const monthKey = w.date.substring(0, 7);
                 
                 const exercise = w.exercises.find(ex => ex.name === selectedExercise);
@@ -2627,7 +2819,6 @@ export default function Home() {
             
             return (
               <div className="space-y-4">
-                {/* Back button */}
                 <button
                   onClick={() => setSelectedExercise(null)}
                   className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
@@ -2799,21 +2990,18 @@ export default function Home() {
                 const oldest = sorted[sorted.length - 1];
                 const change = latest.weight - oldest.weight;
                 
-                // Calculate weight change rate (lbs/week)
                 const oldestDate = new Date(oldest.date);
                 const latestDate = new Date(latest.date);
                 const daysDiff = (latestDate - oldestDate) / (1000 * 60 * 60 * 24);
                 const weeksDiff = daysDiff / 7;
                 const changeRate = weeksDiff > 0 ? (change / weeksDiff).toFixed(2) : null;
                 
-                // Calculate 7-day average
                 const sevenDaysAgo = new Date();
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
                 const sevenDayStr = sevenDaysAgo.toISOString().split('T')[0];
                 const recent7 = sorted.filter(e => e.date >= sevenDayStr);
                 const avg7 = recent7.length > 0 ? (recent7.reduce((sum, e) => sum + parseFloat(e.weight), 0) / recent7.length).toFixed(1) : null;
                 
-                // Calculate 30-day average
                 const thirtyDaysAgo = new Date();
                 thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
                 const thirtyDayStr = thirtyDaysAgo.toISOString().split('T')[0];
@@ -2876,17 +3064,13 @@ export default function Home() {
                 const minWeight = Math.min(...weights);
                 const maxWeight = Math.max(...weights);
                 const range = maxWeight - minWeight;
-                const padding = range * 0.1 || 5; // Add 10% padding or 5 lbs if flat
+                const padding = range * 0.1 || 5;
                 const chartMin = minWeight - padding;
                 const chartMax = maxWeight + padding;
                 const chartRange = chartMax - chartMin;
                 
-                // Chart dimensions
-                const width = 100; // percentage
                 const height = 180;
-                const pointRadius = 4;
                 
-                // Generate SVG path
                 const points = weights.map((w, i) => {
                   const x = (i / (weights.length - 1)) * 100;
                   const y = ((chartMax - w) / chartRange) * 100;
@@ -2897,7 +3081,6 @@ export default function Home() {
                   `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
                 ).join(' ');
                 
-                // Create gradient fill path (same as line but closed to bottom)
                 const fillPath = `${pathData} L 100 100 L 0 100 Z`;
                 
                 return (
@@ -2909,7 +3092,6 @@ export default function Home() {
                         preserveAspectRatio="none"
                         className="absolute inset-0 w-full h-full"
                       >
-                        {/* Gradient fill under line */}
                         <defs>
                           <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
@@ -2920,7 +3102,6 @@ export default function Home() {
                           d={fillPath}
                           fill="url(#weightGradient)"
                         />
-                        {/* Line */}
                         <path
                           d={pathData}
                           fill="none"
@@ -2930,7 +3111,6 @@ export default function Home() {
                         />
                       </svg>
                       
-                      {/* Data points */}
                       <svg 
                         viewBox="0 0 100 100" 
                         className="absolute inset-0 w-full h-full pointer-events-none"
@@ -2949,14 +3129,12 @@ export default function Home() {
                         ))}
                       </svg>
                       
-                      {/* Y-axis labels */}
                       <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-gray-500 pr-1">
                         <span>{chartMax.toFixed(0)}</span>
                         <span>{((chartMax + chartMin) / 2).toFixed(0)}</span>
                         <span>{chartMin.toFixed(0)}</span>
                       </div>
                       
-                      {/* X-axis labels (first and last date) */}
                       <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-gray-500 pt-2">
                         <span>{new Date(dates[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                         <span>{new Date(dates[dates.length - 1]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -2968,74 +3146,6 @@ export default function Home() {
                   </div>
                 );
               })()}
-              
-              {/* Recent Entries */}
-              <div className="space-y-2">
-                <h3 className={`text-sm font-bold ${darkMode ? 'text-gray-300' : 'text-gray-700'} uppercase tracking-wide`}>Weight History</h3>
-                {[...weightEntries].sort((a, b) => b.date.localeCompare(a.date)).map((entry, i, arr) => {
-                  const [year, month, day] = entry.date.split('-');
-                  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                  const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                  
-                  // Calculate change from previous entry
-                  const prevEntry = arr[i + 1];
-                  const change = prevEntry ? (entry.weight - prevEntry.weight) : 0;
-                  
-                  return (
-                    <div key={i} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-3 shadow-md`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold">{entry.weight}</span>
-                            <span className="text-sm">lbs</span>
-                            {prevEntry && (
-                              <span className={`text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {change > 0 ? '↑' : change < 0 ? '↓' : '→'} {Math.abs(change).toFixed(1)}
-                              </span>
-                            )}
-                          </div>
-                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>{dateStr}</div>
-                          {entry.notes && (
-                            <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'} mt-1`}>{entry.notes}</div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              setCurrentWeight(entry);
-                              setEditingWeight(i);
-                              // Set calendar to the entry's month
-                              const entryDate = new Date(entry.date + 'T00:00:00');
-                              setWeightCalendarMonth(entryDate.getMonth());
-                              setWeightCalendarYear(entryDate.getFullYear());
-                              setShowWeightModal(true);
-                            }}
-                            className="text-blue-400 hover:text-blue-300 p-2"
-                          >
-                            <Icons.Edit />
-                          </button>
-                          <button
-                            onClick={() => setDeleteWeight(i)}
-                            className="text-red-400 hover:text-red-300 p-2"
-                          >
-                            <Icons.Trash />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-                
-                {weightEntries.length === 0 && (
-                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-8 shadow-md text-center`}>
-                    <div className="text-4xl mb-3">⚖️</div>
-                    <div className={`text-lg font-semibold mb-2`}>No Weight Entries Yet</div>
-                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                      Start tracking your weight by adding your first entry above
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
           )}
           
@@ -3084,14 +3194,14 @@ export default function Home() {
               <div className="space-y-2">
                 {(() => {
                   const last14Days = [];
-const now = new Date();
-for (let i = 0; i < 14; i++) {
-  const date = new Date(now);
-  date.setDate(now.getDate() - i);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const dateStr = `${year}-${month}-${day}`;
+                  const now = new Date();
+                  for (let i = 0; i < 14; i++) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() - i);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
                     const dayEntries = proteinEntries.filter(e => e.date === dateStr);
                     const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
                     const dayName = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
@@ -3140,225 +3250,7 @@ for (let i = 0; i < 14; i++) {
             </div>
           )}
           
-          {/* Progress Charts View */}
-          {view === 'stats' && statsView === 'progress' && (
-            <div 
-              className="space-y-3"
-              onTouchStart={(e) => {
-                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
-                e.currentTarget.dataset.swipeStartY = e.touches[0].clientY;
-              }}
-              onTouchMove={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const startY = parseFloat(e.currentTarget.dataset.swipeStartY);
-                const currentX = e.touches[0].clientX;
-                const currentY = e.touches[0].clientY;
-                const diffX = currentX - startX;
-                const diffY = Math.abs(currentY - startY);
-                
-                // Only swipe if horizontal movement is greater than vertical
-                if (Math.abs(diffX) > diffY && diffX > 20) {
-                  e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
-                  e.currentTarget.style.transition = 'none';
-                }
-              }}
-              onTouchEnd={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const currentX = e.changedTouches[0].clientX;
-                const diffX = currentX - startX;
-                
-                e.currentTarget.style.transition = 'transform 0.2s ease-out';
-                
-                if (diffX > 100) {
-                  // Swipe right to go back
-                  e.currentTarget.style.transform = 'translateX(100%)';
-                  setTimeout(() => {
-                    setStatsView('menu');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    e.currentTarget.style.transform = '';
-                  }, 200);
-                } else {
-                  e.currentTarget.style.transform = '';
-                }
-              }}
-            >
-              <div className="flex items-center gap-2 mb-3">
-                <button
-                  onClick={() => {
-                    setStatsView('menu');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="text-blue-400 hover:text-blue-300"
-                >
-                  ← Back
-                </button>
-                <h2 className="text-base font-semibold">Progress Charts</h2>
-              </div>
-              
-              {workouts.length === 0 ? (
-                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-8 text-center shadow-md`}>
-                  <div className="text-4xl mb-3">📊</div>
-                  <div className="text-lg font-semibold mb-2">No Workout Data</div>
-                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Start logging workouts to see your progress!
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Volume Trend Chart */}
-                  {(() => {
-                    // Get Monday of current week
-                    const now = new Date();
-                    const currentDay = now.getDay(); // 0 = Sunday
-                    const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; // Days since last Monday
-                    const thisMonday = new Date(now);
-                    thisMonday.setDate(now.getDate() - daysToMonday);
-                    thisMonday.setHours(0, 0, 0, 0);
-                    
-                    const weeklyData = [];
-                    for (let i = 11; i >= 0; i--) {
-                      const weekStart = new Date(thisMonday);
-                      weekStart.setDate(thisMonday.getDate() - (i * 7));
-                      const weekEnd = new Date(weekStart);
-                      weekEnd.setDate(weekStart.getDate() + 7);
-                      
-                      const weekWorkouts = workouts.filter(w => {
-                        const wDate = new Date(w.date);
-                        return wDate >= weekStart && wDate < weekEnd;
-                      });
-                      
-                      const totalReps = weekWorkouts.reduce((sum, w) => {
-                        return sum + w.exercises.reduce((exSum, ex) => {
-                          return exSum + ex.sets.reduce((setSum, s) => setSum + (s.reps || 0), 0);
-                        }, 0);
-                      }, 0);
-                      
-                      weeklyData.push({
-                        label: `${weekStart.getMonth() + 1}/${weekStart.getDate()}`,
-                        value: totalReps,
-                        isCurrentWeek: i === 0
-                      });
-                    }
-                    
-                    const maxVolume = Math.max(...weeklyData.map(d => d.value), 1);
-                    
-                    return (
-                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                        <h3 className="font-bold text-lg mb-1">Volume Trend</h3>
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-                          Total reps per week (last 12 weeks)
-                        </div>
-                        
-                        {/* Chart */}
-                        <div className="h-48 flex items-end gap-1">
-                          {weeklyData.map((week, i) => {
-                            const height = maxVolume > 0 ? (week.value / maxVolume) * 100 : 0;
-                            return (
-                              <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                                <div className="w-full flex flex-col justify-end relative" style={{ height: '170px' }}>
-                                  {week.value > 0 && (
-                                    <>
-                                      <div 
-                                        className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:opacity-80"
-                                        style={{ height: `${height}%` }}
-                                      />
-                                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                        {week.value}
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                                <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-blue-400' : ''}`}>
-                                  {week.label}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
-                          This week: {weeklyData[weeklyData.length - 1].value} reps
-                        </div>
-                      </div>
-                    );
-                  })()}
-                  
-                  {/* Workout Frequency Chart */}
-                  {(() => {
-                    // Get Monday of current week
-                    const now = new Date();
-                    const currentDay = now.getDay();
-                    const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
-                    const thisMonday = new Date(now);
-                    thisMonday.setDate(now.getDate() - daysToMonday);
-                    thisMonday.setHours(0, 0, 0, 0);
-                    
-                    const weeklyWorkouts = [];
-                    for (let i = 11; i >= 0; i--) {
-                      const weekStart = new Date(thisMonday);
-                      weekStart.setDate(thisMonday.getDate() - (i * 7));
-                      const weekEnd = new Date(weekStart);
-                      weekEnd.setDate(weekStart.getDate() + 7);
-                      
-                      const count = workouts.filter(w => {
-                        const wDate = new Date(w.date);
-                        return wDate >= weekStart && wDate < weekEnd;
-                      }).length;
-                      
-                      weeklyWorkouts.push({
-                        label: `${weekStart.getMonth() + 1}/${weekStart.getDate()}`,
-                        count: count,
-                        isCurrentWeek: i === 0
-                      });
-                    }
-                    
-                    const maxCount = Math.max(...weeklyWorkouts.map(d => d.count), 1);
-                    const avgWorkouts = (weeklyWorkouts.reduce((sum, w) => sum + w.count, 0) / 12).toFixed(1);
-                    
-                    return (
-                      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                        <h3 className="font-bold text-lg mb-1">Workout Frequency</h3>
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-                          Workouts per week (last 12 weeks)
-                        </div>
-                        
-                        {/* Chart */}
-                        <div className="h-48 flex items-end gap-1">
-                          {weeklyWorkouts.map((week, i) => {
-                            const height = maxCount > 0 ? (week.count / maxCount) * 100 : 0;
-                            return (
-                              <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                                <div className="w-full flex flex-col justify-end relative" style={{ height: '170px' }}>
-                                  {week.count > 0 && (
-                                    <>
-                                      <div 
-                                        className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t transition-all hover:opacity-80"
-                                        style={{ height: `${height}%` }}
-                                      />
-                                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                        {week.count}
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                                <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-green-400' : ''}`}>
-                                  {week.label}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
-                          Average: {avgWorkouts} workouts/week • This week: {weeklyWorkouts[weeklyWorkouts.length - 1].count}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </>
-              )}
-            </div>
-          )}
+          {/* ==================== END STATS VIEWS ==================== */}
           
           {view === 'settings' && (
             <div className="space-y-3">
