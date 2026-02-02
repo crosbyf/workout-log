@@ -2226,7 +2226,8 @@ export default function Home() {
               {/* Volume Trend Chart - NOW AT TOP with Exercise Filter */}
               {(() => {
                 // Get all unique exercises for the filter
-                const allExercises = [...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].sort();
+                // Limited exercises for the filter
+                const allExercises = ['Pull-ups', 'Chin-ups', 'Dips', 'Inverted rows', 'Pike push-ups', 'Decline push-ups', 'Bicep curls', 'Hammer curls', 'Lateral raises', 'Overhead press', 'Deadhang'];
                 
                 // Get Monday of current week using local time
                 const now = new Date();
@@ -2241,12 +2242,13 @@ export default function Home() {
                 for (let i = 11; i >= 0; i--) {
                   const weekStart = new Date(thisMonday);
                   weekStart.setDate(thisMonday.getDate() - (i * 7));
+                  
+                  // Format week start
+                  const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
+                  
+                  // Week end is 6 days after start (Mon-Sun)
                   const weekEnd = new Date(weekStart);
                   weekEnd.setDate(weekStart.getDate() + 6);
-                  weekEnd.setHours(23, 59, 59, 999);
-                  
-                  // Format date range for filtering
-                  const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
                   const weekEndStr = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
                   
                   const weekWorkouts = workouts.filter(w => {
@@ -2298,7 +2300,7 @@ export default function Home() {
                 return (
                   <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-bold text-lg">Volume Trend</h3>
+                      <h3 className="font-bold text-lg">Volume</h3>
                       <button
                         onClick={() => setShowVolumeFilter(!showVolumeFilter)}
                         className={`text-xs px-2 py-1 rounded-lg ${
@@ -2440,56 +2442,51 @@ export default function Home() {
               })()}
               
               {/* Protein Tracker Card */}
-              <div className={`${darkMode ? 'bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/30' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-300'} rounded-xl shadow-xl border-2 overflow-hidden`}>
-                <button
-                  onClick={() => {
-                    setStatsView('protein');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="w-full p-3 text-left"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="text-3xl">🥩</div>
-                      <div>
-                        <h3 className="font-bold text-lg mb-1">Protein Intake</h3>
-                        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {(() => {
-                            const today = getTodayDate();
-                            const todayTotal = proteinEntries
-                              .filter(e => e.date === today)
-                              .reduce((sum, e) => sum + e.grams, 0);
-                            return todayTotal > 0 ? `${todayTotal}g today` : 'Track daily protein intake';
-                          })()}
-                        </div>
+              <button
+                onClick={() => {
+                  setStatsView('protein');
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">🥩</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Protein Intake</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {(() => {
+                          const today = getTodayDate();
+                          const todayTotal = proteinEntries
+                            .filter(e => e.date === today)
+                            .reduce((sum, e) => sum + e.grams, 0);
+                          return todayTotal > 0 ? `${todayTotal}g today` : 'Track daily protein intake';
+                        })()}
                       </div>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowAddProtein(true);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                    >
+                      + Add
+                    </button>
                     <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
-                </button>
-                
-                {/* Quick Add Button */}
-                <div className="px-3 pb-3">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowAddProtein(true);
-                    }}
-                    className="w-full bg-green-600 hover:bg-green-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
-                  >
-                    <span className="text-lg">+</span>
-                    Add Protein
-                  </button>
                 </div>
-              </div>
+              </button>
               
               {/* Body Weight Card */}
               <button
                 onClick={() => {
                   setStatsView('weight');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
                 }}
                 className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
               >
@@ -2516,7 +2513,7 @@ export default function Home() {
               <button
                 onClick={() => {
                   setStatsView('exercises');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
                 }}
                 className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
               >
@@ -3235,12 +3232,22 @@ export default function Home() {
                       
                       {entries.length > 0 && (
                         <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
-                          {entries.map((entry) => (
-                            <div key={entry.timestamp} className="flex items-center justify-between text-sm">
-                              <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{entry.food}</span>
-                              <span className="font-bold">{entry.grams}g</span>
-                            </div>
-                          ))}
+                          {entries.map((entry) => {
+                            // Format timestamp to readable time
+                            const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { 
+                              hour: 'numeric', 
+                              minute: '2-digit',
+                              hour12: true 
+                            }).toLowerCase() : '';
+                            
+                            return (
+                              <div key={entry.timestamp} className="flex items-center text-sm">
+                                <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
+                                <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
+                                <span className="w-12 text-right font-bold">{entry.grams}g</span>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
