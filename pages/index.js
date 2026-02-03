@@ -1812,7 +1812,7 @@ export default function Home() {
                         for (let day = 1; day <= daysInMonth; day++) {
                           const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                           const hasWorkout = workouts.some(w => w.date === dateStr);
-                          const isToday = dateStr === new Date().toISOString().split('T')[0];
+                          const isToday = dateStr === getTodayDate();
                           
                           const workout = workouts.find(w => w.date === dateStr);
                           const color = workout ? getPresetColor(workout.location) : null;
