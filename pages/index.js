@@ -123,6 +123,7 @@ export default function Home() {
   const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
   const [showVolumeFilter, setShowVolumeFilter] = useState(false);
   const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
+  const [quickAddTab, setQuickAddTab] = useState('workout');
   
   // Theme definitions
   const themes = {
@@ -3532,111 +3533,215 @@ export default function Home() {
           );
         })()}
         
-        {/* Preset Selector Modal */}
-        {showPresetSelector && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowPresetSelector(false)}>
-            <div 
-              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[60vh] overflow-y-auto pb-8`} 
-              onClick={(e) => e.stopPropagation()}
+        {/* {/* Preset Selector Modal - 3 Tab Menu */}
+{showPresetSelector && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPresetSelector(false)}>
+    <div 
+      className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col`} 
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header with Tabs */}
+      <div className={`${darkMode ? 'border-gray-700' : 'border-gray-200'} border-b`}>
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <h3 className="font-bold text-lg">Quick Add</h3>
+          <button
+            onClick={() => setShowPresetSelector(false)}
+            className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            <Icons.X />
+          </button>
+        </div>
+        
+        {/* Tab Buttons */}
+        <div className="flex">
+          {[
+            { id: 'workout', label: '🏋️ Workout', color: 'blue' },
+            { id: 'protein', label: '🥩 Protein', color: 'green' },
+            { id: 'weight', label: '⚖️ Weight', color: 'purple' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setQuickAddTab(tab.id)}
+              className={`flex-1 py-3 text-sm font-semibold transition-all border-b-2 ${
+                quickAddTab === tab.id
+                  ? tab.color === 'blue' 
+                    ? 'border-blue-500 text-blue-500' 
+                    : tab.color === 'green'
+                    ? 'border-green-500 text-green-500'
+                    : 'border-purple-500 text-purple-500'
+                  : `border-transparent ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`
+              }`}
             >
-              <div 
-                className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}
-                onTouchStart={(e) => {
-                  e.currentTarget.dataset.startY = e.touches[0].clientY;
-                  e.currentTarget.dataset.modalParent = 'true';
-                }}
-                onTouchMove={(e) => {
-                  if (e.currentTarget.dataset.modalParent !== 'true') return;
-                  
-                  const startY = parseFloat(e.currentTarget.dataset.startY);
-                  const currentY = e.touches[0].clientY;
-                  const diff = currentY - startY;
-                  
-                  // Only allow dragging down from the handle area
-                  if (diff > 0) {
-                    const modal = e.currentTarget.closest('.rounded-t-2xl');
-                    if (modal) {
-                      modal.style.transform = `translateY(${diff}px)`;
-                      modal.style.transition = 'none';
-                    }
-                  }
-                }}
-                onTouchEnd={(e) => {
-                  if (e.currentTarget.dataset.modalParent !== 'true') return;
-                  
-                  const startY = parseFloat(e.currentTarget.dataset.startY);
-                  const currentY = e.changedTouches[0].clientY;
-                  const diff = currentY - startY;
-                  
-                  const modal = e.currentTarget.closest('.rounded-t-2xl');
-                  if (modal) {
-                    modal.style.transition = 'transform 0.2s ease-out';
-                    
-                    if (diff > 100) {
-                      modal.style.transform = 'translateY(100%)';
-                      setTimeout(() => setShowPresetSelector(false), 200);
-                    } else {
-                      modal.style.transform = '';
-                    }
-                  }
-                  
-                  delete e.currentTarget.dataset.modalParent;
-                }}
-              >
-                <div className="flex justify-center pb-2 cursor-grab active:cursor-grabbing">
-                  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
-                </div>
-                <div className="flex items-center justify-between px-4">
-                  <h3 className="font-bold text-lg">Choose Workout</h3>
-                  <button
-                    onClick={() => setShowPresetSelector(false)}
-                    className="text-gray-400 hover:text-white"
-                  >
-                    <Icons.X />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="p-4 space-y-2">
-                {presets.filter(p => p.includeInMenu !== false).map((p, i) => {
-                  const color = getPresetColor(p.name);
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        loadPreset(p);
-                        setShowPresetSelector(false);
-                        setShowWorkoutModal(true);
-                        setEditing(null);
-                        // Reset timer for new workout
-                        setWorkoutStarted(false);
-                        setWorkoutTimer(0);
-                        setTimerRunning(false);
-                      }}
-                      className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-4 rounded-lg text-left border-l-4 ${color.border} transition-all`}
-                    >
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-3 h-3 rounded-full ${color.border.replace('border-', 'bg-')}`}></div>
-                        <div className="font-medium text-base">{p.name}</div>
-                      </div>
-                      {p.name === 'Manual' ? (
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-5`}>Build your own</div>
-                      ) : p.exercises.length > 0 && (
-                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-5`}>{p.exercises.length} exercises</div>
-                      )}
-                    </button>
-                  );
-                })}
-                
-                {presets.length === 0 && (
-                  <div className="text-center text-gray-500 py-8 text-sm">
-                    No presets yet. Add some in Settings!
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {/* Workout Tab */}
+        {quickAddTab === 'workout' && (
+          <div className="space-y-2">
+            {presets.filter(p => p.includeInMenu !== false).map((p, i) => {
+              const color = getPresetColor(p.name);
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    loadPreset(p);
+                    setShowPresetSelector(false);
+                    setShowWorkoutModal(true);
+                    setEditing(null);
+                    setWorkoutStarted(false);
+                    setWorkoutTimer(0);
+                    setTimerRunning(false);
+                  }}
+                  className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-4 rounded-lg text-left border-l-4 ${color.border} transition-all`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`w-3 h-3 rounded-full ${color.border.replace('border-', 'bg-')}`}></div>
+                    <div className="font-medium text-base">{p.name}</div>
                   </div>
-                )}
+                  {p.name === 'Manual' ? (
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-5`}>Build your own</div>
+                  ) : p.exercises.length > 0 && (
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-5`}>{p.exercises.length} exercises</div>
+                  )}
+                </button>
+              );
+            })}
+            
+            {presets.length === 0 && (
+              <div className="text-center text-gray-500 py-8 text-sm">
+                No presets yet. Add some in Settings!
               </div>
-            </div>
+            )}
           </div>
         )}
+        
+        {/* Protein Tab */}
+        {quickAddTab === 'protein' && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const grams = formData.get('grams');
+              const food = formData.get('food');
+              
+              if (grams && !isNaN(grams) && parseInt(grams) > 0) {
+                const today = getTodayDate();
+                const newEntry = {
+                  date: today,
+                  grams: parseInt(grams),
+                  food: food || 'Food',
+                  timestamp: Date.now()
+                };
+                const updated = [...proteinEntries, newEntry];
+                setProteinEntries(updated);
+                localStorage.setItem('proteinEntries', JSON.stringify(updated));
+                setShowPresetSelector(false);
+                setToastMessage(`Added ${grams}g protein`);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Grams of Protein</label>
+              <input
+                type="number"
+                name="grams"
+                placeholder="45"
+                autoFocus
+                required
+                min="1"
+                className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3 text-lg font-bold`}
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>What did you eat?</label>
+              <input
+                type="text"
+                name="food"
+                placeholder="Chicken breast, protein shake..."
+                className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3`}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg font-bold transition-colors text-white"
+            >
+              Add Protein
+            </button>
+          </form>
+        )}
+        
+        {/* Weight Tab */}
+        {quickAddTab === 'weight' && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const weight = formData.get('weight');
+              const notes = formData.get('notes');
+              
+              if (weight && !isNaN(weight) && parseFloat(weight) > 0) {
+                const today = getTodayDate();
+                const entry = {
+                  date: today,
+                  weight: parseFloat(weight),
+                  notes: notes || ''
+                };
+                const updated = [...weightEntries, entry];
+                save(updated, 'weightEntries', setWeightEntries);
+                setShowPresetSelector(false);
+                setToastMessage(`Logged ${weight} lbs`);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Weight (lbs)</label>
+              <input
+                type="number"
+                name="weight"
+                step="0.1"
+                placeholder="185.5"
+                autoFocus
+                required
+                min="1"
+                className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3 text-lg font-bold`}
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Notes (optional)</label>
+              <input
+                type="text"
+                name="notes"
+                placeholder="Morning weigh-in..."
+                className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3`}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg font-bold transition-colors text-white"
+            >
+              Log Weight
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  </div>
+)}
         
         {/* Calendar Legend Modal - Improved */}
         {showCalendarLegend && (
