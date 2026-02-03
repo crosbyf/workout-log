@@ -123,7 +123,6 @@ export default function Home() {
   const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
   const [showVolumeFilter, setShowVolumeFilter] = useState(false);
   const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
-  const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
   
   // Theme definitions
   const themes = {
