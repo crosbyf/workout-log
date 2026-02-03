@@ -2012,17 +2012,15 @@ export default function Home() {
   <div key={weekKey} className="mb-6">
     <div className="flex">
       {/* Week Label Sidebar */}
-      <div className={`w-[25px] flex-shrink-0 border-r-[8px] rounded-l-xl ${
-        darkMode ? 'bg-white border-white' : 'bg-black border-black'
-      }`}>
-        <div className="flex items-center justify-center h-full py-2">
-          <div className={`text-[8px] font-black leading-tight tracking-wider ${
-            darkMode ? 'text-black' : 'text-white'
-          }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
-            {label}
-          </div>
-        </div>
-      </div>
+<div className={`w-[25px] flex-shrink-0 border-r-[8px] rounded-l-xl flex items-center justify-center ${
+  darkMode ? 'bg-white border-white' : 'bg-black border-black'
+}`}>
+  <div className={`text-[8px] font-black leading-tight tracking-wider ${
+    darkMode ? 'text-black' : 'text-white'
+  }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+    {label}
+  </div>
+</div>
       
       {/* Workouts for this week */}
       <div className="flex-1 space-y-2">
