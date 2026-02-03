@@ -1856,9 +1856,9 @@ export default function Home() {
               )}
               
               {/* Control buttons */}
-              <div className="flex items-center gap-2 mb-3">
-                <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mr-auto`}>Workout History</h2>
-                {!searchExpanded ? (
+<div className="flex items-center gap-2 mb-3">
+  <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mr-auto`}>Workout History</h2>
+  {!searchExpanded ? (
                   <button
                     onClick={() => {
                       setSearchExpanded(true);
