@@ -3333,6 +3333,30 @@ export default function Home() {
                           </svg>
                         </button>
                       </div>
+                    ))}
+                    
+                    <button
+                      onClick={() => {
+                        const newExercise = prompt('Enter exercise name:');
+                        if (newExercise && newExercise.trim()) {
+                          const trimmed = newExercise.trim();
+                          if (!exercises.includes(trimmed)) {
+                            const updated = [...exercises, trimmed];
+                            setExercises(updated);
+                            localStorage.setItem('exercises', JSON.stringify(updated));
+                          } else {
+                            alert('Exercise already exists!');
+                          }
+                        }
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span className="text-lg">+</span>
+                      Add Exercise
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Home V1 Toggle */}
               <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
