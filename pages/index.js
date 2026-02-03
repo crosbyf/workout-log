@@ -3705,6 +3705,7 @@ export default function Home() {
                     Data Deletion
                   </h3>
                   <div className={`transform transition-transform ${showDataDeletion ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
                   </div>
                 </button>
                 
@@ -3712,7 +3713,11 @@ export default function Home() {
                   <div className="px-4 pb-4 border-t border-gray-700">
                     <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 mt-2`}>
                       Permanently delete all workout data. This action cannot be undone.
-                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 mt-2`}>
+                    </p>
+                    <button 
+                      onClick={() => setShowClear(true)} 
+                      className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-3 rounded-lg text-sm font-bold shadow-md transition-all"
+                    >
                       Delete All Workouts
                     </button>
                   </div>
