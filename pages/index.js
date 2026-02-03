@@ -2015,7 +2015,7 @@ export default function Home() {
 <div className={`w-[25px] flex-shrink-0 border-r-[8px] rounded-l-xl relative ${
   darkMode ? 'bg-white border-white' : 'bg-black border-black'
 }`}>
-  <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+  <div className="absolute top-0 bottom-0 left-0 right-[8px] flex items-center justify-center overflow-hidden">
     <div className={`text-[8px] font-black tracking-wider whitespace-nowrap ${
       darkMode ? 'text-black' : 'text-white'
     }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed', transform: 'rotate(180deg)' }}>
