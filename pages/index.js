@@ -2009,62 +2009,63 @@ export default function Home() {
                 });
                 
                 return sortedWeeks.map(([weekKey, { label, workouts }]) => (
-                  <div key={weekKey} className="flex gap-0 mb-6">
-  {/* Week Label Sidebar - Theme-aware colors for maximum visibility */}
-  <div className={`w-[25px] flex-shrink-0 flex items-center justify-center border-r-[8px] rounded-l-xl ${
-darkMode ? 'bg-white border-white' : 'bg-black border-black'
-}`}>
-    <div className="text-center py-2">
-      <div className={`text-[8px] font-black leading-tight tracking-wider ${
-        darkMode ? 'text-black' : 'text-white'
-      }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
-        {label}
+  <div key={weekKey} className="mb-6">
+    <div className="flex">
+      {/* Week Label Sidebar */}
+      <div className={`w-[25px] flex-shrink-0 border-r-[8px] rounded-l-xl ${
+        darkMode ? 'bg-white border-white' : 'bg-black border-black'
+      }`}>
+        <div className="flex items-center justify-center h-full py-2">
+          <div className={`text-[8px] font-black leading-tight tracking-wider ${
+            darkMode ? 'text-black' : 'text-white'
+          }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+            {label}
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+      
+      {/* Workouts for this week */}
+      <div className="flex-1 space-y-2">
+        {workouts.map(({ workout: w, index: i }) => {
+          const [year, month, day] = w.date.split('-');
+          const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+          const isExpanded = expandedLog.has(i);
+          
+          const color = getPresetColor(w.location);
+          const borderColor = color.border;
+          
+          return (
+            <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-r-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
+              <button
+                onClick={(e) => {
+                  const newExpanded = new Set(expandedLog);
+                  if (newExpanded.has(i)) {
+                    newExpanded.delete(i);
+                  } else {
+                    const element = e.currentTarget.closest('[data-workout-date]');
+                    newExpanded.add(i);
+                    setExpandedLog(newExpanded);
                     
-                    {/* Workouts for this week */}
-                    <div className="flex-1 space-y-2">
-                      {workouts.map(({ workout: w, index: i }) => {
-                        const [year, month, day] = w.date.split('-');
-                        const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-                        const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                        const isExpanded = expandedLog.has(i);
-                        
-                        const color = getPresetColor(w.location);
-                        const borderColor = color.border;
-                        
-                        return (
-                          <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-r-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
-                            <button
-                              onClick={(e) => {
-                                const newExpanded = new Set(expandedLog);
-                                if (newExpanded.has(i)) {
-                                  newExpanded.delete(i);
-                                } else {
-                                  const element = e.currentTarget.closest('[data-workout-date]');
-                                  newExpanded.add(i);
-                                  setExpandedLog(newExpanded);
-                                  
-                                  // Scroll this workout to top when expanding
-                                  requestAnimationFrame(() => {
-                                    requestAnimationFrame(() => {
-                                      setTimeout(() => {
-                                        if (element) {
-                                          const rect = element.getBoundingClientRect();
-                                          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                          const targetY = rect.top + scrollTop - 120;
-                                          window.scrollTo({ top: targetY, behavior: 'smooth' });
-                                        }
-                                      }, 100);
-                                    });
-                                  });
-                                  return;
-                                }
-                                setExpandedLog(newExpanded);
-                              }}
-                              className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
-                            >
+                    // Scroll this workout to top when expanding
+                    requestAnimationFrame(() => {
+                      requestAnimationFrame(() => {
+                        setTimeout(() => {
+                          if (element) {
+                            const rect = element.getBoundingClientRect();
+                            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                            const targetY = rect.top + scrollTop - 120;
+                            window.scrollTo({ top: targetY, behavior: 'smooth' });
+                          }
+                        }, 100);
+                      });
+                    });
+                    return;
+                  }
+                  setExpandedLog(newExpanded);
+                }}
+                className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
+              >
                               <div className="flex items-center justify-between">
                                 <div>
                                   <div className="font-bold text-base">
@@ -2193,6 +2194,7 @@ darkMode ? 'bg-white border-white' : 'bg-black border-black'
                           </div>
                         );
                       })}
+                    </div>
                     </div>
                   </div>
                 ));
