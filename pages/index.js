@@ -2009,19 +2009,19 @@ export default function Home() {
                 });
                 
                 return sortedWeeks.map(([weekKey, { label, workouts }]) => (
-                  <div key={weekKey} className="flex gap-0 mb-6 items-stretch">
-                    {/* Week Label Sidebar - Theme-aware colors for maximum visibility */}
-                    <div className={`w-[25px] flex-shrink-0 flex items-center justify-center border-r-[8px] rounded-l-xl self-stretch ${
-  darkMode ? 'bg-white border-white' : 'bg-black border-black'
+                  <div key={weekKey} className="flex gap-0 mb-6">
+  {/* Week Label Sidebar - Theme-aware colors for maximum visibility */}
+  <div className={`w-[25px] flex-shrink-0 flex items-center justify-center border-r-[8px] rounded-l-xl ${
+darkMode ? 'bg-white border-white' : 'bg-black border-black'
 }`}>
-                      <div className="text-center py-2">
-                        <div className={`text-[8px] font-black leading-tight tracking-wider ${
-                          darkMode ? 'text-black' : 'text-white'
-                        }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
-                          {label}
-                        </div>
-                      </div>
-                    </div>
+    <div className="text-center py-2">
+      <div className={`text-[8px] font-black leading-tight tracking-wider ${
+        darkMode ? 'text-black' : 'text-white'
+      }`} style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}>
+        {label}
+      </div>
+    </div>
+  </div>
                     
                     {/* Workouts for this week */}
                     <div className="flex-1 space-y-2">
