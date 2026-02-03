@@ -3211,6 +3211,70 @@ export default function Home() {
                 )}
               </div>
 
+              {/* Exercise Presets */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                <button
+                  onClick={() => setShowExercisesMenu(!showExercisesMenu)}
+                  className={`w-full p-4 flex items-center justify-between ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🏋️</span>
+                    <span className="font-bold">Exercise Presets</span>
+                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>({exercises.length})</span>
+                  </div>
+                  <div className={`transform transition-transform ${showExercisesMenu ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
+                </button>
+                
+                {showExercisesMenu && (
+                  <div className={`p-3 space-y-2 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
+                    {exercises.sort((a, b) => a.localeCompare(b)).map((ex, i) => (
+                      <div 
+                        key={i} 
+                        className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3 flex items-center justify-between`}
+                      >
+                        <span className="font-medium">{ex}</span>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete "${ex}"?`)) {
+                              const updated = exercises.filter(e => e !== ex);
+                              setExercises(updated);
+                              localStorage.setItem('exercises', JSON.stringify(updated));
+                            }
+                          }}
+                          className="text-red-500 hover:text-red-400 p-1"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                    
+                    <button
+                      onClick={() => {
+                        const newExercise = prompt('Enter exercise name:');
+                        if (newExercise && newExercise.trim()) {
+                          const trimmed = newExercise.trim();
+                          if (!exercises.includes(trimmed)) {
+                            const updated = [...exercises, trimmed];
+                            setExercises(updated);
+                            localStorage.setItem('exercises', JSON.stringify(updated));
+                          } else {
+                            alert('Exercise already exists!');
+                          }
+                        }
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span className="text-lg">+</span>
+                      Add Exercise
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Data Import/Export Section */}
               <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
                 <button
@@ -3294,69 +3358,7 @@ export default function Home() {
                 </div>
                 )}
               </div>
-              {/* Exercise Presets */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
-                <button
-                  onClick={() => setShowExercisesMenu(!showExercisesMenu)}
-                  className={`w-full p-4 flex items-center justify-between ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🏋️</span>
-                    <span className="font-bold">Exercise Presets</span>
-                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>({exercises.length})</span>
-                  </div>
-                  <div className={`transform transition-transform ${showExercisesMenu ? 'rotate-180' : ''}`}>
-                    <Icons.ChevronDown />
-                  </div>
-                </button>
-                
-                {showExercisesMenu && (
-                  <div className={`p-3 space-y-2 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
-                    {exercises.sort((a, b) => a.localeCompare(b)).map((ex, i) => (
-                      <div 
-                        key={i} 
-                        className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3 flex items-center justify-between`}
-                      >
-                        <span className="font-medium">{ex}</span>
-                        <button
-                          onClick={() => {
-                            if (confirm(`Delete "${ex}"?`)) {
-                              const updated = exercises.filter(e => e !== ex);
-                              setExercises(updated);
-                              localStorage.setItem('exercises', JSON.stringify(updated));
-                            }
-                          }}
-                          className="text-red-500 hover:text-red-400 p-1"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                    
-                    <button
-                      onClick={() => {
-                        const newExercise = prompt('Enter exercise name:');
-                        if (newExercise && newExercise.trim()) {
-                          const trimmed = newExercise.trim();
-                          if (!exercises.includes(trimmed)) {
-                            const updated = [...exercises, trimmed];
-                            setExercises(updated);
-                            localStorage.setItem('exercises', JSON.stringify(updated));
-                          } else {
-                            alert('Exercise already exists!');
-                          }
-                        }
-                      }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span className="text-lg">+</span>
-                      Add Exercise
-                    </button>
-                  </div>
-                )}
-              </div>
+              
               {/* Home V1 Toggle */}
               <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
                 <div className="flex items-center justify-between">
