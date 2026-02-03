@@ -3294,36 +3294,6 @@ export default function Home() {
                 </div>
                 )}
               </div>
-
-              {/* Home V1 Toggle */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🏠</span>
-                    <div>
-                      <div className="font-bold">Home V1 Tab</div>
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Show original Home layout as extra tab</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const newValue = !showHomeV1;
-                      setShowHomeV1(newValue);
-                      localStorage.setItem('showHomeV1', JSON.stringify(newValue));
-                    }}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showHomeV1 ? 'bg-blue-600' : darkMode ? 'bg-gray-700' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showHomeV1 ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-
               {/* Exercise Presets */}
               <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
                 <button
@@ -3386,6 +3356,34 @@ export default function Home() {
                     </button>
                   </div>
                 )}
+              </div>
+              {/* Home V1 Toggle */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🏠</span>
+                    <div>
+                      <div className="font-bold">Home V1 Tab</div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Show original Home layout as extra tab</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newValue = !showHomeV1;
+                      setShowHomeV1(newValue);
+                      localStorage.setItem('showHomeV1', JSON.stringify(newValue));
+                    }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      showHomeV1 ? 'bg-blue-600' : darkMode ? 'bg-gray-700' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        showHomeV1 ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               {/* Data Deletion Section */}
