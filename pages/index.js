@@ -124,8 +124,6 @@ export default function Home() {
   const [showVolumeFilter, setShowVolumeFilter] = useState(false);
   const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
   const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
-  const [showVolumeFilter, setShowVolumeFilter] = useState(false);
-  const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
   
   // Theme definitions
   const themes = {
