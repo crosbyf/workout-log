@@ -1857,6 +1857,7 @@ export default function Home() {
               
               {/* Control buttons */}
               <div className="flex items-center gap-2 mb-3">
+                <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mr-auto`}>Workout History</h2>
                 {!searchExpanded ? (
                   <button
                     onClick={() => {
@@ -1922,20 +1923,6 @@ export default function Home() {
                       </svg>
                     )}
                   </button>
-                )}
-                
-                {!searchExpanded && (
-                  <select
-                    value={historyFilter}
-                    onChange={(e) => setHistoryFilter(e.target.value)}
-                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl pl-2 pr-5 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm min-w-0`}
-                  >
-                    <option value="all">All</option>
-                    <option value="day">Today</option>
-                    <option value="week">Week</option>
-                    <option value="month">Month</option>
-                    <option value="year">Year</option>
-                  </select>
                 )}
                 
                 {!showLogCalendar && !searchExpanded && (
