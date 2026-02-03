@@ -3716,8 +3716,7 @@ export default function Home() {
                     </p>
                     <button 
                       onClick={() => setShowClear(true)} 
-                      className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-3 rounded-lg text-sm font-bold shadow-md transition-all"
-                    >
+                      className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-3 rounded-lg text-sm font-bold shadow-md transition-all">
                       Delete All Workouts
                     </button>
                   </div>
@@ -3726,7 +3725,8 @@ export default function Home() {
             </div>
           )}
         </div>
-        
+        )}
+
         {/* Day Details Modal */}
         {showDayModal && selectedDay && (() => {
           const workout = workouts.find(w => w.date === selectedDay);
