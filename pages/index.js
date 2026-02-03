@@ -2227,7 +2227,7 @@ export default function Home() {
               {/* Volume Trend Chart - AT TOP with Exercise Filter */}
               {(() => {
                 // Limited exercises for the filter
-                const filterExercises = ['Pull-ups', 'Chin-ups', 'Dips', 'Inverted rows', 'Pike push-ups', 'Decline push-ups', 'Bicep curls', 'Hammer curls', 'Lateral raises', 'Overhead press', 'Deadhang'];
+                const filterExercises = ['Pull-ups', 'Chin-ups', 'Dips', 'Push-ups', 'Inverted rows', 'Pike push-ups', 'Decline push-ups', 'Bicep curls', 'Hammer curls', 'Lateral raises', 'Overhead press', 'Deadhang'];
                 
                 // Get Monday of current week using local time
                 const now = new Date();
