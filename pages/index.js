@@ -123,6 +123,9 @@ export default function Home() {
   const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
   const [showVolumeFilter, setShowVolumeFilter] = useState(false);
   const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
+  const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
+  const [showVolumeFilter, setShowVolumeFilter] = useState(false);
+  const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
   
   // Theme definitions
   const themes = {
@@ -2218,14 +2221,16 @@ export default function Home() {
          
           {/* ==================== STATS VIEWS ==================== */}
           {/* Stats Menu */}
+          {/* ==================== STATS VIEWS ==================== */}
+          
+          {/* Stats Menu */}
           {view === 'stats' && statsView === 'menu' && (
             <div className="space-y-3">
               
-              {/* Volume Trend Chart - NOW AT TOP with Exercise Filter */}
+              {/* Volume Trend Chart - AT TOP with Exercise Filter */}
               {(() => {
-                // Get all unique exercises for the filter
                 // Limited exercises for the filter
-                const allExercises = ['Pull-ups', 'Chin-ups', 'Dips', 'Inverted rows', 'Pike push-ups', 'Decline push-ups', 'Bicep curls', 'Hammer curls', 'Lateral raises', 'Overhead press', 'Deadhang'];
+                const filterExercises = ['Pull-ups', 'Chin-ups', 'Dips', 'Inverted rows', 'Pike push-ups', 'Decline push-ups', 'Bicep curls', 'Hammer curls', 'Lateral raises', 'Overhead press', 'Deadhang'];
                 
                 // Get Monday of current week using local time
                 const now = new Date();
@@ -2241,7 +2246,7 @@ export default function Home() {
                   const weekStart = new Date(thisMonday);
                   weekStart.setDate(thisMonday.getDate() - (i * 7));
                   
-                  // Format week start
+                  // Format week start using local time
                   const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
                   
                   // Week end is 6 days after start (Mon-Sun)
@@ -2290,15 +2295,10 @@ export default function Home() {
                   'from-red-600 to-red-400',
                 ];
                 
-                // Get exercises to show in chart (either selected or all that have data)
-                const exercisesInChart = selectedVolumeExercises && selectedVolumeExercises.length > 0
-                  ? selectedVolumeExercises
-                  : [...new Set(weeklyData.flatMap(w => Object.keys(w.exerciseReps)))];
-                
                 return (
                   <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
                     <div className="flex items-center justify-between mb-1">
-                      <h3 className="font-bold text-lg">Volume</h3>
+                      <h3 className="font-bold text-lg">Volume Trend</h3>
                       <button
                         onClick={() => setShowVolumeFilter(!showVolumeFilter)}
                         className={`text-xs px-2 py-1 rounded-lg ${
@@ -2328,7 +2328,7 @@ export default function Home() {
                           )}
                         </div>
                         <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                          {allExercises.map((exercise, idx) => {
+                          {filterExercises.map((exercise, idx) => {
                             const isSelected = selectedVolumeExercises && selectedVolumeExercises.includes(exercise);
                             const colorClass = exerciseColors[idx % exerciseColors.length];
                             return (
@@ -2367,16 +2367,15 @@ export default function Home() {
                         // Build stacked segments if multiple exercises selected
                         const segments = [];
                         if (selectedVolumeExercises && selectedVolumeExercises.length > 1) {
-                          let cumulative = 0;
                           selectedVolumeExercises.forEach((exercise, idx) => {
                             const reps = week.exerciseReps[exercise] || 0;
-                            if (reps > 0) {
+                            if (reps > 0 && week.value > 0) {
                               const segmentHeight = (reps / week.value) * 100;
                               segments.push({
                                 exercise,
                                 reps,
                                 height: segmentHeight,
-                                color: exerciseColors[allExercises.indexOf(exercise) % exerciseColors.length]
+                                color: exerciseColors[filterExercises.indexOf(exercise) % exerciseColors.length]
                               });
                             }
                           });
@@ -2388,7 +2387,6 @@ export default function Home() {
                               {week.value > 0 && (
                                 <>
                                   {segments.length > 1 ? (
-                                    // Stacked bar
                                     <div className="w-full flex flex-col-reverse" style={{ height: `${height}%` }}>
                                       {segments.map((seg, si) => (
                                         <div
@@ -2400,7 +2398,6 @@ export default function Home() {
                                       ))}
                                     </div>
                                   ) : (
-                                    // Single color bar
                                     <div 
                                       className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:opacity-80"
                                       style={{ height: `${height}%` }}
@@ -2425,7 +2422,7 @@ export default function Home() {
                       <div className="flex flex-wrap gap-2 mt-3 justify-center">
                         {selectedVolumeExercises.map((exercise, idx) => (
                           <div key={exercise} className="flex items-center gap-1">
-                            <div className={`w-3 h-3 rounded bg-gradient-to-r ${exerciseColors[allExercises.indexOf(exercise) % exerciseColors.length]}`} />
+                            <div className={`w-3 h-3 rounded bg-gradient-to-r ${exerciseColors[filterExercises.indexOf(exercise) % exerciseColors.length]}`} />
                             <span className="text-xs text-gray-400">{exercise}</span>
                           </div>
                         ))}
@@ -2439,7 +2436,7 @@ export default function Home() {
                 );
               })()}
               
-              {/* Protein Tracker Card */}
+              {/* Protein Tracker Card - Compact with Add button */}
               <button
                 onClick={() => {
                   setStatsView('protein');
@@ -2480,48 +2477,48 @@ export default function Home() {
                 </div>
               </button>
               
-              {/* Body Weight Card */}
-<button
-  onClick={() => {
-    setStatsView('weight');
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
-  }}
-  className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
->
-  <div className="flex items-center justify-between">
-    <div className="flex items-center gap-3">
-      <div className="text-3xl">⚖️</div>
-      <div>
-        <h3 className="font-bold text-lg mb-1">Body Weight</h3>
-        <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-          {weightEntries.length > 0 
-            ? `${weightEntries[weightEntries.length - 1].weight} lbs • ${weightEntries.length} entries`
-            : 'Track your weight over time'
-          }
-        </div>
-      </div>
-    </div>
-    <div className="flex items-center gap-2">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          const today = new Date();
-          setCurrentWeight({ date: getTodayDate(), weight: '', notes: '' });
-          setEditingWeight(null);
-          setWeightCalendarMonth(today.getMonth());
-          setWeightCalendarYear(today.getFullYear());
-          setShowWeightModal(true);
-        }}
-        className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
-      >
-        + Add
-      </button>
-      <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-    </div>
-  </div>
-</button>
+              {/* Body Weight Card - With Add button */}
+              <button
+                onClick={() => {
+                  setStatsView('weight');
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">⚖️</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Body Weight</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {weightEntries.length > 0 
+                          ? `${weightEntries[weightEntries.length - 1].weight} lbs • ${weightEntries.length} entries`
+                          : 'Track your weight over time'
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const today = new Date();
+                        setCurrentWeight({ date: getTodayDate(), weight: '', notes: '' });
+                        setEditingWeight(null);
+                        setWeightCalendarMonth(today.getMonth());
+                        setWeightCalendarYear(today.getFullYear());
+                        setShowWeightModal(true);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                    >
+                      + Add
+                    </button>
+                    <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
               
               {/* Exercise Stats Card */}
               <button
@@ -2551,48 +2548,11 @@ export default function Home() {
           
           {/* Exercise List View - WITH MONTHLY VOLUME WIDGET */}
           {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
-            <div 
-              className="space-y-3"
-              onTouchStart={(e) => {
-                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
-                e.currentTarget.dataset.swipeStartY = e.touches[0].clientY;
-              }}
-              onTouchMove={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const startY = parseFloat(e.currentTarget.dataset.swipeStartY);
-                const currentX = e.touches[0].clientX;
-                const currentY = e.touches[0].clientY;
-                const diffX = currentX - startX;
-                const diffY = Math.abs(currentY - startY);
-                
-                if (Math.abs(diffX) > diffY && diffX > 20) {
-                  e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
-                  e.currentTarget.style.transition = 'none';
-                }
-              }}
-              onTouchEnd={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const currentX = e.changedTouches[0].clientX;
-                const diffX = currentX - startX;
-                
-                e.currentTarget.style.transition = 'transform 0.2s ease-out';
-                
-                if (diffX > 100) {
-                  e.currentTarget.style.transform = 'translateX(100%)';
-                  setTimeout(() => {
-                    setStatsView('menu');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    e.currentTarget.style.transform = '';
-                  }, 200);
-                } else {
-                  e.currentTarget.style.transform = '';
-                }
-              }}
-            >
+            <div className="space-y-3">
               <button
                 onClick={() => {
                   setStatsView('menu');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
                 }}
                 className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} mb-2`}
               >
@@ -2604,9 +2564,8 @@ export default function Home() {
               
               <h2 className="text-base font-semibold mb-2">Exercise Statistics</h2>
               
-              {/* Monthly Volume Widget - MOVED HERE */}
+              {/* Monthly Volume Widget */}
               <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-2 shadow-xl border-2 mb-3`}>
-                {/* Header */}
                 <div className="flex items-center justify-between mb-1">
                   <button
                     onClick={() => {
@@ -2637,13 +2596,12 @@ export default function Home() {
                   </button>
                 </div>
                 
-                {/* Exercise Cards */}
                 <div className="space-y-2">
-                  {/* Pull-ups */}
-                  {(() => {
+                  {['Pull-ups', 'Dips', 'Chin-ups'].map((exerciseName, idx) => {
+                    const emoji = idx === 0 ? '💪' : idx === 1 ? '🔥' : '⚡';
                     const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
                     const monthlyVolume = workouts.filter(w => w.date.startsWith(monthStr)).reduce((total, w) => {
-                      const exercise = w.exercises.find(e => e.name === 'Pull-ups');
+                      const exercise = w.exercises.find(e => e.name === exerciseName);
                       return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
                     }, 0);
                     
@@ -2651,18 +2609,18 @@ export default function Home() {
                     prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
                     const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
                     const prevMonthVolume = workouts.filter(w => w.date.startsWith(prevMonthStr)).reduce((total, w) => {
-                      const exercise = w.exercises.find(e => e.name === 'Pull-ups');
+                      const exercise = w.exercises.find(e => e.name === exerciseName);
                       return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
                     }, 0);
                     
                     const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
                     
                     return (
-                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                      <div key={exerciseName} className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-lg p-3`}>
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xl">💪</span>
-                            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Pull-ups</span>
+                            <span className="text-xl">{emoji}</span>
+                            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{exerciseName}</span>
                           </div>
                           <div className="text-right">
                             <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
@@ -2676,85 +2634,7 @@ export default function Home() {
                         </div>
                       </div>
                     );
-                  })()}
-                  
-                  {/* Dips */}
-                  {(() => {
-                    const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
-                    const monthlyVolume = workouts.filter(w => w.date.startsWith(monthStr)).reduce((total, w) => {
-                      const exercise = w.exercises.find(e => e.name === 'Dips');
-                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
-                    }, 0);
-                    
-                    const prevMonthDate = new Date(volumeWidgetDate);
-                    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-                    const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
-                    const prevMonthVolume = workouts.filter(w => w.date.startsWith(prevMonthStr)).reduce((total, w) => {
-                      const exercise = w.exercises.find(e => e.name === 'Dips');
-                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
-                    }, 0);
-                    
-                    const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
-                    
-                    return (
-                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-lg p-3`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">🔥</span>
-                            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dips</span>
-                          </div>
-                          <div className="text-right">
-                            <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
-                            {prevMonthVolume > 0 && (
-                              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}> / {prevMonthVolume}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className={`w-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
-                          <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                  
-                  {/* Chin-ups */}
-                  {(() => {
-                    const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
-                    const monthlyVolume = workouts.filter(w => w.date.startsWith(monthStr)).reduce((total, w) => {
-                      const exercise = w.exercises.find(e => e.name === 'Chin-ups');
-                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
-                    }, 0);
-                    
-                    const prevMonthDate = new Date(volumeWidgetDate);
-                    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-                    const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
-                    const prevMonthVolume = workouts.filter(w => w.date.startsWith(prevMonthStr)).reduce((total, w) => {
-                      const exercise = w.exercises.find(e => e.name === 'Chin-ups');
-                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
-                    }, 0);
-                    
-                    const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
-                    
-                    return (
-                      <div className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-lg p-3`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">⚡</span>
-                            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Chin-ups</span>
-                          </div>
-                          <div className="text-right">
-                            <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
-                            {prevMonthVolume > 0 && (
-                              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}> / {prevMonthVolume}</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className={`w-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
-                          <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  })}
                 </div>
               </div>
               
@@ -2780,7 +2660,7 @@ export default function Home() {
                       key={exerciseName}
                       onClick={() => {
                         setSelectedExercise(exerciseName);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
                       }}
                       className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
                     >
@@ -2842,7 +2722,6 @@ export default function Home() {
                 
                 <h2 className="text-2xl font-bold">{selectedExercise}</h2>
                 
-                {/* Weekly Volume */}
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
                   <h3 className="font-bold text-lg mb-3">Weekly Volume</h3>
                   <div className="space-y-2">
@@ -2855,28 +2734,7 @@ export default function Home() {
                             const weekDate = new Date(week);
                             setLogCalendarDate(weekDate);
                             setView('home');
-                            setTimeout(() => {
-                              const weekStart = new Date(week);
-                              const weekEnd = new Date(weekStart);
-                              weekEnd.setDate(weekEnd.getDate() + 7);
-                              
-                              const firstWorkout = workouts.find(w => {
-                                const wDate = new Date(w.date);
-                                return wDate >= weekStart && wDate < weekEnd;
-                              });
-                              
-                              if (firstWorkout) {
-                                const element = document.querySelector(`[data-workout-date="${firstWorkout.date}"]`);
-                                if (element) {
-                                  const rect = element.getBoundingClientRect();
-                                  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                  const targetY = rect.top + scrollTop - 70;
-                                  window.scrollTo({ top: targetY, behavior: 'smooth' });
-                                }
-                              } else {
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                              }
-                            }, 300);
+                            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
                           }}
                           className={`flex items-center gap-2 w-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded px-2 -mx-2 py-1`}
                         >
@@ -2886,9 +2744,7 @@ export default function Home() {
                           <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-6 relative overflow-hidden`}>
                             <div
                               className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full shadow-sm"
-                              style={{
-                                width: `${(reps / Math.max(...Object.values(stats.weekly))) * 100}%`
-                              }}
+                              style={{ width: `${(reps / Math.max(...Object.values(stats.weekly))) * 100}%` }}
                             />
                           </div>
                           <span className="text-base font-semibold w-16 text-right">{reps}</span>
@@ -2897,7 +2753,6 @@ export default function Home() {
                   </div>
                 </div>
                 
-                {/* Monthly Volume */}
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
                   <h3 className="font-bold text-lg mb-3">Monthly Volume</h3>
                   <div className="space-y-2">
@@ -2909,9 +2764,7 @@ export default function Home() {
                           <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-6 relative overflow-hidden`}>
                             <div
                               className="bg-green-500 h-full rounded-full"
-                              style={{
-                                width: `${(reps / Math.max(...Object.values(stats.monthly))) * 100}%`
-                              }}
+                              style={{ width: `${(reps / Math.max(...Object.values(stats.monthly))) * 100}%` }}
                             />
                           </div>
                           <span className="text-base font-semibold w-16 text-right">{reps}</span>
@@ -2925,48 +2778,11 @@ export default function Home() {
           
           {/* Body Weight View */}
           {view === 'stats' && statsView === 'weight' && (
-            <div 
-              className="space-y-3"
-              onTouchStart={(e) => {
-                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
-                e.currentTarget.dataset.swipeStartY = e.touches[0].clientY;
-              }}
-              onTouchMove={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const startY = parseFloat(e.currentTarget.dataset.swipeStartY);
-                const currentX = e.touches[0].clientX;
-                const currentY = e.touches[0].clientY;
-                const diffX = currentX - startX;
-                const diffY = Math.abs(currentY - startY);
-                
-                if (Math.abs(diffX) > diffY && diffX > 20) {
-                  e.currentTarget.style.transform = `translateX(${Math.min(diffX, 100)}px)`;
-                  e.currentTarget.style.transition = 'none';
-                }
-              }}
-              onTouchEnd={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const currentX = e.changedTouches[0].clientX;
-                const diffX = currentX - startX;
-                
-                e.currentTarget.style.transition = 'transform 0.2s ease-out';
-                
-                if (diffX > 100) {
-                  e.currentTarget.style.transform = 'translateX(100%)';
-                  setTimeout(() => {
-                    setStatsView('menu');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    e.currentTarget.style.transform = '';
-                  }, 200);
-                } else {
-                  e.currentTarget.style.transform = '';
-                }
-              }}
-            >
+            <div className="space-y-3">
               <button
                 onClick={() => {
                   setStatsView('menu');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
                 }}
                 className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} mb-2`}
               >
@@ -2978,7 +2794,6 @@ export default function Home() {
               
               <h2 className="text-base font-semibold mb-2">Body Weight</h2>
               
-              {/* Add Weight Button */}
               <button
                 onClick={() => {
                   const today = new Date();
@@ -2994,7 +2809,6 @@ export default function Home() {
                 Add Weight Entry
               </button>
               
-              {/* Stats Summary */}
               {weightEntries.length > 0 && (() => {
                 const sorted = [...weightEntries].sort((a, b) => b.date.localeCompare(a.date));
                 const latest = sorted[0];
@@ -3006,18 +2820,6 @@ export default function Home() {
                 const daysDiff = (latestDate - oldestDate) / (1000 * 60 * 60 * 24);
                 const weeksDiff = daysDiff / 7;
                 const changeRate = weeksDiff > 0 ? (change / weeksDiff).toFixed(2) : null;
-                
-                const sevenDaysAgo = new Date();
-                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                const sevenDayStr = sevenDaysAgo.toISOString().split('T')[0];
-                const recent7 = sorted.filter(e => e.date >= sevenDayStr);
-                const avg7 = recent7.length > 0 ? (recent7.reduce((sum, e) => sum + parseFloat(e.weight), 0) / recent7.length).toFixed(1) : null;
-                
-                const thirtyDaysAgo = new Date();
-                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                const thirtyDayStr = thirtyDaysAgo.toISOString().split('T')[0];
-                const recent30 = sorted.filter(e => e.date >= thirtyDayStr);
-                const avg30 = recent30.length > 0 ? (recent30.reduce((sum, e) => sum + parseFloat(e.weight), 0) / recent30.length).toFixed(1) : null;
                 
                 return (
                   <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
@@ -3033,40 +2835,23 @@ export default function Home() {
                       </div>
                       <div>
                         <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Total Change</div>
-                        <div className="text-xl font-bold">
-                          {change > 0 ? '+' : ''}{change.toFixed(1)} lbs
-                        </div>
+                        <div className="text-xl font-bold">{change > 0 ? '+' : ''}{change.toFixed(1)} lbs</div>
                       </div>
                       {changeRate && weeksDiff >= 1 && (
                         <div>
                           <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Rate</div>
-                          <div className="text-xl font-bold">
-                            {changeRate > 0 ? '+' : ''}{changeRate} <span className="text-sm font-normal">lbs/week</span>
-                          </div>
+                          <div className="text-xl font-bold">{changeRate > 0 ? '+' : ''}{changeRate} <span className="text-sm font-normal">lbs/week</span></div>
                         </div>
                       )}
                       <div>
                         <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Entries</div>
                         <div className="text-xl font-bold">{weightEntries.length}</div>
                       </div>
-                      {avg7 && (
-                        <div>
-                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Avg (Last 7 Days)</div>
-                          <div className="text-xl font-bold">{avg7} <span className="text-sm font-normal">lbs</span></div>
-                        </div>
-                      )}
-                      {avg30 && (
-                        <div>
-                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Avg (Last 30 Days)</div>
-                          <div className="text-xl font-bold">{avg30} <span className="text-sm font-normal">lbs</span></div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
               })()}
               
-              {/* Weight Chart */}
               {weightEntries.length > 1 && (() => {
                 const sorted = [...weightEntries].sort((a, b) => a.date.localeCompare(b.date));
                 const weights = sorted.map(e => parseFloat(e.weight));
@@ -3080,79 +2865,43 @@ export default function Home() {
                 const chartMax = maxWeight + padding;
                 const chartRange = chartMax - chartMin;
                 
-                const height = 180;
-                
                 const points = weights.map((w, i) => {
                   const x = (i / (weights.length - 1)) * 100;
                   const y = ((chartMax - w) / chartRange) * 100;
                   return { x, y, weight: w, date: dates[i] };
                 });
                 
-                const pathData = points.map((p, i) => 
-                  `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
-                ).join(' ');
-                
+                const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
                 const fillPath = `${pathData} L 100 100 L 0 100 Z`;
                 
                 return (
                   <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
                     <h3 className="font-bold text-lg mb-3">Weight Trend</h3>
-                    <div className="relative" style={{ height: `${height}px` }}>
-                      <svg 
-                        viewBox="0 0 100 100" 
-                        preserveAspectRatio="none"
-                        className="absolute inset-0 w-full h-full"
-                      >
+                    <div className="relative" style={{ height: '180px' }}>
+                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
                         <defs>
                           <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                             <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
                             <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.05" />
                           </linearGradient>
                         </defs>
-                        <path
-                          d={fillPath}
-                          fill="url(#weightGradient)"
-                        />
-                        <path
-                          d={pathData}
-                          fill="none"
-                          stroke="#3b82f6"
-                          strokeWidth="0.5"
-                          vectorEffect="non-scaling-stroke"
-                        />
+                        <path d={fillPath} fill="url(#weightGradient)" />
+                        <path d={pathData} fill="none" stroke="#3b82f6" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
                       </svg>
-                      
-                      <svg 
-                        viewBox="0 0 100 100" 
-                        className="absolute inset-0 w-full h-full pointer-events-none"
-                        preserveAspectRatio="none"
-                      >
+                      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
                         {points.map((p, i) => (
-                          <g key={i}>
-                            <circle
-                              cx={p.x}
-                              cy={p.y}
-                              r="0.8"
-                              fill="#3b82f6"
-                              vectorEffect="non-scaling-stroke"
-                            />
-                          </g>
+                          <circle key={i} cx={p.x} cy={p.y} r="0.8" fill="#3b82f6" vectorEffect="non-scaling-stroke" />
                         ))}
                       </svg>
-                      
                       <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-gray-500 pr-1">
                         <span>{chartMax.toFixed(0)}</span>
                         <span>{((chartMax + chartMin) / 2).toFixed(0)}</span>
                         <span>{chartMin.toFixed(0)}</span>
                       </div>
-                      
                       <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-gray-500 pt-2">
                         <span>{new Date(dates[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                         <span>{new Date(dates[dates.length - 1]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                       </div>
-                    </div>
-                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} text-center mt-4`}>
-                      {weightEntries.length} data points • Showing all time
                     </div>
                   </div>
                 );
@@ -3160,28 +2909,14 @@ export default function Home() {
             </div>
           )}
           
-          {/* Protein View */}
+          {/* Protein View - 30 days, today expanded, past collapsible */}
           {view === 'stats' && statsView === 'protein' && (
-            <div 
-              className="space-y-3"
-              onTouchStart={(e) => {
-                e.currentTarget.dataset.swipeStartX = e.touches[0].clientX;
-              }}
-              onTouchEnd={(e) => {
-                const startX = parseFloat(e.currentTarget.dataset.swipeStartX);
-                const endX = e.changedTouches[0].clientX;
-                const diff = endX - startX;
-                if (diff > 100) {
-                  setStatsView('menu');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-            >
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-2">
                 <button
                   onClick={() => {
                     setStatsView('menu');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
                   }}
                   className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-1`}
                 >
@@ -3192,7 +2927,6 @@ export default function Home() {
                 <h2 className="text-xl font-bold">🥩 Protein Intake</h2>
               </div>
               
-              {/* Quick Add */}
               <button
                 onClick={() => setShowAddProtein(true)}
                 className="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-xl text-base font-bold transition-colors flex items-center justify-center gap-2 shadow-md"
@@ -3201,188 +2935,164 @@ export default function Home() {
                 Add Protein
               </button>
               
-              {/* Last 30 Days - Today expanded, past days collapsible */}
-<div className="space-y-2">
-  {(() => {
-    const last30Days = [];
-    const now = new Date();
-    for (let i = 0; i < 30; i++) {
-      const date = new Date(now);
-      date.setDate(now.getDate() - i);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-      const dayEntries = proteinEntries.filter(e => e.date === dateStr);
-      const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
-      const dayName = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
-      const dateDisplay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      last30Days.push({ date: dateStr, dayName, dateDisplay, total, entries: dayEntries, isToday: i === 0 });
-    }
-    
-    return last30Days.map(({ date, dayName, dateDisplay, total, entries, isToday }) => {
-      const isExpanded = isToday || expandedProteinDays.has(date);
-      
-      return (
-        <div key={date} data-protein-date={date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
-          {isToday ? (
-            // Today - always expanded, not collapsible
-            <>
-              <div className="p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <div className="font-bold text-base">{dayName}</div>
-                    <div className="text-xs text-gray-500">{dateDisplay}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-2xl font-black text-green-500">{total}g</div>
-                      <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
-                    </div>
-                    <button
-                      onClick={() => setEditingProteinDate(date)}
-                      className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-2`}
-                      title="Edit"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-                
-                {entries.length > 0 && (
-                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
-                    {entries.map((entry) => {
-                      const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { 
-                        hour: 'numeric', 
-                        minute: '2-digit',
-                        hour12: true 
-                      }).toLowerCase() : '';
-                      
-                      return (
-                        <div key={entry.timestamp} className="flex items-center text-sm">
-                          <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
-                          <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
-                          <span className="w-12 text-right font-bold">{entry.grams}g</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            // Past days - collapsible
-            <>
-              <button
-                onClick={(e) => {
-                  const newExpanded = new Set(expandedProteinDays);
-                  if (newExpanded.has(date)) {
-                    newExpanded.delete(date);
-                  } else {
-                    newExpanded.add(date);
-                    // Scroll to this card
-                    const element = e.currentTarget.closest('[data-protein-date]');
-                    requestAnimationFrame(() => {
-                      requestAnimationFrame(() => {
-                        setTimeout(() => {
-                          if (element) {
-                            const rect = element.getBoundingClientRect();
-                            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                            const targetY = rect.top + scrollTop - 120;
-                            window.scrollTo({ top: targetY, behavior: 'smooth' });
-                          }
-                        }, 100);
-                      });
-                    });
+              <div className="space-y-2">
+                {(() => {
+                  const last30Days = [];
+                  const now = new Date();
+                  for (let i = 0; i < 30; i++) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() - i);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
+                    const dayEntries = proteinEntries.filter(e => e.date === dateStr);
+                    const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
+                    const dayName = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dateDisplay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    last30Days.push({ date: dateStr, dayName, dateDisplay, total, entries: dayEntries, isToday: i === 0 });
                   }
-                  setExpandedProteinDays(newExpanded);
-                }}
-                className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-bold text-base">{dayName}</div>
-                    <div className="text-xs text-gray-500">{dateDisplay}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="text-2xl font-black text-green-500">{total}g</div>
-                      <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
-                    </div>
-                    <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                      <Icons.ChevronDown />
-                    </div>
-                  </div>
-                </div>
-              </button>
-              
-              {isExpanded && (
-                <div className="px-3 pb-3">
-                  <div className="flex justify-end mb-2">
-                    <button
-                      onClick={() => setEditingProteinDate(date)}
-                      className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-1 text-xs flex items-center gap-1`}
-                      title="Edit"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit
-                    </button>
-                  </div>
                   
-                  {entries.length > 0 ? (
-                    <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
-                      {entries.map((entry) => {
-                        const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit',
-                          hour12: true 
-                        }).toLowerCase() : '';
-                        
-                        return (
-                          <div key={entry.timestamp} className="flex items-center text-sm">
-                            <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
-                            <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
-                            <span className="w-12 text-right font-bold">{entry.grams}g</span>
+                  return last30Days.map(({ date, dayName, dateDisplay, total, entries, isToday }) => {
+                    const isExpanded = isToday || expandedProteinDays.has(date);
+                    
+                    return (
+                      <div key={date} data-protein-date={date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                        {isToday ? (
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <div className="font-bold text-base">{dayName}</div>
+                                <div className="text-xs text-gray-500">{dateDisplay}</div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                  <div className="text-2xl font-black text-green-500">{total}g</div>
+                                  <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
+                                </div>
+                                <button
+                                  onClick={() => setEditingProteinDate(date)}
+                                  className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-2`}
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                            {entries.length > 0 && (
+                              <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
+                                {entries.map((entry) => {
+                                  const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase() : '';
+                                  return (
+                                    <div key={entry.timestamp} className="flex items-center text-sm">
+                                      <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
+                                      <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
+                                      <span className="w-12 text-right font-bold">{entry.grams}g</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-center py-2`}>
-                      No entries
-                    </div>
-                  )}
-                  
-                  {/* Collapse Button */}
-                  <button
-                    onClick={() => {
-                      const newExpanded = new Set(expandedProteinDays);
-                      newExpanded.delete(date);
-                      setExpandedProteinDays(newExpanded);
-                    }}
-                    className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 mt-2`}
-                  >
-                    <div className="transform rotate-180">
-                      <Icons.ChevronDown className="w-3 h-3" />
-                    </div>
-                    Collapse
-                  </button>
-                </div>
-              )}
-            </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                const newExpanded = new Set(expandedProteinDays);
+                                if (newExpanded.has(date)) {
+                                  newExpanded.delete(date);
+                                } else {
+                                  newExpanded.add(date);
+                                  const element = e.currentTarget.closest('[data-protein-date]');
+                                  requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                      setTimeout(() => {
+                                        if (element) {
+                                          const rect = element.getBoundingClientRect();
+                                          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                          const targetY = rect.top + scrollTop - 120;
+                                          window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                        }
+                                      }, 100);
+                                    });
+                                  });
+                                }
+                                setExpandedProteinDays(newExpanded);
+                              }}
+                              className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="font-bold text-base">{dayName}</div>
+                                  <div className="text-xs text-gray-500">{dateDisplay}</div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <div className="text-right">
+                                    <div className="text-2xl font-black text-green-500">{total}g</div>
+                                    <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
+                                  </div>
+                                  <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                    <Icons.ChevronDown />
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                            {isExpanded && (
+                              <div className="px-3 pb-3">
+                                <div className="flex justify-end mb-2">
+                                  <button
+                                    onClick={() => setEditingProteinDate(date)}
+                                    className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-1 text-xs flex items-center gap-1`}
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Edit
+                                  </button>
+                                </div>
+                                {entries.length > 0 ? (
+                                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
+                                    {entries.map((entry) => {
+                                      const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase() : '';
+                                      return (
+                                        <div key={entry.timestamp} className="flex items-center text-sm">
+                                          <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
+                                          <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
+                                          <span className="w-12 text-right font-bold">{entry.grams}g</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-center py-2`}>No entries</div>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    const newExpanded = new Set(expandedProteinDays);
+                                    newExpanded.delete(date);
+                                    setExpandedProteinDays(newExpanded);
+                                  }}
+                                  className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 mt-2`}
+                                >
+                                  <div className="transform rotate-180">
+                                    <Icons.ChevronDown className="w-3 h-3" />
+                                  </div>
+                                  Collapse
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
           )}
-        </div>
-      );
-    });
-  })()}
-</div>
           
           {/* ==================== END STATS VIEWS ==================== */}
-          
           {view === 'settings' && (
             <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
