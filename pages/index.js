@@ -2034,7 +2034,8 @@ export default function Home() {
                     </div>
                     
                     {/* Workouts for this week */}
-                    <div className="flex-1 space-y-2">
+                    {/* Workouts for this week */}
+                    <div className="flex-1 flex flex-col gap-2">
                       {workouts.map(({ workout: w, index: i }) => {
                         const [year, month, day] = w.date.split('-');
                         const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -2045,7 +2046,7 @@ export default function Home() {
                         const borderColor = color.border;
                         
                         return (
-                          <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-r-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden`}>
+  <div key={i} data-workout-date={w.date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border-t border-r border-b border-gray-200'} rounded-r-xl border-l-[6px] ${borderColor} shadow-md hover:shadow-lg transition-shadow overflow-hidden flex-1`}>
                             <button
                               onClick={(e) => {
                                 const newExpanded = new Set(expandedLog);
