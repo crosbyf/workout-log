@@ -3725,7 +3725,6 @@ export default function Home() {
             </div>
           )}
         </div>
-        )}
 
         {/* Day Details Modal */}
         {showDayModal && selectedDay && (() => {
