@@ -1856,9 +1856,8 @@ export default function Home() {
               )}
               
               {/* Control buttons */}
-<div className="flex items-center gap-2 mb-3">
-  <h2 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mr-auto`}>Workout History</h2>
-  {!searchExpanded ? (
+              <div className="flex items-center gap-2 mb-3">
+                {!searchExpanded ? (
                   <button
                     onClick={() => {
                       setSearchExpanded(true);
@@ -1923,6 +1922,20 @@ export default function Home() {
                       </svg>
                     )}
                   </button>
+                )}
+                
+                {!searchExpanded && (
+                  <select
+                    value={historyFilter}
+                    onChange={(e) => setHistoryFilter(e.target.value)}
+                    className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl pl-2 pr-5 py-2 text-xs font-medium cursor-pointer transition-colors shadow-sm min-w-0`}
+                  >
+                    <option value="all">All</option>
+                    <option value="day">Today</option>
+                    <option value="week">Week</option>
+                    <option value="month">Month</option>
+                    <option value="year">Year</option>
+                  </select>
                 )}
                 
                 {!showLogCalendar && !searchExpanded && (
@@ -3294,7 +3307,37 @@ export default function Home() {
                 </div>
                 )}
               </div>
-{/* Exercise Presets */}
+
+              {/* Home V1 Toggle */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🏠</span>
+                    <div>
+                      <div className="font-bold">Home V1 Tab</div>
+                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Show original Home layout as extra tab</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newValue = !showHomeV1;
+                      setShowHomeV1(newValue);
+                      localStorage.setItem('showHomeV1', JSON.stringify(newValue));
+                    }}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      showHomeV1 ? 'bg-blue-600' : darkMode ? 'bg-gray-700' : 'bg-gray-300'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        showHomeV1 ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+              </div>
+
+              {/* Exercise Presets */}
               <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
                 <button
                   onClick={() => setShowExercisesMenu(!showExercisesMenu)}
@@ -3333,61 +3376,6 @@ export default function Home() {
                           </svg>
                         </button>
                       </div>
-                    ))}
-                    
-                    <button
-                      onClick={() => {
-                        const newExercise = prompt('Enter exercise name:');
-                        if (newExercise && newExercise.trim()) {
-                          const trimmed = newExercise.trim();
-                          if (!exercises.includes(trimmed)) {
-                            const updated = [...exercises, trimmed];
-                            setExercises(updated);
-                            localStorage.setItem('exercises', JSON.stringify(updated));
-                          } else {
-                            alert('Exercise already exists!');
-                          }
-                        }
-                      }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
-                    >
-                      <span className="text-lg">+</span>
-                      Add Exercise
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Home V1 Toggle */}
-              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">🏠</span>
-                    <div>
-                      <div className="font-bold">Home V1 Tab</div>
-                      <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Show original Home layout as extra tab</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const newValue = !showHomeV1;
-                      setShowHomeV1(newValue);
-                      localStorage.setItem('showHomeV1', JSON.stringify(newValue));
-                    }}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      showHomeV1 ? 'bg-blue-600' : darkMode ? 'bg-gray-700' : 'bg-gray-300'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        showHomeV1 ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              
                     ))}
                     
                     <button
