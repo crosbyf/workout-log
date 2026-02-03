@@ -1670,13 +1670,26 @@ export default function Home() {
         )}
 
         <div className={`sticky top-0 z-10 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            {/* Spacer for balance */}
-            <div className="w-10"></div>
-            
-            {/* Centered GORS LOG */}
-            <button 
-              onClick={() => {
+  <div className="max-w-4xl mx-auto flex items-center justify-between">
+    {/* Start Workout Button - Left side, only on Home and Home V1 */}
+    {(view === 'home' || view === 'homev1') ? (
+      <button
+        onClick={() => {
+          setQuickAddTab('workout');
+          setShowPresetSelector(true);
+        }}
+        className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg p-2 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+        title="Quick Add"
+      >
+        <Icons.Plus className="w-5 h-5" />
+      </button>
+    ) : (
+      <div className="w-10"></div>
+    )}
+    
+    {/* Centered GORS LOG */}
+    <button 
+      onClick={() => {
                 const themeOrder = ['light', 'dark', 'neon', 'forest'];
                 const currentIndex = themeOrder.indexOf(theme);
                 const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
@@ -1689,18 +1702,7 @@ export default function Home() {
               <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
             </button>
             
-            {/* Start Workout Button - only on Home and Home V1 */}
-            {(view === 'home' || view === 'homev1') ? (
-              <button
-                onClick={() => setShowPresetSelector(true)}
-                className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg p-2 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
-                title="Start Workout"
-              >
-                <Icons.Plus className="w-5 h-5" />
-              </button>
-            ) : (
-              <div className="w-10"></div>
-            )}
+            <div className="w-10"></div>
           </div>
         </div>
 
