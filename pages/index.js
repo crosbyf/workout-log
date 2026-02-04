@@ -3767,7 +3767,6 @@ export default function Home() {
               </div>
             </div>
           )}
-        </div>
 
         {/* Day Details Modal */}
 {showDayModal && selectedDay && (() => {
@@ -3868,7 +3867,7 @@ export default function Home() {
             </div>
           )}
           
-          {/* {/* Action Buttons */}
+{/* Action Buttons */}
 <div className={`grid grid-cols-4 gap-2 pt-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
   <button
     onClick={() => {
@@ -3936,47 +3935,10 @@ export default function Home() {
     <span className="text-xs font-medium">Delete</span>
   </button>
 </div>
-            <button
-              onClick={() => {
-                shareWorkout(workout);
-                setShowDayModal(false);
-              }}
-              className={`flex flex-col items-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
-            >
-              <Icons.Share className="w-5 h-5 text-purple-400" />
-              <span className="text-xs font-medium">Share</span>
-            </button>
-            <button
-              onClick={() => {
-                if (workoutIndex !== -1) {
-                  editWorkout(workoutIndex);
-                  setShowDayModal(false);
-                }
-              }}
-              className={`flex flex-col items-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
-            >
-              <Icons.Edit className="w-5 h-5 text-green-400" />
-              <span className="text-xs font-medium">Edit</span>
-            </button>
-            <button
-              onClick={() => {
-                if (workoutIndex !== -1) {
-                  setDeleteWorkout(workoutIndex);
-                  setShowDayModal(false);
-                }
-              }}
-              className={`flex flex-col items-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
-            >
-              <Icons.Trash className="w-5 h-5 text-red-400" />
-              <span className="text-xs font-medium">Delete</span>
-            </button>
-          </div>
-        </div>
-      </div>
   );
 })()}
         
-        {/* {/* Preset Selector Modal - 3 Tab Menu */}
+{/* Preset Selector Modal - 3 Tab Menu */}
 {showPresetSelector && (
   <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPresetSelector(false)}>
     <div 
