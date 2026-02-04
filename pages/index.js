@@ -3943,9 +3943,9 @@ export default function Home() {
         
 {/* Preset Selector Modal - 3 Tab Menu */}
 {showPresetSelector && (
-  <div className={"fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPresetSelector(false)}>
+  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPresetSelector(false)}>
     <div 
-      className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col`} 
+      className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col`}
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header with Tabs */}
