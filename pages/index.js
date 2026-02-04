@@ -2554,6 +2554,8 @@ export default function Home() {
     });
   })()}
 </div>
+</div>
+          )}
 
           {/* ==================== STATS VIEWS ==================== */} 
           {/* Stats Menu */}
