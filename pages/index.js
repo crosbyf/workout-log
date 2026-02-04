@@ -3943,15 +3943,15 @@ export default function Home() {
         
 {/* Preset Selector Modal - 3 Tab Menu */}
 {showPresetSelector && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPresetSelector(false)}>
+  <div className={"fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPresetSelector(false)}>
     <div 
       className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col`} 
       onClick={(e) => e.stopPropagation()}
     >
       {/* Header with Tabs */}
       <div className={`${darkMode ? 'border-gray-700' : 'border-gray-200'} border-b`}>
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <h3 className="font-bold text-lg">Quick Add</h3>
+        <div className={"flex items-center justify-between px-4 pt-3 pb-2">
+          <h3 className={"font-bold text-lg">Quick Add</h3>
           <button
             onClick={() => setShowPresetSelector(false)}
             className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
@@ -3961,7 +3961,7 @@ export default function Home() {
         </div>
         
         {/* Tab Buttons */}
-        <div className="flex">
+        <div className={"flex">
           {[
             { id: 'workout', label: '🏋️ Workout', color: 'blue' },
             { id: 'protein', label: '🥩 Protein', color: 'green' },
