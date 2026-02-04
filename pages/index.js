@@ -124,6 +124,7 @@ export default function Home() {
   const [showVolumeFilter, setShowVolumeFilter] = useState(false);
   const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
   const [quickAddTab, setQuickAddTab] = useState('workout');
+  const [weekOffset, setWeekOffset] = useState(0);
   
   // Theme definitions
   const themes = {
