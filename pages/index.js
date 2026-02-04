@@ -3718,8 +3718,8 @@ export default function Home() {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
-        <div className={"flex justify-center pt-3 pb-2 sticky top-0 ${darkMode ? 'bg-gray-800' : 'bg-white'}'}>
-          <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+        <div className={`flex justify-center pt-3 pb-2 sticky top-0 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
         </div>
         
         <div className="p-4">
