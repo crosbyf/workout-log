@@ -1671,7 +1671,8 @@ export default function Home() {
 
         <div className={`sticky top-0 z-10 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
   <div className="max-w-4xl mx-auto flex items-center justify-between">
-    {/* Start Workout Button - Left side, only on Home and Home V1 */}
+    
+  {/* Start Workout Button - Left side, only on Home and Home V1 */}
     {(view === 'home' || view === 'homev1') ? (
       <button
         onClick={() => {
