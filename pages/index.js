@@ -2208,7 +2208,6 @@ export default function Home() {
               )}
             </div>
           )}
-          )}
           
           {/* HOME V1 - Weekly Calendar Layout */}
           {view === 'homev1' && (
