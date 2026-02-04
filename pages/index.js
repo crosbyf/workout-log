@@ -2342,26 +2342,61 @@ export default function Home() {
                   );
                 })()}
               </div>
+            
+              {/* Search */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Search workouts..."
+                    className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-4 py-3 pl-10 text-sm shadow-sm`}
+                  />
+                  <Icons.Search className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                  {search && (
+                    <button
+                      onClick={() => setSearch('')}
+                      className={`absolute right-3 top-3 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                      <Icons.X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               
-              {/* Workouts for this week */}
-              <div className="space-y-2">
-                {(() => {
-                  const now = new Date();
-                  const currentDay = now.getDay();
-                  const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
-                  const thisMonday = new Date(now);
-                  thisMonday.setDate(now.getDate() - daysToMonday);
-                  thisMonday.setHours(0, 0, 0, 0);
-                  
-                  const thisSunday = new Date(thisMonday);
-                  thisSunday.setDate(thisMonday.getDate() + 6);
-                  
-                  const mondayStr = `${thisMonday.getFullYear()}-${String(thisMonday.getMonth() + 1).padStart(2, '0')}-${String(thisMonday.getDate()).padStart(2, '0')}`;
-                  const sundayStr = `${thisSunday.getFullYear()}-${String(thisSunday.getMonth() + 1).padStart(2, '0')}-${String(thisSunday.getDate()).padStart(2, '0')}`;
-                  
-                  const weekWorkouts = workouts
+              {/* Workouts for selected week */}
+                <div className="space-y-2">
+                  {(() => {
+                    const now = new Date();
+                    const currentDay = now.getDay();
+                    const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+                    const thisMonday = new Date(now);
+                    thisMonday.setDate(now.getDate() - daysToMonday);
+                    thisMonday.setHours(0, 0, 0, 0);
+                    
+                    // Apply week offset from calendar
+                    const displayMonday = new Date(thisMonday);
+                    displayMonday.setDate(thisMonday.getDate() + (weekOffset * 7));
+                    
+                    const displaySunday = new Date(displayMonday);
+                    displaySunday.setDate(displayMonday.getDate() + 6);
+                    
+                    const mondayStr = `${displayMonday.getFullYear()}-${String(displayMonday.getMonth() + 1).padStart(2, '0')}-${String(displayMonday.getDate()).padStart(2, '0')}`;
+                    const sundayStr = `${displaySunday.getFullYear()}-${String(displaySunday.getMonth() + 1).padStart(2, '0')}-${String(displaySunday.getDate()).padStart(2, '0')}`;
+                    
+                  let weekWorkouts = workouts
                     .filter(w => w.date >= mondayStr && w.date <= sundayStr)
                     .sort((a, b) => b.date.localeCompare(a.date));
+                  
+                  // Apply search filter
+                  if (search.trim()) {
+                    const q = search.toLowerCase();
+                    weekWorkouts = weekWorkouts.filter(w =>
+                      w.date.includes(q) ||
+                      (w.location && w.location.toLowerCase().includes(q)) ||
+                      w.exercises.some(e => e.name.toLowerCase().includes(q)) ||
+                      (w.notes && w.notes.toLowerCase().includes(q))
+                    );
+                  }
                   
                   if (weekWorkouts.length === 0) {
                     return (
@@ -2381,29 +2416,68 @@ export default function Home() {
                     );
                     
                     return (
-                      <button
+                      <div
                         key={i}
-                        onClick={() => {
-                          setSelectedDay(w.date);
-                          setShowDayModal(true);
-                        }}
-                        className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md border-l-4 ${color.border}`}
+                        className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md border-l-4 ${color.border} overflow-hidden`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-bold text-base">
-                              {dayOfWeek} {month}/{day}
-                              {w.location && <span className="ml-2 text-sm font-medium opacity-70">· {w.location}</span>}
+                        <button
+                          onClick={() => {
+                            setSelectedDay(w.date);
+                            setShowDayModal(true);
+                          }}
+                          className={`w-full p-4 text-left transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-bold text-base">
+                                {dayOfWeek} {month}/{day}
+                                {w.location && <span className="ml-2 text-sm font-medium opacity-70">· {w.location}</span>}
+                              </div>
+                              <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''} · {totalReps} reps
+                                {w.elapsedTime && ` · ${formatTimeHHMMSS(w.elapsedTime)}`}
+                              </div>
                             </div>
-                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''} · {totalReps} reps
-                            </div>
+                            <svg className={`w-5 h-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                           </div>
-                          <svg className={`w-5 h-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
+                        </button>
+                        
+                        {/* Quick Actions */}
+                        <div className={`flex border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                          <button
+                            onClick={() => copyToSheets(w)}
+                            className={`flex-1 py-2 text-xs font-medium ${darkMode ? 'text-blue-400 hover:bg-gray-700' : 'text-blue-600 hover:bg-gray-50'} transition-colors flex items-center justify-center gap-1`}
+                          >
+                            <Icons.Copy /> Copy
+                          </button>
+                          <button
+                            onClick={() => shareWorkout(w)}
+                            className={`flex-1 py-2 text-xs font-medium ${darkMode ? 'text-purple-400 hover:bg-gray-700' : 'text-purple-600 hover:bg-gray-50'} transition-colors flex items-center justify-center gap-1 border-l ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
+                          >
+                            <Icons.Share /> Share
+                          </button>
+                          <button
+                            onClick={() => {
+                              const idx = workouts.findIndex(wk => wk.date === w.date && wk.location === w.location);
+                              if (idx !== -1) editWorkout(idx);
+                            }}
+                            className={`flex-1 py-2 text-xs font-medium ${darkMode ? 'text-green-400 hover:bg-gray-700' : 'text-green-600 hover:bg-gray-50'} transition-colors flex items-center justify-center gap-1 border-l ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
+                          >
+                            <Icons.Edit /> Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              const idx = workouts.findIndex(wk => wk.date === w.date && wk.location === w.location);
+                              if (idx !== -1) setDeleteWorkout(idx);
+                            }}
+                            className={`flex-1 py-2 text-xs font-medium ${darkMode ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-50'} transition-colors flex items-center justify-center gap-1 border-l ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}
+                          >
+                            <Icons.Trash /> Delete
+                          </button>
                         </div>
-                      </button>
+                      </div>
                     );
                   });
                 })()}
