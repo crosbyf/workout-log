@@ -2208,11 +2208,211 @@ export default function Home() {
               )}
             </div>
           )}
+          )}
+          
+          {/* HOME V1 - Weekly Calendar Layout */}
+          {view === 'homev1' && (
+            <div className="space-y-3 pb-32">
+              
+              {/* Weekly Calendar */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                {(() => {
+                  
+                  // Get Monday of current week
+                  const now = new Date();
+                  const currentDay = now.getDay();
+                  const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+                  const thisMonday = new Date(now);
+                  thisMonday.setDate(now.getDate() - daysToMonday);
+                  thisMonday.setHours(0, 0, 0, 0);
+                  
+                  // Apply week offset
+                  const displayMonday = new Date(thisMonday);
+                  displayMonday.setDate(thisMonday.getDate() + (weekOffset * 7));
+                  
+                  // Build days of the week
+                  const weekDays = [];
+                  for (let i = 0; i < 7; i++) {
+                    const day = new Date(displayMonday);
+                    day.setDate(displayMonday.getDate() + i);
+                    const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+                    const workout = workouts.find(w => w.date === dateStr);
+                    const isToday = dateStr === getTodayDate();
+                    
+                    weekDays.push({
+                      date: day,
+                      dateStr,
+                      dayName: day.toLocaleDateString('en-US', { weekday: 'short' }),
+                      dayNum: day.getDate(),
+                      workout,
+                      isToday
+                    });
+                  }
+                  
+                  // Week label
+                  const weekStart = weekDays[0].date;
+                  const weekEnd = weekDays[6].date;
+                  const isThisWeek = weekOffset === 0;
+                  const isLastWeek = weekOffset === -1;
+                  
+                  let weekLabel;
+                  if (isThisWeek) {
+                    weekLabel = 'This Week';
+                  } else if (isLastWeek) {
+                    weekLabel = 'Last Week';
+                  } else {
+                    weekLabel = `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                  }
+                  
+                  return (
+                    <>
+                      {/* Week Navigation */}
+                      <div className="flex items-center justify-between mb-4">
+                        <button
+                          onClick={() => setWeekOffset(prev => prev - 1)}
+                          className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        
+                        <div className="text-center">
+                          <div className="font-bold text-lg">{weekLabel}</div>
+                          {!isThisWeek && (
+                            <button
+                              onClick={() => setWeekOffset(0)}
+                              className="text-xs text-blue-500 hover:text-blue-400"
+                            >
+                              Jump to Today
+                            </button>
+                          )}
+                        </div>
+                        
+                        <button
+                          onClick={() => setWeekOffset(prev => prev + 1)}
+                          className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      {/* Days Row */}
+                      <div className="grid grid-cols-7 gap-2">
+                        {weekDays.map(({ dateStr, dayName, dayNum, workout, isToday }) => {
+                          const color = workout ? getPresetColor(workout.location) : null;
+                          
+                          return (
+                            <button
+                              key={dateStr}
+                              onClick={() => {
+                                if (workout) {
+                                  setSelectedDay(dateStr);
+                                  setShowDayModal(true);
+                                }
+                              }}
+                              className={`flex flex-col items-center p-2 rounded-lg transition-all ${
+                                isToday 
+                                  ? 'ring-2 ring-blue-500' 
+                                  : ''
+                              } ${
+                                workout 
+                                  ? `${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} cursor-pointer` 
+                                  : `${darkMode ? 'bg-gray-800' : 'bg-gray-50'} opacity-60`
+                              }`}
+                            >
+                              <div className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {dayName}
+                              </div>
+                              <div className={`text-lg font-bold ${isToday ? 'text-blue-500' : ''}`}>
+                                {dayNum}
+                              </div>
+                              {workout ? (
+                                <div className={`w-3 h-3 rounded-full mt-1 ${color.border.replace('border-', 'bg-')}`}></div>
+                              ) : (
+                                <div className="w-3 h-3 mt-1"></div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+              
+              {/* Workouts for this week */}
+              <div className="space-y-2">
+                {(() => {
+                  const now = new Date();
+                  const currentDay = now.getDay();
+                  const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+                  const thisMonday = new Date(now);
+                  thisMonday.setDate(now.getDate() - daysToMonday);
+                  thisMonday.setHours(0, 0, 0, 0);
+                  
+                  const thisSunday = new Date(thisMonday);
+                  thisSunday.setDate(thisMonday.getDate() + 6);
+                  
+                  const mondayStr = `${thisMonday.getFullYear()}-${String(thisMonday.getMonth() + 1).padStart(2, '0')}-${String(thisMonday.getDate()).padStart(2, '0')}`;
+                  const sundayStr = `${thisSunday.getFullYear()}-${String(thisSunday.getMonth() + 1).padStart(2, '0')}-${String(thisSunday.getDate()).padStart(2, '0')}`;
+                  
+                  const weekWorkouts = workouts
+                    .filter(w => w.date >= mondayStr && w.date <= sundayStr)
+                    .sort((a, b) => b.date.localeCompare(a.date));
+                  
+                  if (weekWorkouts.length === 0) {
+                    return (
+                      <div className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        No workouts this week yet
+                      </div>
+                    );
+                  }
+                  
+                  return weekWorkouts.map((w, i) => {
+                    const [year, month, day] = w.date.split('-');
+                    const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                    const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                    const color = getPresetColor(w.location);
+                    const totalReps = w.exercises.reduce((sum, ex) => 
+                      sum + ex.sets.reduce((s, set) => s + (set.reps || 0), 0), 0
+                    );
+                    
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setSelectedDay(w.date);
+                          setShowDayModal(true);
+                        }}
+                        className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md border-l-4 ${color.border}`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-bold text-base">
+                              {dayOfWeek} {month}/{day}
+                              {w.location && <span className="ml-2 text-sm font-medium opacity-70">· {w.location}</span>}
+                            </div>
+                            <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''} · {totalReps} reps
+                            </div>
+                          </div>
+                          <svg className={`w-5 h-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          )}
          
           {/* ==================== STATS VIEWS ==================== */}
-          {/* Stats Menu */}
-          {/* ==================== STATS VIEWS ==================== */}
-          
+          {/* ==================== STATS VIEWS ==================== */} 
           {/* Stats Menu */}
           {view === 'stats' && statsView === 'menu' && (
             <div className="space-y-3">
