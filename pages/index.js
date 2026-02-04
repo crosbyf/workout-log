@@ -3961,7 +3961,7 @@ export default function Home() {
         </div>
         
         {/* Tab Buttons */}
-        <div className={"flex">
+        <div className="flex">
           {[
             { id: 'workout', label: '🏋️ Workout', color: 'blue' },
             { id: 'protein', label: '🥩 Protein', color: 'green' },
