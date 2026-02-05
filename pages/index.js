@@ -3132,8 +3132,7 @@ export default function Home() {
       onClick={() => setShowDayModal(false)}
     >
       <div 
-        <div 
-        className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[85vh] overflow-y-auto pb-8 transform transition-transform duration-300 ease-out animate-slide-up`} 
+        className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[85vh] overflow-y-auto pb-8`} 
         onClick={(e) => e.stopPropagation()}
         style={{ animation: 'slideUp 0.3s ease-out' }}
       >
