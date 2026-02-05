@@ -125,6 +125,7 @@ export default function Home() {
   const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
   const [quickAddTab, setQuickAddTab] = useState('workout');
   const [weekOffset, setWeekOffset] = useState(0);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
   
   // Theme definitions
   const themes = {
@@ -439,6 +440,37 @@ export default function Home() {
     setter(data);
   };
 
+  useEffect(() => {
+  if (view !== 'homev1') return;
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+        const weekKey = entry.target.id.replace('week-', '');
+        const [year, month, day] = weekKey.split('-');
+        const targetMonday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        
+        const now = new Date();
+        const currentDay = now.getDay();
+        const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+        const thisMonday = new Date(now);
+        thisMonday.setDate(now.getDate() - daysToMonday);
+        thisMonday.setHours(0, 0, 0, 0);
+        
+        const diffDays = Math.round((targetMonday - thisMonday) / (1000 * 60 * 60 * 24));
+        const newOffset = Math.round(diffDays / 7);
+        
+        setWeekOffset(prev => prev !== newOffset ? newOffset : prev);
+      }
+    });
+  }, { threshold: 0.5, rootMargin: '-200px 0px -50% 0px' });
+  
+  const headers = document.querySelectorAll('[id^="week-"]');
+  headers.forEach(header => observer.observe(header));
+  
+  return () => observer.disconnect();
+}, [view, workouts]);
+  
   const importPresets = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -2228,7 +2260,7 @@ export default function Home() {
             <div className="pb-32">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`sticky top-[73px] z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-2 pb-1 -mx-3 px-3`}>
+              <div data-calendar className={`sticky top-[69px] z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-2 pb-1 -mx-3 px-3`}>
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
                     const now = new Date();
@@ -3647,47 +3679,44 @@ export default function Home() {
             </button>
           </div>
           
-          {/* Stats Summary */}
-          <div className={`grid grid-cols-4 gap-2 mb-4 p-3 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
-            <div className="text-center">
-              <div className="text-xl font-bold">{workout.exercises.length}</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Exercises</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold">{workout.structure ? (workout.structure === 'pairs' ? `${workout.structureDuration}'` : 'Circ') : '--'}</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{workout.structure === 'pairs' ? 'Pairs' : workout.structure === 'circuit' ? 'Circuit' : 'Structure'}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold">{workout.elapsedTime ? formatTimeHHMMSS(workout.elapsedTime) : '--'}</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Duration</div>
-            </div>
-            <div className="text-center">
-              <div className="text-xl font-bold">{dayProtein > 0 ? `${dayProtein}g` : '--'}</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Protein</div>
-            </div>
-          </div>
+          {/* Stats Summary - Single Line */}
+          {(() => {
+            const color = getPresetColor(workout.location);
+            return (
+              <div className={`flex items-center justify-between mb-4 p-3 rounded-lg border-l-4 ${color.border} ${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+                <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} style={{ fontSize: 'clamp(11px, 3vw, 14px)' }}>
+                  <span className="font-semibold">{workout.exercises.length} exercises</span>
+                  <span className="opacity-50">·</span>
+                  <span>{workout.structure === 'pairs' ? `Pairs ${workout.structureDuration}'` : workout.structure === 'circuit' ? 'Circuit' : '--'}</span>
+                  <span className="opacity-50">·</span>
+                  <span>{workout.elapsedTime ? formatTimeHHMMSS(workout.elapsedTime) : '--'}</span>
+                  <span className="opacity-50">·</span>
+                  <span>{dayProtein > 0 ? `${dayProtein}g` : '--'}</span>
+                </div>
+              </div>
+            );
+          })()}
 
-          {/* Exercises */}
-          <div className="space-y-3 mb-4">
+          {/* Exercises Table */}
+          <div className={`rounded-lg overflow-hidden mb-4 ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
             {workout.exercises.map((ex, ei) => {
               const exReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
               return (
-                <div key={ei}>
-                  <div className="flex items-start text-sm">
-                    <div className="w-32 font-medium">{ex.name}</div>
-                    <div className="flex-1 flex items-center gap-1 flex-wrap">
+                <div key={ei} className={`flex items-center justify-between p-3 ${ei !== workout.exercises.length - 1 ? (darkMode ? 'border-b border-gray-700' : 'border-b border-gray-200') : ''}`}>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{ex.name}</div>
+                    {ex.notes && <div className={`text-xs mt-0.5 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>{ex.notes}</div>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       {ex.sets.map((s, si) => (
-                        <span key={si} className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {s.reps}
-                          {si < ex.sets.length - 1 && <span className={`${darkMode ? 'text-gray-600' : 'text-gray-400'} mx-0.5`}>·</span>}
+                        <span key={si}>
+                          {s.reps}{si < ex.sets.length - 1 && <span className="mx-1">·</span>}
                         </span>
                       ))}
-                      <span className="ml-1 font-bold">({exReps})</span>
                     </div>
+                    <div className={`font-bold text-sm min-w-[40px] text-right ${darkMode ? 'text-white' : 'text-gray-900'}`}>{exReps}</div>
                   </div>
-                  {ex.notes && (
-                    <div className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-600'} ml-32 -mt-0.5`}>{ex.notes}</div>
-                  )}
                 </div>
               );
             })}
@@ -3695,8 +3724,9 @@ export default function Home() {
 
           {/* Workout Notes */}
           {workout.notes && (
-            <div className={`text-sm ${darkMode ? 'text-gray-400 border-gray-700' : 'text-gray-600 border-gray-200'} border-t pt-3 mb-4`}>
-              {workout.notes}
+            <div className={`p-3 rounded-lg mb-4 ${darkMode ? 'bg-yellow-900/20 border border-yellow-700/30' : 'bg-yellow-50 border border-yellow-200'}`}>
+              <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-yellow-500' : 'text-yellow-700'}`}>NOTES</div>
+              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{workout.notes}</div>
             </div>
           )}
           
