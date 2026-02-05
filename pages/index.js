@@ -2355,7 +2355,7 @@ export default function Home() {
                     const weekLabel = getWeekLabel(weekKey);
                     
                     return (
-                      <div key={weekKey} id={`week-${weekKey}`} className="scroll-mt-[200px]">
+                      <div key={weekKey} id={`week-${weekKey}`} className="scroll-mt-[120px]">
                         <div className={`py-2 px-3 mb-2 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
                         <div className="space-y-2">
                           {weekWorkouts.map((w, i) => {
