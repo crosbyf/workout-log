@@ -2067,7 +2067,6 @@ export default function Home() {
                           })}
                         </div>
                       </div>
-                    </div>
                     )}
                     
                     <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
