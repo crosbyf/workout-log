@@ -1769,7 +1769,7 @@ export default function Home() {
             <div className="pb-32 relative">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`fixed left-0 right-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-3 pb-1 px-3`} style={{ top: '73px' }}>
+              <div data-calendar className={`fixed left-0 right-0 z-10 ${currentTheme.bg} pt-3 pb-1 px-3`} style={{ top: '73px' }}>
                 <div className="max-w-4xl mx-auto">
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
@@ -1837,7 +1837,7 @@ export default function Home() {
               </div>
 
                {/* Spacer for fixed calendar */}
-                <div className="h-28"></div>
+                <div className="h-24"></div>
     
               {/* Search Input */}
               {searchExpanded && (
@@ -1905,7 +1905,7 @@ export default function Home() {
                     
                     return (
                       <div key={weekKey}>
-                        <div id={`week-${weekKey}`} className={`py-2 px-3 mb-2 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
+                        <div id={`week-${weekKey}`} className={`py-2 px-3 mb-1 mt-1 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
                         <div className="space-y-2">
                           {weekWorkouts.map((w, i) => {
                             const [year, month, day] = w.date.split('-');
