@@ -1761,7 +1761,7 @@ export default function Home() {
 </div>
 </div>
 
-        <div className="max-w-4xl mx-auto p-3 pb-24 pt-16">
+        <div className="max-w-4xl mx-auto p-3 pb-24 pt-14">
         <div className="h-16"></div>
           
           {/* HOME V1 - Weekly Calendar Layout */}
