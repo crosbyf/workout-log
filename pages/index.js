@@ -1769,7 +1769,7 @@ export default function Home() {
             <div className="pb-32 relative">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`fixed left-0 right-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-1 pb-1 px-3`} style={{ top: '73px' }}>
+              <div data-calendar className={`fixed left-0 right-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-1 pb-1 px-3`} style={{ top: '80px' }}>
                 <div className="max-w-4xl mx-auto">
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
@@ -1837,7 +1837,7 @@ export default function Home() {
               </div>
 
                {/* Spacer for fixed calendar */}
-                <div className="h-20"></div>
+                <div className="h-28"></div>
     
               {/* Search Input */}
               {searchExpanded && (
@@ -1938,7 +1938,7 @@ export default function Home() {
           {/* ==================== STATS VIEWS ==================== */} 
           {/* Stats Menu */}
           {view === 'stats' && statsView === 'menu' && (
-            <div className="space-y-3 mt-16">
+            <div className="space-y-3">
               
               {/* Volume Trend Chart - AT TOP with Exercise Filter */}
               {(() => {
@@ -2261,7 +2261,7 @@ export default function Home() {
           
           {/* Exercise List View - WITH MONTHLY VOLUME WIDGET */}
           {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
-            <div className="space-y-3 mt-16">
+            <div className="space-y-3">
               <button
                 onClick={() => {
                   setStatsView('menu');
@@ -2422,7 +2422,7 @@ export default function Home() {
             })();
             
             return (
-              <div className="space-y-4 mt-16">
+              <div className="space-y-4">
                 <button
                   onClick={() => setSelectedExercise(null)}
                   className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
@@ -2491,7 +2491,7 @@ export default function Home() {
           
           {/* Body Weight View */}
           {view === 'stats' && statsView === 'weight' && (
-            <div className="space-y-3 mt-16">
+            <div className="space-y-3">
               <button
                 onClick={() => {
                   setStatsView('menu');
@@ -2624,7 +2624,7 @@ export default function Home() {
           
           {/* Protein View - 30 days, today expanded, past collapsible */}
           {view === 'stats' && statsView === 'protein' && (
-            <div className="space-y-3 mt-16">
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-2">
                 <button
                   onClick={() => {
@@ -2807,7 +2807,7 @@ export default function Home() {
           
           {/* ==================== END STATS VIEWS ==================== */}
           {view === 'settings' && (
-            <div className="space-y-3 mt-16">
+            <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
               
               {/* Workout Presets - Collapsed at top */}
