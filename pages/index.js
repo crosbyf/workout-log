@@ -2070,7 +2070,7 @@ export default function Home() {
                     </div>
                     )}
                     
-                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                    <div className=`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
                       Total reps per week (last 12 weeks)
                     </div>
                     
