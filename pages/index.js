@@ -2261,14 +2261,14 @@ export default function Home() {
                     return (
                       <>
                         <div className="flex items-center justify-between mb-4">
-                          <button onClick={() => setWeekOffset(prev => prev - 1)} className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
+                          <button onClick={() => { setWeekOffset(prev => prev - 1); setTimeout(() => { const now = new Date(); const currentDay = now.getDay(); const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; const thisMonday = new Date(now); thisMonday.setDate(now.getDate() - daysToMonday); const targetMonday = new Date(thisMonday); targetMonday.setDate(thisMonday.getDate() + ((weekOffset - 1) * 7)); const key = `${targetMonday.getFullYear()}-${String(targetMonday.getMonth() + 1).padStart(2, '0')}-${String(targetMonday.getDate()).padStart(2, '0')}`; const el = document.getElementById(`week-${key}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); }} className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                           </button>
                           <div className="text-center">
                             <div className="font-bold text-lg">{weekLabel}</div>
                             {!isThisWeek && <button onClick={() => setWeekOffset(0)} className="text-xs text-blue-500 hover:text-blue-400">Jump to Today</button>}
                           </div>
-                          <button onClick={() => setWeekOffset(prev => prev + 1)} className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
+                          <button onClick={() => { setWeekOffset(prev => prev + 1); setTimeout(() => { const now = new Date(); const currentDay = now.getDay(); const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; const thisMonday = new Date(now); thisMonday.setDate(now.getDate() - daysToMonday); const targetMonday = new Date(thisMonday); targetMonday.setDate(thisMonday.getDate() + ((weekOffset + 1) * 7)); const key = `${targetMonday.getFullYear()}-${String(targetMonday.getMonth() + 1).padStart(2, '0')}-${String(targetMonday.getDate()).padStart(2, '0')}`; const el = document.getElementById(`week-${key}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); }} className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                           </button>
                         </div>
@@ -3699,7 +3699,7 @@ export default function Home() {
             </div>
           )}
           
-          {/* {/* Action Buttons */}
+          {/* Action Buttons */}
 <div className={`grid grid-cols-4 gap-2 pt-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
   <button
     onClick={() => {
@@ -3767,43 +3767,9 @@ export default function Home() {
     <span className="text-xs font-medium">Delete</span>
   </button>
 </div>
-            <button
-              onClick={() => {
-                shareWorkout(workout);
-                setShowDayModal(false);
-              }}
-              className={`flex flex-col items-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
-            >
-              <Icons.Share className="w-5 h-5 text-purple-400" />
-              <span className="text-xs font-medium">Share</span>
-            </button>
-            <button
-              onClick={() => {
-                if (workoutIndex !== -1) {
-                  editWorkout(workoutIndex);
-                  setShowDayModal(false);
-                }
-              }}
-              className={`flex flex-col items-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
-            >
-              <Icons.Edit className="w-5 h-5 text-green-400" />
-              <span className="text-xs font-medium">Edit</span>
-            </button>
-            <button
-              onClick={() => {
-                if (workoutIndex !== -1) {
-                  setDeleteWorkout(workoutIndex);
-                  setShowDayModal(false);
-                }
-              }}
-              className={`flex flex-col items-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
-            >
-              <Icons.Trash className="w-5 h-5 text-red-400" />
-              <span className="text-xs font-medium">Delete</span>
-            </button>
-          </div>
-        </div>
+            </div>
       </div>
+    </div>
   );
 })()}
         
