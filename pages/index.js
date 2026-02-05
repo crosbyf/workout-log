@@ -1761,7 +1761,7 @@ export default function Home() {
 </div>
 </div>
 
-        <div className="max-w-4xl mx-auto p-3 pb-24 pt-20">
+        <div className="max-w-4xl mx-auto p-3 pb-24 pt-16">
         <div className="h-16"></div>
           
           {/* HOME V1 - Weekly Calendar Layout */}
@@ -1769,7 +1769,7 @@ export default function Home() {
             <div className="pb-32 relative">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`fixed left-0 right-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-1 pb-1 px-3`} style={{ top: '80px' }}>
+              <div data-calendar className={`fixed left-0 right-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-3 pb-1 px-3`} style={{ top: '73px' }}>
                 <div className="max-w-4xl mx-auto">
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
