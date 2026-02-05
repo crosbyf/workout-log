@@ -460,7 +460,7 @@ export default function Home() {
         setWeekOffset(prev => prev !== newOffset ? newOffset : prev);
       }
     });
-  }, { threshold: 0.8, rootMargin: '-220px 0px -40% 0px' });
+  }, { threshold: 1.0, rootMargin: '-250px 0px -30% 0px' });
   
   const headers = document.querySelectorAll('[id^="week-"]');
   headers.forEach(header => observer.observe(header));
@@ -1757,7 +1757,7 @@ export default function Home() {
             <div className="pb-32">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`sticky top-[69px] z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-2 pb-1 -mx-3 px-3`}>
+              <div data-calendar className={`sticky top-[76px] z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-1 pb-1 -mx-3 px-3`}>
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
                     const now = new Date();
@@ -1789,6 +1789,12 @@ export default function Home() {
                     
                     return (
                       <>
+                        <style>{`
+                          @keyframes slideUp {
+                            from { transform: translateY(100%); opacity: 0.5; }
+                            to { transform: translateY(0); opacity: 1; }
+                          }
+                        `}</style>
                         <div className="flex items-center justify-between mb-4">
                           <button onClick={() => { setWeekOffset(prev => prev - 1); setTimeout(() => { const now = new Date(); const currentDay = now.getDay(); const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; const thisMonday = new Date(now); thisMonday.setDate(now.getDate() - daysToMonday); const targetMonday = new Date(thisMonday); targetMonday.setDate(thisMonday.getDate() + ((weekOffset - 1) * 7)); const key = `${targetMonday.getFullYear()}-${String(targetMonday.getMonth() + 1).padStart(2, '0')}-${String(targetMonday.getDate()).padStart(2, '0')}`; const el = document.getElementById(`week-${key}`); const cal = document.querySelector('[data-calendar]'); if (el && cal) { const calBottom = cal.getBoundingClientRect().bottom; const elTop = el.getBoundingClientRect().top; const offset = elTop - calBottom - 12; window.scrollBy({ top: offset, behavior: 'smooth' }); } }, 100); }} className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -3122,7 +3128,10 @@ export default function Home() {
       onClick={() => setShowDayModal(false)}
     >
       <div 
-        className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[85vh] overflow-y-auto pb-8`} 
+        className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[85vh] overflow-y-auto pb-8`}
+        style={{
+          animation: 'slideUp 0.4s ease-out',
+        }} 
         onClick={(e) => e.stopPropagation()}
         style={{ animation: 'slideUp 0.3s ease-out' }}
       >
