@@ -433,54 +433,45 @@ export default function Home() {
   }, [showDayModal, showHistoryModal, showSettings, showClear, deleteWorkout, deletePreset, deleteExercise, showCloseConfirm, showPresetSelector, showWorkoutModal]);
 
   const save = (data, key, setter) => {
-    localStorage.setItem(key, JSON.stringify(data));
-    setter(data);
-  };
-
-  useEffect(() => {
-  if (view !== 'home') return;
-
-
+    useEffect(() => {
+    if (view !== 'home') return;
     
-  useEffect(() => {
-  if (view !== 'home') return;
-  
-  let observer = null;
-  
-  const timeout = setTimeout(() => {
-    const headers = document.querySelectorAll('[id^="week-"]');
-    if (headers.length === 0) return;
+    let observer = null;
     
-    observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-          const weekKey = entry.target.id.replace('week-', '');
-          const [year, month, day] = weekKey.split('-');
-          const targetMonday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-          
-          const now = new Date();
-          const currentDay = now.getDay();
-          const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
-          const thisMonday = new Date(now);
-          thisMonday.setDate(now.getDate() - daysToMonday);
-          thisMonday.setHours(0, 0, 0, 0);
-          
-          const diffDays = Math.round((targetMonday - thisMonday) / (1000 * 60 * 60 * 24));
-          const newOffset = Math.round(diffDays / 7);
-          
-          setWeekOffset(newOffset);
-        }
-      });
-    }, { threshold: 0.5, rootMargin: '-150px 0px -60% 0px' });
+    const timeout = setTimeout(() => {
+      const headers = document.querySelectorAll('[id^="week-"]');
+      if (headers.length === 0) return;
+      
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+            const weekKey = entry.target.id.replace('week-', '');
+            const [year, month, day] = weekKey.split('-');
+            const targetMonday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            
+            const now = new Date();
+            const currentDay = now.getDay();
+            const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+            const thisMonday = new Date(now);
+            thisMonday.setDate(now.getDate() - daysToMonday);
+            thisMonday.setHours(0, 0, 0, 0);
+            
+            const diffDays = Math.round((targetMonday - thisMonday) / (1000 * 60 * 60 * 24));
+            const newOffset = Math.round(diffDays / 7);
+            
+            setWeekOffset(newOffset);
+          }
+        });
+      }, { threshold: 0.5, rootMargin: '-150px 0px -60% 0px' });
+      
+      headers.forEach(header => observer.observe(header));
+    }, 500);
     
-    headers.forEach(header => observer.observe(header));
-  }, 500);
-  
-  return () => {
-    clearTimeout(timeout);
-    if (observer) observer.disconnect();
-  };
-}, [view, workouts.length]);
+    return () => {
+      clearTimeout(timeout);
+      if (observer) observer.disconnect();
+    };
+  }, [view, workouts.length]);
   
   const importPresets = (e) => {
     const file = e.target.files[0];
