@@ -1752,15 +1752,6 @@ export default function Home() {
 </div>
 
         <div className="max-w-4xl mx-auto p-3 pb-24">
-
-
-              {filtered().length === 0 && (
-                <div className="text-center text-gray-500 py-8">
-                  {search ? 'No workouts found' : 'No workouts yet'}
-                </div>
-              )}
-            </div>
-          )}
           
           {/* HOME V1 - Weekly Calendar Layout */}
           {view === 'home' && (
