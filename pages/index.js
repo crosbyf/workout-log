@@ -1938,7 +1938,7 @@ export default function Home() {
           {/* ==================== STATS VIEWS ==================== */} 
           {/* Stats Menu */}
           {view === 'stats' && statsView === 'menu' && (
-            <div className="space-y-3 -mt-11">
+            <div className="space-y-3 -mt-9">
               
               {/* Volume Trend Chart - AT TOP with Exercise Filter */}
               {(() => {
@@ -2261,7 +2261,7 @@ export default function Home() {
           
           {/* Exercise List View - WITH MONTHLY VOLUME WIDGET */}
           {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
-            <div className="space-y-3 -mt-11">
+            <div className="space-y-3 -mt-9">
               <button
                 onClick={() => {
                   setStatsView('menu');
@@ -2422,7 +2422,7 @@ export default function Home() {
             })();
             
             return (
-              <div className="space-y-4 -mt-11">
+              <div className="space-y-4 -mt-9">
                 <button
                   onClick={() => setSelectedExercise(null)}
                   className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
@@ -2491,7 +2491,7 @@ export default function Home() {
           
           {/* Body Weight View */}
           {view === 'stats' && statsView === 'weight' && (
-            <div className="space-y-3 -mt-11">
+            <div className="space-y-3 -mt-9">
               <button
                 onClick={() => {
                   setStatsView('menu');
@@ -2624,7 +2624,7 @@ export default function Home() {
           
           {/* Protein View - 30 days, today expanded, past collapsible */}
           {view === 'stats' && statsView === 'protein' && (
-            <div className="space-y-3 -mt-11">
+            <div className="space-y-3 -mt-9">
               <div className="flex items-center gap-2 mb-2">
                 <button
                   onClick={() => {
@@ -2807,7 +2807,7 @@ export default function Home() {
           
           {/* ==================== END STATS VIEWS ==================== */}
           {view === 'settings' && (
-            <div className="space-y-3 -mt-11">
+            <div className="space-y-3 -mt-9">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
               
               {/* Workout Presets - Collapsed at top */}
