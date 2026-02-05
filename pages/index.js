@@ -466,7 +466,7 @@ export default function Home() {
             setWeekOffset(newOffset);
           }
         });
-      }, { threshold: 0.5, rootMargin: '-150px 0px -60% 0px' });
+      }, { threshold: 0.5, rootMargin: '-220px 0px -40% 0px' });
       
       headers.forEach(header => observer.observe(header));
     }, 500);
@@ -1831,7 +1831,10 @@ export default function Home() {
                 </div>
                 </div>
               </div>
-              
+
+               {/* Spacer for fixed calendar */}
+                <div className="h-44"></div>
+    
               {/* Search Input */}
               {searchExpanded && (
                 <div className="relative mt-3">
