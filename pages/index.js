@@ -433,7 +433,11 @@ export default function Home() {
   }, [showDayModal, showHistoryModal, showSettings, showClear, deleteWorkout, deletePreset, deleteExercise, showCloseConfirm, showPresetSelector, showWorkoutModal]);
 
   const save = (data, key, setter) => {
-    useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(data));
+    setter(data);
+  };
+
+  useEffect(() => {
     if (view !== 'home') return;
     
     let observer = null;
@@ -472,7 +476,6 @@ export default function Home() {
       if (observer) observer.disconnect();
     };
   }, [view, workouts.length]);
-  
   const importPresets = (e) => {
     const file = e.target.files[0];
     if (!file) return;
