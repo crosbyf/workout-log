@@ -440,33 +440,40 @@ export default function Home() {
   useEffect(() => {
   if (view !== 'home') return;
   
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-        const weekKey = entry.target.id.replace('week-', '');
-        const [year, month, day] = weekKey.split('-');
-        const targetMonday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        
-        const now = new Date();
-        const currentDay = now.getDay();
-        const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
-        const thisMonday = new Date(now);
-        thisMonday.setDate(now.getDate() - daysToMonday);
-        thisMonday.setHours(0, 0, 0, 0);
-        
-        const diffDays = Math.round((targetMonday - thisMonday) / (1000 * 60 * 60 * 24));
-        const newOffset = Math.round(diffDays / 7);
-        
-        setWeekOffset(prev => prev !== newOffset ? newOffset : prev);
-      }
-    });
-  }, { threshold: 0.5, rootMargin: '-200px 0px -50% 0px' });
+  const timeout = setTimeout(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          const weekKey = entry.target.id.replace('week-', '');
+          const [year, month, day] = weekKey.split('-');
+          const targetMonday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          
+          const now = new Date();
+          const currentDay = now.getDay();
+          const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+          const thisMonday = new Date(now);
+          thisMonday.setDate(now.getDate() - daysToMonday);
+          thisMonday.setHours(0, 0, 0, 0);
+          
+          const diffDays = Math.round((targetMonday - thisMonday) / (1000 * 60 * 60 * 24));
+          const newOffset = Math.round(diffDays / 7);
+          
+          setWeekOffset(newOffset);
+        }
+      });
+    }, { threshold: 0.5, rootMargin: '-180px 0px -50% 0px' });
+    
+    const headers = document.querySelectorAll('[id^="week-"]');
+    headers.forEach(header => observer.observe(header));
+    
+    window.currentObserver = observer;
+  }, 200);
   
-  const headers = document.querySelectorAll('[id^="week-"]');
-  headers.forEach(header => observer.observe(header));
-  
-  return () => observer.disconnect();
-}, [view, workouts]);
+  return () => {
+    clearTimeout(timeout);
+    if (window.currentObserver) window.currentObserver.disconnect();
+  };
+}, [view, workouts.length]);
   
   const importPresets = (e) => {
     const file = e.target.files[0];
