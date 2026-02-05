@@ -1837,7 +1837,7 @@ export default function Home() {
               </div>
 
                {/* Spacer for fixed calendar */}
-                <div className="h-24"></div>
+                <div className="h-28"></div>
     
               {/* Search Input */}
               {searchExpanded && (
