@@ -2265,9 +2265,9 @@ export default function Home() {
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                           </button>
                           <div className="text-center">
-                            <div className="font-bold text-lg">{weekLabel}</div>
-                            {!isThisWeek && <button onClick={() => setWeekOffset(0)} className="text-xs text-blue-500 hover:text-blue-400">Jump to Today</button>}
-                          </div>
+  <div className="font-bold text-lg">{weekLabel}</div>
+  {!isThisWeek ? <button onClick={() => setWeekOffset(0)} className="text-xs text-blue-500 hover:text-blue-400">Jump to Today</button> : <div className="text-xs opacity-0">Placeholder</div>}
+</div>
                           <button onClick={() => { setWeekOffset(prev => prev + 1); setTimeout(() => { const now = new Date(); const currentDay = now.getDay(); const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; const thisMonday = new Date(now); thisMonday.setDate(now.getDate() - daysToMonday); const targetMonday = new Date(thisMonday); targetMonday.setDate(thisMonday.getDate() + ((weekOffset + 1) * 7)); const key = `${targetMonday.getFullYear()}-${String(targetMonday.getMonth() + 1).padStart(2, '0')}-${String(targetMonday.getDate()).padStart(2, '0')}`; const el = document.getElementById(`week-${key}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50); }} className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                           </button>
