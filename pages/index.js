@@ -460,7 +460,7 @@ export default function Home() {
         setWeekOffset(prev => prev !== newOffset ? newOffset : prev);
       }
     });
-  }, { threshold: 1.0, rootMargin: '-250px 0px -30% 0px' });
+  }, { threshold: 0.5, rootMargin: '-200px 0px -50% 0px' });
   
   const headers = document.querySelectorAll('[id^="week-"]');
   headers.forEach(header => observer.observe(header));
@@ -1754,10 +1754,10 @@ export default function Home() {
           
           {/* HOME V1 - Weekly Calendar Layout */}
           {view === 'home' && (
-            <div className="pb-32">
+            <div className="pb-32 relative">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`sticky top-[76px] z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-1 pb-1 -mx-3 px-3`}>
+              <div data-calendar className={`sticky top-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-1 pb-1 -mx-3 px-3`} style={{ position: '-webkit-sticky', position: 'sticky', top: '76px' }}>
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
                     const now = new Date();
