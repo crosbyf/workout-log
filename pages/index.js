@@ -2355,7 +2355,7 @@ export default function Home() {
                     const weekLabel = getWeekLabel(weekKey);
                     
                     return (
-                      <div key={weekKey} id={`week-${weekKey}`} className="scroll-mt-[120px]">
+                      <div key={weekKey} id={`week-${weekKey}`} className="scroll-mt-[180px]">
                         <div className={`py-2 px-3 mb-2 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
                         <div className="space-y-2">
                           {weekWorkouts.map((w, i) => {
@@ -3651,17 +3651,21 @@ export default function Home() {
           </div>
           
           {/* Stats Summary */}
-          <div className={`grid grid-cols-3 gap-3 mb-4 p-3 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+          <div className={`grid grid-cols-4 gap-2 mb-4 p-3 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
             <div className="text-center">
-              <div className="text-2xl font-bold">{totalReps}</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Reps</div>
+              <div className="text-xl font-bold">{workout.exercises.length}</div>
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Exercises</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{workout.elapsedTime ? formatTimeHHMMSS(workout.elapsedTime) : '--'}</div>
+              <div className="text-xl font-bold">{workout.structure ? (workout.structure === 'pairs' ? `${workout.structureDuration}'` : 'Circ') : '--'}</div>
+              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{workout.structure === 'pairs' ? 'Pairs' : workout.structure === 'circuit' ? 'Circuit' : 'Structure'}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold">{workout.elapsedTime ? formatTimeHHMMSS(workout.elapsedTime) : '--'}</div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Duration</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{dayProtein > 0 ? `${dayProtein}g` : '--'}</div>
+              <div className="text-xl font-bold">{dayProtein > 0 ? `${dayProtein}g` : '--'}</div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Protein</div>
             </div>
           </div>
