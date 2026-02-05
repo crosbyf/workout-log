@@ -128,59 +128,59 @@ export default function Home() {
   
   // Theme definitions
   const themes = {
-    light: {
-      name: 'Light',
-      bg: 'bg-gray-50',
-      text: 'text-gray-900',
-      cardBg: 'bg-white',
-      cardBorder: 'border-gray-200',
-      inputBg: 'bg-white',
-      inputBorder: 'border-gray-300',
-      headerGradient: 'from-gray-100 to-gray-200',
-      headerBorder: 'border-gray-300',
-      accent: 'blue',
-      isDark: false
-    },
-    dark: {
-      name: 'Dark',
-      bg: 'bg-gray-900',
-      text: 'text-white',
-      cardBg: 'bg-gray-800',
-      cardBorder: 'border-gray-700',
-      inputBg: 'bg-gray-800',
-      inputBorder: 'border-gray-600',
-      headerGradient: 'from-gray-800 to-gray-900',
-      headerBorder: 'border-gray-700/50',
-      accent: 'blue',
-      isDark: true
-    },
-    neon: {
-      name: 'Neon',
-      bg: 'bg-black',
-      text: 'text-green-50',
-      cardBg: 'bg-zinc-950',
-      cardBorder: 'border-green-500/30',
-      inputBg: 'bg-zinc-950',
-      inputBorder: 'border-green-500/50',
-      headerGradient: 'from-zinc-950 to-black',
-      headerBorder: 'border-green-500/50',
-      accent: 'green',
-      isDark: true
-    },
-    forest: {
-      name: 'Forest',
-      bg: 'bg-green-950',
-      text: 'text-green-50',
-      cardBg: 'bg-green-800',
-      cardBorder: 'border-green-600',
-      inputBg: 'bg-green-800',
-      inputBorder: 'border-green-500',
-      headerGradient: 'from-green-700 to-green-900',
-      headerBorder: 'border-green-400/50',
-      accent: 'green',
-      isDark: true
-    }
-  };
+  light: {
+    name: 'Light',
+    bg: 'bg-slate-50',
+    text: 'text-slate-900',
+    cardBg: 'bg-white',
+    cardBorder: 'border-slate-200',
+    inputBg: 'bg-white',
+    inputBorder: 'border-slate-300',
+    headerBg: 'bg-slate-50',
+    headerBorder: 'border-slate-200',
+    accent: 'blue',
+    isDark: false
+  },
+  dark: {
+    name: 'Dark',
+    bg: 'bg-slate-900',
+    text: 'text-slate-50',
+    cardBg: 'bg-slate-800',
+    cardBorder: 'border-slate-700',
+    inputBg: 'bg-slate-800',
+    inputBorder: 'border-slate-600',
+    headerBg: 'bg-slate-900',
+    headerBorder: 'border-slate-700',
+    accent: 'blue',
+    isDark: true
+  },
+  neon: {
+    name: 'Neon',
+    bg: 'bg-black',
+    text: 'text-emerald-50',
+    cardBg: 'bg-black',
+    cardBorder: 'border-emerald-500/40',
+    inputBg: 'bg-black',
+    inputBorder: 'border-emerald-500/50',
+    headerBg: 'bg-black',
+    headerBorder: 'border-emerald-500/40',
+    accent: 'emerald',
+    isDark: true
+  },
+  forest: {
+    name: 'Forest',
+    bg: 'bg-emerald-950',
+    text: 'text-emerald-50',
+    cardBg: 'bg-emerald-900',
+    cardBorder: 'border-emerald-700',
+    inputBg: 'bg-emerald-900',
+    inputBorder: 'border-emerald-600',
+    headerBg: 'bg-emerald-950',
+    headerBorder: 'border-emerald-700',
+    accent: 'emerald',
+    isDark: true
+  }
+};
   
   // Safety check - if theme is invalid (e.g., old 'midnight' value), default to 'dark'
   const currentTheme = themes[theme] || themes.dark;
@@ -1710,7 +1710,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className={`fixed top-0 left-0 right-0 z-20 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
+        <div className={`fixed top-0 left-0 right-0 z-20 ${currentTheme.headerBg} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
   <div className="max-w-4xl mx-auto flex items-center justify-between">
     
   {/* Start Workout Button - Left side, only on Home and Home V1 */}
@@ -1849,7 +1849,7 @@ export default function Home() {
               )}
 
               {/* Workout Feed */}
-              <div className="space-y-2 mt-3">
+              <div className="space-y-3 mt-3">
                 {(() => {
                   const getWeekKey = (dateStr) => {
                     const [year, month, day] = dateStr.split('-');
@@ -1905,8 +1905,8 @@ export default function Home() {
                     
                     return (
                       <div key={weekKey}>
-                        <div id={`week-${weekKey}`} className={`py-2 px-3 mb-1 mt-1 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
-                        <div className="space-y-2">
+                        <div id={`week-${weekKey}`} className={`py-2 px-3 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
+                        <div className="space-y-3">
                           {weekWorkouts.map((w, i) => {
                             const [year, month, day] = w.date.split('-');
                             const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -1938,7 +1938,8 @@ export default function Home() {
           {/* ==================== STATS VIEWS ==================== */} 
           {/* Stats Menu */}
           {view === 'stats' && statsView === 'menu' && (
-            <div className="space-y-3 -mt-9">
+            <div className="fixed left-0 right-0 px-3 -mt-9" style={{ top: '90px' }}>
+              <div className="max-w-4xl mx-auto space-y-3">
               
               {/* Volume Trend Chart - AT TOP with Exercise Filter */}
               {(() => {
@@ -2066,6 +2067,7 @@ export default function Home() {
                           })}
                         </div>
                       </div>
+                    </div>
                     )}
                     
                     <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
@@ -2807,7 +2809,8 @@ export default function Home() {
           
           {/* ==================== END STATS VIEWS ==================== */}
           {view === 'settings' && (
-            <div className="space-y-3 -mt-9">
+          <div className="fixed left-0 right-0 px-3 -mt-9 bottom-20 overflow-y-auto" style={{ top: '90px' }}>
+            <div className="max-w-4xl mx-auto space-y-3">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
               
               {/* Workout Presets - Collapsed at top */}
@@ -2905,6 +2908,7 @@ export default function Home() {
                             </button>
                           </div>
                         </div>
+                      </div>
                       );
                     })}
                     
