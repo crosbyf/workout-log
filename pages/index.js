@@ -439,9 +439,19 @@ export default function Home() {
 
   useEffect(() => {
   if (view !== 'home') return;
+
+
+    
+  useEffect(() => {
+  if (view !== 'home') return;
+  
+  let observer = null;
   
   const timeout = setTimeout(() => {
-    const observer = new IntersectionObserver((entries) => {
+    const headers = document.querySelectorAll('[id^="week-"]');
+    if (headers.length === 0) return;
+    
+    observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
           const weekKey = entry.target.id.replace('week-', '');
@@ -461,17 +471,14 @@ export default function Home() {
           setWeekOffset(newOffset);
         }
       });
-    }, { threshold: 0.5, rootMargin: '-180px 0px -50% 0px' });
+    }, { threshold: 0.5, rootMargin: '-150px 0px -60% 0px' });
     
-    const headers = document.querySelectorAll('[id^="week-"]');
     headers.forEach(header => observer.observe(header));
-    
-    window.currentObserver = observer;
-  }, 200);
+  }, 500);
   
   return () => {
     clearTimeout(timeout);
-    if (window.currentObserver) window.currentObserver.disconnect();
+    if (observer) observer.disconnect();
   };
 }, [view, workouts.length]);
   
@@ -1764,7 +1771,7 @@ export default function Home() {
             <div className="pb-32 relative">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`sticky top-0 z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-1 pb-1 -mx-3 px-3`} style={{ position: '-webkit-sticky', position: 'sticky', top: '76px' }}>
+              <div data-calendar className={`sticky z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-1 pb-1 -mx-3 px-3`} style={{ top: '73px' }}>
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
                     const now = new Date();
@@ -3136,11 +3143,8 @@ export default function Home() {
     >
       <div 
         className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[85vh] overflow-y-auto pb-8`}
-        style={{
-          animation: 'slideUp 0.4s ease-out',
-        }} 
         onClick={(e) => e.stopPropagation()}
-        style={{ animation: 'slideUp 0.3s ease-out' }}
+        style={{ animation: 'slideUp 0.35s ease-out' }}
       >
         {/* Drag handle */}
         <div className={`flex justify-center pt-3 pb-2 sticky top-0 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
