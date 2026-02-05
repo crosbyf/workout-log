@@ -440,42 +440,45 @@ export default function Home() {
   useEffect(() => {
     if (view !== 'home') return;
     
-    let observer = null;
-    
-    const timeout = setTimeout(() => {
+    const handleScroll = () => {
       const headers = document.querySelectorAll('[id^="week-"]');
-      if (headers.length === 0) return;
+      const triggerPoint = 320; // Below fixed header + calendar
       
-      observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            const weekKey = entry.target.id.replace('week-', '');
-            const [year, month, day] = weekKey.split('-');
-            const targetMonday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-            
-            const now = new Date();
-            const currentDay = now.getDay();
-            const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
-            const thisMonday = new Date(now);
-            thisMonday.setDate(now.getDate() - daysToMonday);
-            thisMonday.setHours(0, 0, 0, 0);
-            
-            const diffDays = Math.round((targetMonday - thisMonday) / (1000 * 60 * 60 * 24));
-            const newOffset = Math.round(diffDays / 7);
-            
-            setWeekOffset(newOffset);
-          }
-        });
-      }, { threshold: 0.1, rootMargin: '-280px 0px -50% 0px' });
+      let closestHeader = null;
+      let closestDistance = Infinity;
       
-      headers.forEach(header => observer.observe(header));
-    }, 500);
-    
-    return () => {
-      clearTimeout(timeout);
-      if (observer) observer.disconnect();
+      headers.forEach(header => {
+        const rect = header.getBoundingClientRect();
+        const distance = Math.abs(rect.top - triggerPoint);
+        if (rect.top <= triggerPoint + 100 && distance < closestDistance) {
+          closestDistance = distance;
+          closestHeader = header;
+        }
+      });
+      
+      if (closestHeader) {
+        const weekKey = closestHeader.id.replace('week-', '');
+        const [year, month, day] = weekKey.split('-');
+        const targetMonday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        
+        const now = new Date();
+        const currentDay = now.getDay();
+        const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+        const thisMonday = new Date(now);
+        thisMonday.setDate(now.getDate() - daysToMonday);
+        thisMonday.setHours(0, 0, 0, 0);
+        
+        const diffDays = Math.round((targetMonday - thisMonday) / (1000 * 60 * 60 * 24));
+        const newOffset = Math.round(diffDays / 7);
+        
+        setWeekOffset(newOffset);
+      }
     };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [view, workouts.length]);
+  
   const importPresets = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -1758,7 +1761,7 @@ export default function Home() {
 </div>
 </div>
 
-        <div className="max-w-4xl mx-auto p-3 pb-24">
+        <div className="max-w-4xl mx-auto p-3 pb-24 pt-20">
         <div className="h-16"></div>
           
           {/* HOME V1 - Weekly Calendar Layout */}
@@ -1834,7 +1837,7 @@ export default function Home() {
               </div>
 
                {/* Spacer for fixed calendar */}
-                <div className="h-48"></div>
+                <div className="h-36"></div>
     
               {/* Search Input */}
               {searchExpanded && (
