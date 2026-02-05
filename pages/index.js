@@ -466,7 +466,7 @@ export default function Home() {
             setWeekOffset(newOffset);
           }
         });
-      }, { threshold: 0.5, rootMargin: '-220px 0px -40% 0px' });
+      }, { threshold: 0.8, rootMargin: '-250px 0px -30% 0px' });
       
       headers.forEach(header => observer.observe(header));
     }, 500);
@@ -1707,7 +1707,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className={`sticky top-0 z-10 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
+        <div className={`fixed top-0 left-0 right-0 z-20 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
   <div className="max-w-4xl mx-auto flex items-center justify-between">
     
   {/* Start Workout Button - Left side, only on Home and Home V1 */}
@@ -1759,6 +1759,7 @@ export default function Home() {
 </div>
 
         <div className="max-w-4xl mx-auto p-3 pb-24">
+        <div className="h-16"></div>
           
           {/* HOME V1 - Weekly Calendar Layout */}
           {view === 'home' && (
@@ -1833,7 +1834,7 @@ export default function Home() {
               </div>
 
                {/* Spacer for fixed calendar */}
-                <div className="h-44"></div>
+                <div className="h-32"></div>
     
               {/* Search Input */}
               {searchExpanded && (
