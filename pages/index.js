@@ -2228,7 +2228,7 @@ export default function Home() {
             <div className="pb-32">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`sticky top-[73px] z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-2 pb-3 -mx-3 px-3`}>
+              <div data-calendar className={`sticky top-[73px] z-10 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} pt-2 pb-1 -mx-3 px-3`}>
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
                     const now = new Date();
