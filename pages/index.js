@@ -345,7 +345,6 @@ export default function Home() {
           setTheme(JSON.parse(dm) ? 'dark' : 'light');
         }
         if (we) setWeightEntries(JSON.parse(we));
-        if (hv1) setShowHomeV1(JSON.parse(hv1));
         if (pe) setProteinEntries(JSON.parse(pe));
       };
       
@@ -439,7 +438,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-  if (view !== 'homev1') return;
+  if (view !== 'home') return;
   
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -1704,7 +1703,7 @@ export default function Home() {
   <div className="max-w-4xl mx-auto flex items-center justify-between">
     
   {/* Start Workout Button - Left side, only on Home and Home V1 */}
-    {(view === 'home' || view === 'homev1') ? (
+    {view === 'home' ? (
       <button
         onClick={() => {
           setQuickAddTab('workout');
@@ -1734,7 +1733,7 @@ export default function Home() {
               <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
             </button>
             
-            {(view === 'home' || view === 'homev1') ? (
+            {view === 'home' ? (
   <button
     onClick={() => {
       setSearchExpanded(!searchExpanded);
