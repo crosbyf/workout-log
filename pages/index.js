@@ -4356,7 +4356,7 @@ export default function Home() {
                 </button>
                 
                 {/* Extra padding for keyboard */}
-                <div className="h-42"></div>
+                <div className="h-40"></div>
               </form>
             </div>
           </div>
