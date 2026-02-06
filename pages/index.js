@@ -1836,7 +1836,7 @@ export default function Home() {
               </div>
 
                {/* Spacer for fixed calendar */}
-                <div className="h-40"></div>
+                <div className="h-24"></div>
     
               {/* Search Input */}
               {searchExpanded && (
@@ -1848,7 +1848,7 @@ export default function Home() {
               )}
 
               {/* Workout Feed */}
-              <div className="space-y-2 mt-3">
+              <div className="space-y-2 mt-1">
                 {(() => {
                   const getWeekKey = (dateStr) => {
                     const [year, month, day] = dateStr.split('-');
@@ -1904,7 +1904,7 @@ export default function Home() {
                     
                     return (
                       <div key={weekKey}>
-                        <div id={`week-${weekKey}`} className={`py-2 px-3 mb-1 mt-1 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
+                        <div id={`week-${weekKey}`} className={`py-2 px-3 mb-3 mt-1 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
                         <div className="space-y-2">
                           {weekWorkouts.map((w, i) => {
                             const [year, month, day] = w.date.split('-');
@@ -1937,7 +1937,7 @@ export default function Home() {
           {/* ==================== STATS VIEWS ==================== */} 
           {/* Stats Menu */}
           {view === 'stats' && statsView === 'menu' && (
-            <div className="space-y-3 -mt-9">
+            <div className="space-y-3">
               
               {/* Volume Trend Chart - AT TOP with Exercise Filter */}
               {(() => {
@@ -2260,7 +2260,7 @@ export default function Home() {
           
           {/* Exercise List View - WITH MONTHLY VOLUME WIDGET */}
           {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
-            <div className="space-y-3 -mt-9">
+            <div className="space-y-3">
               <button
                 onClick={() => {
                   setStatsView('menu');
@@ -2421,7 +2421,7 @@ export default function Home() {
             })();
             
             return (
-              <div className="space-y-4 -mt-9">
+              <div className="space-y-4">
                 <button
                   onClick={() => setSelectedExercise(null)}
                   className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
@@ -2490,7 +2490,7 @@ export default function Home() {
           
           {/* Body Weight View */}
           {view === 'stats' && statsView === 'weight' && (
-            <div className="space-y-3 -mt-9">
+            <div className="space-y-3">
               <button
                 onClick={() => {
                   setStatsView('menu');
@@ -2750,7 +2750,7 @@ export default function Home() {
           
           {/* Protein View - 30 days, today expanded, past collapsible */}
           {view === 'stats' && statsView === 'protein' && (
-            <div className="space-y-3 -mt-9">
+            <div className="space-y-3">
               <div className="flex items-center gap-2 mb-2">
                 <button
                   onClick={() => {
@@ -2933,7 +2933,7 @@ export default function Home() {
           
           {/* ==================== END STATS VIEWS ==================== */}
           {view === 'settings' && (
-            <div className="space-y-3 -mt-9">
+            <div className="space-y-3">
               <h2 className="text-base font-semibold mb-2">Settings</h2>
               
               {/* Workout Presets - Collapsed at top */}
