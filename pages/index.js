@@ -1710,7 +1710,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className={`fixed top-0 left-0 right-0 z-20 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b p-4 shadow-lg`}>
+        <div className={`fixed top-0 left-0 right-0 z-20 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b py-2 px-4 shadow-lg`}>
   <div className="max-w-4xl mx-auto flex items-center justify-between">
     
   {/* Start Workout Button - Left side, only on Home and Home V1 */}
@@ -1730,46 +1730,45 @@ export default function Home() {
     )}
     
     {/* Centered GORS LOG */}
-    <button 
-      onClick={() => {
-                const themeOrder = ['light', 'dark', 'neon', 'forest'];
-                const currentIndex = themeOrder.indexOf(theme);
-                const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
-                setTheme(nextTheme);
-                localStorage.setItem('theme', nextTheme);
-              }}
-              className="cursor-pointer hover:opacity-80 transition-opacity text-center"
-            >
-              <h1 className={`text-2xl font-extrabold tracking-tight bg-gradient-to-r ${darkMode ? 'from-white to-gray-300' : 'from-gray-900 to-gray-700'} bg-clip-text text-transparent`}>GORS LOG</h1>
-              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} -mt-0.5 font-medium`}>Be About It</p>
-            </button>
+      <button 
+        onClick={() => {
+            const themeOrder = ['light', 'dark', 'neon', 'forest'];
+            const currentIndex = themeOrder.indexOf(theme);
+            const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
+            setTheme(nextTheme);
+            localStorage.setItem('theme', nextTheme);
+          }}
+          className="cursor-pointer hover:opacity-80 transition-opacity text-center"
+        >
+          <h1 className={`text-xl font-extrabold tracking-tight bg-gradient-to-r ${darkMode ? 'from-white to-gray-300' : 'from-gray-900 to-gray-700'} bg-clip-text text-transparent`}>GORS LOG</h1>
+        </button>
             
             {view === 'home' ? (
-  <button
-    onClick={() => {
-      setSearchExpanded(!searchExpanded);
-      if (!searchExpanded) setSearch('');
-    }}
-    className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} p-2`}
-    title="Search"
-  >
-    <Icons.Search className="w-5 h-5" />
-  </button>
-) : (
-  <div className="w-10"></div>
-)}
-</div>
-</div>
+              <button
+                onClick={() => {
+                  setSearchExpanded(!searchExpanded);
+                  if (!searchExpanded) setSearch('');
+                }}
+                className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} p-2`}
+                title="Search"
+              >
+                <Icons.Search className="w-5 h-5" />
+              </button>
+            ) : (
+              <div className="w-10"></div>
+            )}
+            </div>
+            </div>
 
-        <div className="max-w-4xl mx-auto p-3 pb-24 pt-16">
-        <div className="h-16"></div>
+        <div className="max-w-4xl mx-auto p-3 pb-24 pt-12">
+        <div className="h-12"></div>
           
           {/* HOME V1 - Weekly Calendar Layout */}
           {view === 'home' && (
             <div className="pb-32 relative">
               
               {/* Weekly Calendar - Sticky */}
-              <div data-calendar className={`fixed left-0 right-0 z-10 ${currentTheme.bg} pt-3 pb-1 px-3`} style={{ top: '73px' }}>
+              <div data-calendar className={`fixed left-0 right-0 z-10 ${currentTheme.bg} pt-2 pb-1 px-3`} style={{ top: '52px' }}>
                 <div className="max-w-4xl mx-auto">
                 <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
                   {(() => {
@@ -1837,7 +1836,7 @@ export default function Home() {
               </div>
 
                {/* Spacer for fixed calendar */}
-                <div className="h-28"></div>
+                <div className="h-32"></div>
     
               {/* Search Input */}
               {searchExpanded && (
@@ -2565,60 +2564,187 @@ export default function Home() {
                 );
               })()}
               
-              {weightEntries.length > 1 && (() => {
-                const sorted = [...weightEntries].sort((a, b) => a.date.localeCompare(b.date));
-                const weights = sorted.map(e => parseFloat(e.weight));
-                const dates = sorted.map(e => e.date);
-                
-                const minWeight = Math.min(...weights);
-                const maxWeight = Math.max(...weights);
-                const range = maxWeight - minWeight;
-                const padding = range * 0.1 || 5;
-                const chartMin = minWeight - padding;
-                const chartMax = maxWeight + padding;
-                const chartRange = chartMax - chartMin;
-                
-                const points = weights.map((w, i) => {
-                  const x = (i / (weights.length - 1)) * 100;
-                  const y = ((chartMax - w) / chartRange) * 100;
-                  return { x, y, weight: w, date: dates[i] };
-                });
-                
-                const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-                const fillPath = `${pathData} L 100 100 L 0 100 Z`;
-                
-                return (
-                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
-                    <h3 className="font-bold text-lg mb-3">Weight Trend</h3>
-                    <div className="relative" style={{ height: '180px' }}>
-                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
-                        <defs>
-                          <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.05" />
-                          </linearGradient>
-                        </defs>
-                        <path d={fillPath} fill="url(#weightGradient)" />
-                        <path d={pathData} fill="none" stroke="#3b82f6" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
-                      </svg>
-                      <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
-                        {points.map((p, i) => (
-                          <circle key={i} cx={p.x} cy={p.y} r="0.8" fill="#3b82f6" vectorEffect="non-scaling-stroke" />
-                        ))}
-                      </svg>
-                      <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between text-[10px] text-gray-500 pr-1">
-                        <span>{chartMax.toFixed(0)}</span>
-                        <span>{((chartMax + chartMin) / 2).toFixed(0)}</span>
-                        <span>{chartMin.toFixed(0)}</span>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] text-gray-500 pt-2">
-                        <span>{new Date(dates[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                        <span>{new Date(dates[dates.length - 1]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                      </div>
-                    </div>
+              {/* IMPROVED Weight Chart */}
+{weightEntries.length > 1 && (() => {
+  const sorted = [...weightEntries].sort((a, b) => a.date.localeCompare(b.date));
+  const weights = sorted.map(e => parseFloat(e.weight));
+  const dates = sorted.map(e => e.date);
+  
+  const minWeight = Math.min(...weights);
+  const maxWeight = Math.max(...weights);
+  const range = maxWeight - minWeight;
+  const padding = range * 0.15 || 2;
+  const chartMin = Math.floor(minWeight - padding);
+  const chartMax = Math.ceil(maxWeight + padding);
+  const chartRange = chartMax - chartMin;
+  
+  // Generate Y-axis ticks
+  const yTicks = [];
+  const tickCount = 4;
+  for (let i = 0; i <= tickCount; i++) {
+    yTicks.push(chartMax - (i * chartRange / tickCount));
+  }
+  
+  const points = weights.map((w, i) => {
+    const x = weights.length > 1 ? (i / (weights.length - 1)) * 100 : 50;
+    const y = ((chartMax - w) / chartRange) * 100;
+    return { x, y, weight: w, date: dates[i] };
+  });
+  
+  const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const fillPath = `${pathData} L 100 100 L 0 100 Z`;
+  
+  return (
+    <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
+      <h3 className="font-bold text-lg mb-3">Weight Trend</h3>
+      <div className="relative" style={{ height: '200px' }}>
+        {/* Y-axis labels */}
+        <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between w-10 text-right pr-2">
+          {yTicks.map((tick, i) => (
+            <span key={i} className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              {tick.toFixed(0)}
+            </span>
+          ))}
+        </div>
+        
+        {/* Chart area */}
+        <div className="absolute left-10 right-0 top-0 bottom-6">
+          {/* Grid lines */}
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+            {yTicks.map((_, i) => (
+              <line
+                key={i}
+                x1="0"
+                y1={i * 100 / tickCount}
+                x2="100"
+                y2={i * 100 / tickCount}
+                stroke={darkMode ? '#374151' : '#e5e7eb'}
+                strokeWidth="0.5"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+          </svg>
+          
+          {/* Chart fill and line */}
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+            <defs>
+              <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.05" />
+              </linearGradient>
+            </defs>
+            <path d={fillPath} fill="url(#weightGradient)" />
+            <path d={pathData} fill="none" stroke="#3b82f6" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+          </svg>
+          
+          {/* Data points */}
+          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+            {points.map((p, i) => (
+              <circle key={i} cx={p.x} cy={p.y} r="1.5" fill="#3b82f6" stroke="white" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
+            ))}
+          </svg>
+        </div>
+        
+        {/* X-axis labels */}
+        <div className="absolute bottom-0 left-10 right-0 flex justify-between px-1">
+          <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            {new Date(dates[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+          {dates.length > 2 && (
+            <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              {new Date(dates[Math.floor(dates.length / 2)]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
+          <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            {new Date(dates[dates.length - 1]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+})()}
+
+{/* Weight History List */}
+{weightEntries.length > 0 && (
+  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+    <h3 className="font-bold text-lg mb-3">History</h3>
+    <div className="space-y-2 max-h-96 overflow-y-auto">
+      {[...weightEntries]
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .map((entry, idx) => {
+          const [year, month, day] = entry.date.split('-');
+          const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+          
+          // Calculate change from previous entry
+          const sortedEntries = [...weightEntries].sort((a, b) => b.date.localeCompare(a.date));
+          const currentIdx = sortedEntries.findIndex(e => e.date === entry.date);
+          const prevEntry = sortedEntries[currentIdx + 1];
+          const change = prevEntry ? entry.weight - prevEntry.weight : null;
+          
+          return (
+            <div 
+              key={entry.date + '-' + entry.weight}
+              className={`${darkMode ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'} rounded-lg p-3 transition-colors`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">{dayOfWeek} {month}/{day}/{year.slice(2)}</span>
+                    {change !== null && (
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                        change > 0 
+                          ? 'bg-red-500/20 text-red-400' 
+                          : change < 0 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        {change > 0 ? '+' : ''}{change.toFixed(1)}
+                      </span>
+                    )}
                   </div>
-                );
-              })()}
+                  {entry.notes && (
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
+                      {entry.notes}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold">{entry.weight}</span>
+                  <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>lbs</span>
+                  <div className="flex gap-1 ml-2">
+                    <button
+                      onClick={() => {
+                        const entryIdx = weightEntries.findIndex(e => e.date === entry.date && e.weight === entry.weight);
+                        setEditingWeight(entryIdx);
+                        setCurrentWeight({ date: entry.date, weight: entry.weight.toString(), notes: entry.notes || '' });
+                        const entryDate = new Date(entry.date);
+                        setWeightCalendarMonth(entryDate.getMonth());
+                        setWeightCalendarYear(entryDate.getFullYear());
+                        setShowWeightModal(true);
+                      }}
+                      className={`p-1.5 rounded ${darkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500'}`}
+                    >
+                      <Icons.Edit />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const entryIdx = weightEntries.findIndex(e => e.date === entry.date && e.weight === entry.weight);
+                        setDeleteWeight(entryIdx);
+                      }}
+                      className={`p-1.5 rounded ${darkMode ? 'hover:bg-red-900/50 text-red-400' : 'hover:bg-red-100 text-red-500'}`}
+                    >
+                      <Icons.Trash />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+    </div>
+  </div>
+)}
             </div>
           )}
           
@@ -3145,10 +3271,45 @@ export default function Home() {
       onClick={() => setShowDayModal(false)}
     >
       <div 
-        className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[85vh] overflow-y-auto pb-8`}
-        onClick={(e) => e.stopPropagation()}
-        style={{ animation: 'slideUp 0.35s ease-out' }}
-      >
+  className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[85vh] overflow-y-auto pb-8`}
+  onClick={(e) => e.stopPropagation()}
+  style={{ animation: 'slideUp 0.35s ease-out' }}
+  onTouchStart={(e) => {
+    const el = e.currentTarget;
+    el.dataset.startY = e.touches[0].clientY;
+    el.dataset.scrollTop = el.scrollTop;
+  }}
+  onTouchMove={(e) => {
+    const el = e.currentTarget;
+    const startY = parseFloat(el.dataset.startY);
+    const scrollTop = parseFloat(el.dataset.scrollTop);
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    
+    // Only allow drag down when at top of scroll
+    if (scrollTop <= 0 && diff > 0) {
+      el.style.transform = `translateY(${diff}px)`;
+      el.style.transition = 'none';
+    }
+  }}
+  onTouchEnd={(e) => {
+    const el = e.currentTarget;
+    const startY = parseFloat(el.dataset.startY);
+    const scrollTop = parseFloat(el.dataset.scrollTop);
+    const currentY = e.changedTouches[0].clientY;
+    const diff = currentY - startY;
+    
+    el.style.transition = 'transform 0.2s ease-out';
+    
+    // Close if dragged down more than 100px when at top
+    if (scrollTop <= 0 && diff > 100) {
+      el.style.transform = 'translateY(100%)';
+      setTimeout(() => setShowDayModal(false), 200);
+    } else {
+      el.style.transform = '';
+    }
+  }}
+>
         {/* Drag handle */}
         <div className={`flex justify-center pt-3 pb-2 sticky top-0 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
   <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
