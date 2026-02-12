@@ -1,18 +1,4593 @@
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import App from '../components/App';
+
+const Icons = {
+  Plus: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+  ),
+  TrendingUp: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+    </svg>
+  ),
+  Calendar: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+      <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
+  Upload: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/>
+      <line x1="12" y1="3" x2="12" y2="15"/>
+    </svg>
+  ),
+  Dumbbell: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M14.4 14.4L9.6 9.6M21.5 21.5l-1.4-1.4M3.9 3.9l1.4 1.4"/>
+    </svg>
+  ),
+  X: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  ),
+  Copy: () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+    </svg>
+  ),
+  Trash: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="3 6 5 6 21 6"/>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+    </svg>
+  ),
+  Edit: () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+    </svg>
+  ),
+  Settings: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M12 1v6m0 6v6m5.196-13.196l-4.242 4.242m0 5.656l-4.243 4.243"/>
+    </svg>
+  ),
+  Search: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+  ),
+  ArrowUpDown: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="m21 16-4 4-4-4M17 20V4M3 8l4-4 4 4M7 4v16"/>
+    </svg>
+  ),
+  Download: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+  ),
+  ChevronDown: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  ),
+  Play: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <polygon points="5 3 19 12 5 21 5 3"/>
+    </svg>
+  ),
+  Pause: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="6" y="4" width="4" height="16"/>
+      <rect x="14" y="4" width="4" height="16"/>
+    </svg>
+  ),
+  Share: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+      <polyline points="16 6 12 2 8 6"/>
+      <line x1="12" y1="2" x2="12" y2="15"/>
+    </svg>
+  ),
+};
 
 export default function Home() {
+  const [workouts, setWorkouts] = useState([]);
+  const [presets, setPresets] = useState([]);
+  const [exercises, setExercises] = useState([]);
+  const [view, setView] = useState('home'); // 'home' (calendar/log), 'stats', 'settings', 'test'
+  const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'neon', 'forest'
+  const [proteinEntries, setProteinEntries] = useState([]); // Protein tracking: [{date, grams, food, timestamp}]
+  const [showNew, setShowNew] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState(null); // For exercise detail view
+  const [statsView, setStatsView] = useState('menu'); // 'menu', 'exercises', 'weight', 'protein'
+  const [weightEntries, setWeightEntries] = useState([]); // Weight tracking data
+  const [showWeightModal, setShowWeightModal] = useState(false);
+  const [editingWeight, setEditingWeight] = useState(null);
+  const [currentWeight, setCurrentWeight] = useState({ date: '', weight: '', notes: '' });
+  const [deleteWeight, setDeleteWeight] = useState(null);
+  const [weightCalendarMonth, setWeightCalendarMonth] = useState(new Date().getMonth());
+  const [weightCalendarYear, setWeightCalendarYear] = useState(new Date().getFullYear());
+  const [editing, setEditing] = useState(null);
+  const [selectedVolumeExercises, setSelectedVolumeExercises] = useState([]);
+  const [showVolumeFilter, setShowVolumeFilter] = useState(false);
+  const [expandedProteinDays, setExpandedProteinDays] = useState(new Set());
+  const [quickAddTab, setQuickAddTab] = useState('workout');
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  
+  // Theme definitions
+  const themes = {
+    light: {
+      name: 'Light',
+      bg: 'bg-gray-50',
+      text: 'text-gray-900',
+      cardBg: 'bg-white',
+      cardBorder: 'border-gray-200',
+      inputBg: 'bg-white',
+      inputBorder: 'border-gray-300',
+      headerGradient: 'from-gray-100 to-gray-200',
+      headerBorder: 'border-gray-300',
+      accent: 'blue',
+      isDark: false
+    },
+    dark: {
+      name: 'Dark',
+      bg: 'bg-gray-900',
+      text: 'text-white',
+      cardBg: 'bg-gray-800',
+      cardBorder: 'border-gray-700',
+      inputBg: 'bg-gray-800',
+      inputBorder: 'border-gray-600',
+      headerGradient: 'from-gray-800 to-gray-900',
+      headerBorder: 'border-gray-700/50',
+      accent: 'blue',
+      isDark: true
+    },
+    neon: {
+      name: 'Neon',
+      bg: 'bg-black',
+      text: 'text-green-50',
+      cardBg: 'bg-zinc-950',
+      cardBorder: 'border-green-500/30',
+      inputBg: 'bg-zinc-950',
+      inputBorder: 'border-green-500/50',
+      headerGradient: 'from-zinc-950 to-black',
+      headerBorder: 'border-green-500/50',
+      accent: 'green',
+      isDark: true
+    },
+    forest: {
+      name: 'Forest',
+      bg: 'bg-green-950',
+      text: 'text-green-50',
+      cardBg: 'bg-green-800',
+      cardBorder: 'border-green-600',
+      inputBg: 'bg-green-800',
+      inputBorder: 'border-green-500',
+      headerGradient: 'from-green-700 to-green-900',
+      headerBorder: 'border-green-400/50',
+      accent: 'green',
+      isDark: true
+    }
+  };
+  
+  // Safety check - if theme is invalid (e.g., old 'midnight' value), default to 'dark'
+  const currentTheme = themes[theme] || themes.dark;
+  const darkMode = currentTheme.isDark; // For backwards compatibility
+  
+  const [showSettings, setShowSettings] = useState(false);
+  const [sortOrder, setSortOrder] = useState('desc');
+  const [search, setSearch] = useState('');
+  const [showClear, setShowClear] = useState(false);
+  const [showBackups, setShowBackups] = useState(false);
+  const [backupsList, setBackupsList] = useState([]);
+  const [expandedTrends, setExpandedTrends] = useState({});
+  const [deleteWorkout, setDeleteWorkout] = useState(null);
+  const [deletePreset, setDeletePreset] = useState(null);
+  const [deleteExercise, setDeleteExercise] = useState(null);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [workoutViewMode, setWorkoutViewMode] = useState('table'); // 'table' or 'cards'
+  const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'day', 'week', 'month'
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [showDayModal, setShowDayModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  
+  // Scroll to expanded recent workout
+  const [expandedLog, setExpandedLog] = useState(new Set());
+  const [showWorkoutModal, setShowWorkoutModal] = useState(false);
+  const [showPresetSelector, setShowPresetSelector] = useState(false);
+  const [showDataManagement, setShowDataManagement] = useState(false);
+  const [showDataDeletion, setShowDataDeletion] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [showLogCalendar, setShowLogCalendar] = useState(true); // Default to open
+  const [logCalendarDate, setLogCalendarDate] = useState(new Date());
+  const [showPresetsMenu, setShowPresetsMenu] = useState(false);
+  const [showExercisesMenu, setShowExercisesMenu] = useState(false);
+  const [showProteinExpanded, setShowProteinExpanded] = useState(false);
+  const [editingProteinDate, setEditingProteinDate] = useState(null); // Date string for editing past protein
+  const [showAddProtein, setShowAddProtein] = useState(false);
+  const [editingProteinEntry, setEditingProteinEntry] = useState(null); // {timestamp, grams, food} for editing
+  const [draggedPreset, setDraggedPreset] = useState(null);
+  const [selectedLogDay, setSelectedLogDay] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showCalendarLegend, setShowCalendarLegend] = useState(false);  const [showEndWorkoutConfirm, setShowEndWorkoutConfirm] = useState(false);
+  const [editingPreset, setEditingPreset] = useState(null);
+  const [editPresetName, setEditPresetName] = useState('');
+  const [editPresetExercises, setEditPresetExercises] = useState([]);
+  const [editPresetColor, setEditPresetColor] = useState('Blue');
+  const [editPresetIncludeInMenu, setEditPresetIncludeInMenu] = useState(true);
+  const [showSaveAsPreset, setShowSaveAsPreset] = useState(false);
+  const [showCreatePreset, setShowCreatePreset] = useState(false);
+  const [newPresetName, setNewPresetName] = useState('');
+  const [newPresetExercises, setNewPresetExercises] = useState([]);
+  const [newPresetColor, setNewPresetColor] = useState('Blue');
+  const [newPresetIncludeInMenu, setNewPresetIncludeInMenu] = useState(true);
+  const [volumeWidgetDate, setVolumeWidgetDate] = useState(new Date());
+  const [workoutStarted, setWorkoutStarted] = useState(false);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [showPauseMenu, setShowPauseMenu] = useState(false);
+  const [workoutTimer, setWorkoutTimer] = useState(0);
+  const [pausedTime, setPausedTime] = useState(0); // Track accumulated paused time
+  const [lastStartTime, setLastStartTime] = useState(null); // Track when timer last started
+  
+  // Timer effect - properly handles pause/resume
+  useEffect(() => {
+    let interval;
+    if (timerRunning && lastStartTime) {
+      const updateTimer = () => {
+        const currentElapsed = Math.floor((Date.now() - lastStartTime) / 1000);
+        setWorkoutTimer(pausedTime + currentElapsed);
+      };
+      
+      updateTimer(); // Initial update
+      interval = setInterval(updateTimer, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerRunning, lastStartTime, pausedTime]);
+  
+  // Format timer display
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  };
+  
+  // Format elapsed time as hh:mm:ss
+  const formatTimeHHMMSS = (seconds) => {
+    if (!seconds) return null;
+    const hours = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
+  
+  // Color palette for workout presets
+  const presetColors = [
+    { name: 'Blue', border: 'border-blue-400', bg: 'bg-blue-500/10', text: 'text-blue-400' },
+    { name: 'Purple', border: 'border-purple-400', bg: 'bg-purple-500/10', text: 'text-purple-400' },
+    { name: 'Green', border: 'border-green-400', bg: 'bg-green-500/10', text: 'text-green-400' },
+    { name: 'Yellow', border: 'border-yellow-400', bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
+    { name: 'Red', border: 'border-red-400', bg: 'bg-red-500/10', text: 'text-red-400' },
+    { name: 'Pink', border: 'border-pink-400', bg: 'bg-pink-500/10', text: 'text-pink-400' },
+    { name: 'Orange', border: 'border-orange-400', bg: 'bg-orange-500/10', text: 'text-orange-400' },
+    { name: 'Cyan', border: 'border-cyan-400', bg: 'bg-cyan-500/10', text: 'text-cyan-400' },
+  ];
+  
+  // Get color classes for a preset
+  const getPresetColor = (presetName) => {
+    const preset = presets.find(p => p.name === presetName);
+    if (preset && preset.color) {
+      return presetColors.find(c => c.name === preset.color) || presetColors[0];
+    }
+    // Legacy fallback for old presets without colors
+    const legacyColors = {
+      'Garage BW': presetColors[0], // Blue
+      'Manual': presetColors[2], // Green
+      'Garage 10': presetColors[1], // Purple
+      'BW-only': presetColors[3], // Yellow
+    };
+    return legacyColors[presetName] || presetColors[0];
+  };
+  
+  // Helper to get today's date in YYYY-MM-DD format without timezone issues
+  const getTodayDate = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
+  const [current, setCurrent] = useState({
+    date: getTodayDate(),
+    exercises: [],
+    notes: '',
+    location: '',
+    structure: '', // 'pairs' or 'circuit'
+    structureDuration: '' // '3', '4', '5' for pairs duration
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const loadData = () => {
+        const w = localStorage.getItem('workouts');
+        const p = localStorage.getItem('presets');
+        const e = localStorage.getItem('exercises');
+        const t = localStorage.getItem('theme');
+        const dm = localStorage.getItem('darkMode'); // Legacy support
+        const we = localStorage.getItem('weightEntries');
+        const pe = localStorage.getItem('proteinEntries');
+        if (w) setWorkouts(JSON.parse(w));
+        if (p) setPresets(JSON.parse(p));
+        if (e) setExercises(JSON.parse(e));
+        if (t) {
+          // Migrate old 'midnight' to 'neon'
+          const loadedTheme = t === 'midnight' ? 'neon' : t;
+          setTheme(loadedTheme);
+          if (t === 'midnight') {
+            localStorage.setItem('theme', 'neon'); // Update storage
+          }
+        } else if (dm !== null) {
+          // Migrate old darkMode to new theme system
+          setTheme(JSON.parse(dm) ? 'dark' : 'light');
+        }
+        if (we) setWeightEntries(JSON.parse(we));
+        if (pe) setProteinEntries(JSON.parse(pe));
+      };
+      
+      // Load data immediately
+      loadData();
+      
+      // But keep loading screen visible for 2 seconds
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
+    }
+  }, []);
+  
+  // Auto-backup system (every 7 days)
+  useEffect(() => {
+    if (typeof window === 'undefined' || workouts.length === 0) return;
+    
+    const createBackup = async () => {
+      try {
+        const backup = {
+          timestamp: Date.now(),
+          workouts: workouts,
+          presets: presets,
+          weightEntries: weightEntries,
+          exercises: exercises
+        };
+        
+        // Open IndexedDB
+        const request = indexedDB.open('GorsLogBackups', 1);
+        
+        request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('backups')) {
+            db.createObjectStore('backups', { keyPath: 'timestamp' });
+          }
+        };
+        
+        request.onsuccess = (e) => {
+          const db = e.target.result;
+          const transaction = db.transaction(['backups'], 'readwrite');
+          const store = transaction.objectStore('backups');
+          
+          // Add new backup
+          store.add(backup);
+          
+          // Prune old backups (keep last 5)
+          const getAllRequest = store.getAll();
+          getAllRequest.onsuccess = () => {
+            const allBackups = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
+            if (allBackups.length > 5) {
+              const toDelete = allBackups.slice(5);
+              toDelete.forEach(b => {
+                store.delete(b.timestamp);
+              });
+            }
+          };
+          
+          localStorage.setItem('lastBackup', backup.timestamp.toString());
+          console.log('Backup created:', new Date(backup.timestamp).toLocaleString());
+        };
+      } catch (err) {
+        console.error('Backup failed:', err);
+      }
+    };
+    
+    // Check if backup is needed
+    const lastBackup = localStorage.getItem('lastBackup');
+    const now = Date.now();
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    
+    if (!lastBackup || now - parseInt(lastBackup) > sevenDays) {
+      createBackup();
+    }
+  }, [workouts, presets, weightEntries, exercises]);
+  
+  // Disable background scroll when modals are open
+  useEffect(() => {
+    if (showDayModal || showHistoryModal || showSettings || showClear || deleteWorkout !== null || deletePreset !== null || deleteExercise !== null || showCloseConfirm || showPresetSelector || showWorkoutModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showDayModal, showHistoryModal, showSettings, showClear, deleteWorkout, deletePreset, deleteExercise, showCloseConfirm, showPresetSelector, showWorkoutModal]);
+
+  const save = (data, key, setter) => {
+    localStorage.setItem(key, JSON.stringify(data));
+    setter(data);
+  };
+
+  useEffect(() => {
+    if (view !== 'home') return;
+    
+    const handleScroll = () => {
+      const headers = document.querySelectorAll('[id^="week-"]');
+      const triggerPoint = 320; // Below fixed header + calendar
+      
+      let closestHeader = null;
+      let closestDistance = Infinity;
+      
+      headers.forEach(header => {
+        const rect = header.getBoundingClientRect();
+        const distance = Math.abs(rect.top - triggerPoint);
+        if (rect.top <= triggerPoint + 100 && distance < closestDistance) {
+          closestDistance = distance;
+          closestHeader = header;
+        }
+      });
+      
+      if (closestHeader) {
+        const weekKey = closestHeader.id.replace('week-', '');
+        const [year, month, day] = weekKey.split('-');
+        const targetMonday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        
+        const now = new Date();
+        const currentDay = now.getDay();
+        const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+        const thisMonday = new Date(now);
+        thisMonday.setDate(now.getDate() - daysToMonday);
+        thisMonday.setHours(0, 0, 0, 0);
+        
+        const diffDays = Math.round((targetMonday - thisMonday) / (1000 * 60 * 60 * 24));
+        const newOffset = Math.round(diffDays / 7);
+        
+        setWeekOffset(newOffset);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [view, workouts.length]);
+  
+  const importPresets = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const lines = ev.target.result.split('\n');
+      const ps = [], exs = new Set();
+      lines.forEach((line) => {
+        const cols = line.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+        if (!cols[0]) return;
+        ps.push({ name: cols[0], exercises: cols.slice(1).filter(e => e) });
+        cols.slice(1).filter(e => e).forEach(e => exs.add(e));
+      });
+      save(ps, 'presets', setPresets);
+      save(Array.from(exs).sort(), 'exercises', setExercises);
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  const parseDate = (str) => {
+    // Handle MM-DD-YYYY format
+    const parts = str.split('-');
+    if (parts.length === 3) {
+      const month = parts[0].padStart(2, '0');
+      const day = parts[1].padStart(2, '0');
+      const year = parts[2].length === 4 ? parts[2] : '2026';
+      return `${year}-${month}-${day}`;
+    }
+    return str;
+  };
+
+  const importWorkouts = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const lines = ev.target.result.split('\n').map(l => l.trim()).filter(l => l);
+      const imp = [];
+      let currentWorkout = null;
+      let workoutLocation = '';
+
+      // First line is the location (e.g., "Garage BW")
+      if (lines.length > 0 && !lines[0].toLowerCase().includes('date')) {
+        workoutLocation = lines[0].split(',')[0].trim();
+      }
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const cols = line.split(',').map(c => c.trim());
+
+        // Skip header rows
+        if (cols[0] && (cols[0].toLowerCase() === 'date' || cols[1] && cols[1].toLowerCase() === 'exercise')) {
+          continue;
+        }
+
+        // Skip the first location line
+        if (i === 0 && !cols[0].match(/^\d/)) {
+          continue;
+        }
+
+        // Check if this is a new workout (has a date)
+        if (cols[0] && cols[0].match(/^\d+-\d+/)) {
+          // Save previous workout if exists
+          if (currentWorkout && (currentWorkout.exercises.length > 0 || currentWorkout.location === 'Day Off')) {
+            imp.push(currentWorkout);
+          }
+
+          // Start new workout
+          currentWorkout = {
+            date: parseDate(cols[0]),
+            exercises: [],
+            notes: '',
+            location: workoutLocation
+          };
+
+          // Check if this is a Day Off entry
+          if (cols[1] && cols[1] === 'Day Off') {
+            currentWorkout.location = 'Day Off';
+            // Get notes from column 7 or later columns
+            const noteParts = [cols[7], cols[8], cols[9], cols[10]].filter(n => n && n.trim());
+            if (noteParts.length > 0) {
+              currentWorkout.notes = noteParts.join(' ');
+            }
+          }
+          // Add first exercise if present
+          else if (cols[1] && cols[1] !== 'Day Off') {
+            const sets = [cols[2], cols[3], cols[4], cols[5]]
+              .filter(s => s && s.trim())
+              .map(s => ({ reps: parseInt(s) || 0, weight: null }));
+            
+            currentWorkout.exercises.push({
+              name: cols[1],
+              sets: sets,
+              notes: cols[7] || ''
+            });
+          }
+        }
+        // Check if this is an additional exercise (no date, but has exercise name)
+        else if (currentWorkout && cols[1] && cols[1].trim() && cols[1] !== 'Day Off') {
+          const sets = [cols[2], cols[3], cols[4], cols[5]]
+            .filter(s => s && s.trim())
+            .map(s => ({ reps: parseInt(s) || 0, weight: null }));
+          
+          currentWorkout.exercises.push({
+            name: cols[1],
+            sets: sets,
+            notes: cols[7] || ''
+          });
+        }
+        // Check if this is workout notes (has location info in col 2) - but not for Day Off
+        else if (currentWorkout && currentWorkout.location !== 'Day Off' && cols[2] && (cols[2].includes('Garage') || cols[2].includes('BW') || cols[2].includes('Manual'))) {
+          currentWorkout.location = cols[2];
+          const noteParts = [cols[7], cols[8], cols[9], cols[10]].filter(n => n && n.trim());
+          if (noteParts.length > 0) {
+            currentWorkout.notes = noteParts.join(' ');
+          }
+        }
+        // Handle Day Off as location in second line
+        else if (currentWorkout && cols[2] && cols[2] === 'Day Off') {
+          currentWorkout.location = 'Day Off';
+          const noteParts = [cols[7], cols[8], cols[9], cols[10]].filter(n => n && n.trim());
+          if (noteParts.length > 0) {
+            currentWorkout.notes = noteParts.join(' ');
+          }
+        }
+      }
+
+      // Don't forget the last workout (including Day Off)
+      if (currentWorkout && (currentWorkout.exercises.length > 0 || currentWorkout.location === 'Day Off')) {
+        imp.push(currentWorkout);
+      }
+
+      // Merge with existing workouts and save
+      const merged = [...imp, ...workouts];
+      save(merged, 'workouts', setWorkouts);
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  };
+
+  const addEx = () => setCurrent({
+    ...current,
+    exercises: [...current.exercises, {
+      name: '',
+      sets: [
+        { reps: 0, weight: null },
+        { reps: 0, weight: null },
+        { reps: 0, weight: null },
+        { reps: 0, weight: null }
+      ],
+      notes: ''
+    }]
+  });
+
+  const updateEx = (i, f, v) => {
+    const u = [...current.exercises];
+    u[i][f] = v;
+    setCurrent({ ...current, exercises: u });
+  };
+
+  const updateSet = (ei, si, f, v) => {
+    const u = [...current.exercises];
+    u[ei].sets[si][f] = f === 'weight' ? (v || null) : parseInt(v) || 0;
+    setCurrent({ ...current, exercises: u });
+  };
+
+  const addSet = (i) => {
+    const u = [...current.exercises];
+    u[i].sets.push({ reps: 0, weight: null });
+    setCurrent({ ...current, exercises: u });
+  };
+
+  const removeSet = (ei, si) => {
+    const u = [...current.exercises];
+    if (u[ei].sets.length > 1) u[ei].sets.splice(si, 1);
+    setCurrent({ ...current, exercises: u });
+  };
+
+  const saveWorkout = (elapsedTime = null) => {
+    // Allow Day Off workouts with zero exercises if they have notes or location
+    if (!current.exercises.length && !current.notes && current.location !== 'Day Off') return;
+    
+    // Add elapsed time if provided
+    const workoutToSave = elapsedTime !== null ? { ...current, elapsedTime } : current;
+    
+    let ws;
+    if (editing !== null) {
+      ws = [...workouts];
+      ws[editing] = workoutToSave;
+      setEditing(null);
+    } else {
+      ws = [workoutToSave, ...workouts];
+    }
+    save(ws, 'workouts', setWorkouts);
+    
+    setCurrent({
+      date: getTodayDate(),
+      exercises: [],
+      notes: '',
+      location: '',
+      structure: '',
+      structureDuration: ''
+    });
+    setShowNew(false);
+  };
+
+  const editWorkout = (i) => {
+    setCurrent(JSON.parse(JSON.stringify(workouts[i])));
+    setEditing(i);
+    setShowWorkoutModal(true);
+    setWorkoutStarted(true); // Enable editing of reps
+  };
+
+  const loadPreset = (p) => setCurrent({
+    ...current,
+    exercises: p.exercises.map(n => ({
+      name: n,
+      sets: [
+        { reps: 0, weight: null },
+        { reps: 0, weight: null },
+        { reps: 0, weight: null },
+        { reps: 0, weight: null }
+      ],
+      notes: ''
+    })),
+    location: p.name
+  });
+
+  const copyToSheets = (w) => {
+    const d = new Date(w.date);
+    const lines = [];
+    w.exercises.forEach((ex, i) => {
+      const s = ex.sets.slice(0, 4);
+      const r = s.map(x => x.reps || '').concat(Array(4 - s.length).fill(''));
+      const t = s.reduce((sum, x) => sum + (x.reps || 0), 0);
+      let n = ex.notes || '';
+      const wts = s.filter(x => x.weight).map(x => x.weight);
+      if (wts.length) n = wts[0] + (n ? '. ' + n : '');
+      const dateStr = `${d.getMonth() + 1}-${d.getDate()}-${d.toLocaleDateString('en-US', { weekday: 'short' })}`;
+      lines.push(
+        i === 0
+          ? `${dateStr}\t${ex.name}\t${r[0]}\t${r[1]}\t${r[2]}\t${r[3]}\t${t}\t${n}`
+          : `\t${ex.name}\t${r[0]}\t${r[1]}\t${r[2]}\t${r[3]}\t${t}\t${n}`
+      );
+    });
+    lines.push(`\t${w.location || ''}\t\t\t\t\t\t${[w.location, w.notes].filter(x => x).join('. ')}`);
+    navigator.clipboard.writeText(lines.join('\n'));
+    
+    // Show toast notification
+    setToastMessage('Workout copied to clipboard!');
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  };
+
+  const shareWorkout = async (w) => {
+    // Format workout data in readable format
+    const d = new Date(w.date);
+    const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    
+    let shareText = `GORS LOG - ${w.location || 'Workout'}\n`;
+    shareText += `${dateStr}\n`;
+    if (w.elapsedTime) {
+      shareText += `Duration: ${formatTimeHHMMSS(w.elapsedTime)}\n`;
+    }
+    shareText += `\n`;
+    
+    w.exercises.forEach((ex) => {
+      const sets = ex.sets.map(s => s.reps || 0).join(', ');
+      const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+      shareText += `${ex.name}: ${sets} (Total: ${total})`;
+      if (ex.notes) shareText += ` - ${ex.notes}`;
+      shareText += `\n`;
+    });
+    
+    if (w.notes) {
+      shareText += `\nNotes: ${w.notes}`;
+    }
+    
+    // Try Web Share API (native iOS share sheet)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `GORS LOG - ${w.location || 'Workout'}`,
+          text: shareText
+        });
+      } catch (err) {
+        // User cancelled or error - ignore
+        if (err.name !== 'AbortError') {
+          console.error('Share failed:', err);
+          // Fallback to clipboard
+          navigator.clipboard.writeText(shareText);
+          setToastMessage('Copied to clipboard!');
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        }
+      }
+    } else {
+      // Fallback for browsers without Web Share API
+      navigator.clipboard.writeText(shareText);
+      setToastMessage('Copied to clipboard!');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+  };
+
+  const clearAll = () => {
+    save([], 'workouts', setWorkouts);
+    setShowClear(false);
+  };
+
+  const exportCSV = (returnContent = false) => {
+    const rows = [];
+    
+    workouts.sort((a, b) => a.date.localeCompare(b.date)).forEach(w => {
+      const d = new Date(w.date);
+      const dateStr = `${d.getMonth() + 1}-${d.getDate()}-${d.getFullYear()}`;
+      
+      w.exercises.forEach((ex, i) => {
+        const sets = ex.sets.slice(0, 4);
+        const reps = sets.map(s => s.reps || '').concat(Array(4 - sets.length).fill(''));
+        const total = sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+        let notes = ex.notes || '';
+        const weights = sets.filter(s => s.weight).map(s => s.weight);
+        if (weights.length) notes = weights[0] + (notes ? '. ' + notes : '');
+        
+        if (i === 0) {
+          rows.push(`${dateStr},${ex.name},${reps[0]},${reps[1]},${reps[2]},${reps[3]},${total},${notes}`);
+        } else {
+          rows.push(`,${ex.name},${reps[0]},${reps[1]},${reps[2]},${reps[3]},${total},${notes}`);
+        }
+      });
+      
+      const workoutNotes = [w.location, w.notes].filter(x => x).join('. ');
+      rows.push(`,${w.location || ''},,,,,,${workoutNotes}`);
+    });
+    
+    const csv = `Date,Exercise,1,2,3,4,Tot,Notes\n${rows.join('\n')}`;
+    
+    if (returnContent) {
+      return csv;
+    }
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workouts-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const filtered = () => {
+    let f = workouts;
+    
+    // Apply date range filter
+    if (historyFilter !== 'all') {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      f = f.filter(w => {
+        const [year, month, day] = w.date.split('-');
+        const workoutDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        
+        if (historyFilter === 'day') {
+          return workoutDate.getTime() === today.getTime();
+        } else if (historyFilter === 'week') {
+          // Get start of current week (Monday)
+          const dayOfWeek = now.getDay();
+          const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days; otherwise back to Monday
+          const weekStart = new Date(now);
+          weekStart.setDate(now.getDate() + diff);
+          weekStart.setHours(0, 0, 0, 0);
+          
+          return workoutDate >= weekStart && workoutDate <= today;
+        } else if (historyFilter === 'month') {
+          // Get start of current month
+          const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+          
+          return workoutDate >= monthStart && workoutDate <= today;
+        } else if (historyFilter === 'year') {
+          // Get start of current year
+          const yearStart = new Date(now.getFullYear(), 0, 1);
+          
+          return workoutDate >= yearStart && workoutDate <= today;
+        }
+        return true;
+      });
+    }
+    
+    // Apply search filter
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      f = f.filter(w =>
+        w.date.includes(q) ||
+        (w.location && w.location.toLowerCase().includes(q)) ||
+        w.exercises.some(e => e.name.toLowerCase().includes(q)) ||
+        (w.notes && w.notes.toLowerCase().includes(q)) ||
+        w.exercises.some(e => e.notes && e.notes.toLowerCase().includes(q))
+      );
+    }
+    
+    // Always sort newest first
+    return [...f].sort((a, b) => b.date.localeCompare(a.date));
+  };
+
+  const trends = () => {
+    const t = {};
+    workouts.forEach(w => {
+      const d = new Date(w.date);
+      const day = d.getDay();
+      // Start week on Monday: if Sunday (0), go back 6 days; otherwise go back (day-1) days
+      const diff = day === 0 ? -6 : 1 - day;
+      const start = new Date(d.setDate(d.getDate() + diff));
+      const ws = start.toISOString().split('T')[0];
+      const m = w.date.substring(0, 7);
+      
+      w.exercises.forEach(e => {
+        if (!t[e.name]) t[e.name] = { weekly: {}, monthly: {} };
+        const reps = e.sets.reduce((s, set) => s + set.reps, 0);
+        t[e.name].weekly[ws] = (t[e.name].weekly[ws] || 0) + reps;
+        t[e.name].monthly[m] = (t[e.name].monthly[m] || 0) + reps;
+      });
+    });
+    return t;
+  };
+
+  if (loading) {
+    // Simple text-only loading screen
+    return (
+      <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text} flex flex-col items-center justify-center`}>
+        <div className="text-center">
+          <h1 className="text-6xl font-black tracking-tight mb-4">
+            GORS
+          </h1>
+          <div className={`w-20 h-1 mx-auto mb-6 ${
+            theme === 'neon' ? 'bg-green-500' : 
+            theme === 'forest' ? 'bg-emerald-500' : 
+            theme === 'sunset' ? 'bg-orange-500' : 
+            'bg-blue-500'
+          }`}></div>
+          <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium tracking-widest`}>
+            BE ABOUT IT
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
         <title>GORS LOG</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="description" content="GORS LOG - Workout Tracking" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <style>{`
+          @keyframes slowPulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.3); }
+          }
+          .loading-dot-1 {
+            animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation-delay: 0s;
+          }
+          .loading-dot-2 {
+            animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation-delay: 0.5s;
+          }
+          .loading-dot-3 {
+            animation: slowPulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            animation-delay: 1s;
+          }
+          
+          /* New loading animations */
+          @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+          }
+          
+          @keyframes pulse-slow {
+            0%, 100% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+          }
+          .animate-pulse-slow {
+            animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          }
+          
+          @keyframes slide-right {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          .animate-slide-right {
+            animation: slide-right 1.5s ease-in-out infinite;
+          }
+        `}</style>
       </Head>
-      <div>
-        <App />
+      
+      <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text}`}>
+        {showClear && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-md border-2 border-red-500/50`}>
+              <h3 className="text-2xl font-bold mb-3 text-red-400">⚠️ Delete All Workouts?</h3>
+              <p className="mb-2 text-base">This will permanently delete <strong>all {workouts.length} workout{workouts.length !== 1 ? 's' : ''}</strong> from your history.</p>
+              <p className={`mb-6 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Your workout presets will NOT be deleted. This action cannot be undone!</p>
+              <div className="flex gap-3">
+                <button onClick={clearAll} className="flex-1 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 py-3 rounded-xl font-bold shadow-lg transition-all">
+                  Yes, Delete All
+                </button>
+                <button onClick={() => setShowClear(false)} className="flex-1 bg-gradient-to-r from-gray-700 to-gray-600 hover:from-gray-600 hover:to-gray-500 py-3 rounded-xl font-semibold shadow-md transition-all">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Backups Modal */}
+        {showBackups && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setShowBackups(false)}>
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-xl font-bold mb-4">Automatic Backups</h3>
+              
+              {backupsList.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-3">💾</div>
+                  <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    No backups yet. Backups are created automatically every 7 days.
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {backupsList.map((backup) => {
+                    const date = new Date(backup.timestamp);
+                    return (
+                      <div key={backup.timestamp} className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-3`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <div className="font-semibold text-sm">
+                              {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </div>
+                            <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (confirm(`Restore backup from ${date.toLocaleDateString()}? Your current data will be replaced.`)) {
+                                setWorkouts(backup.workouts || []);
+                                setPresets(backup.presets || []);
+                                setWeightEntries(backup.weightEntries || []);
+                                setExercises(backup.exercises || []);
+                                
+                                save(backup.workouts || [], 'workouts', setWorkouts);
+                                save(backup.presets || [], 'presets', setPresets);
+                                save(backup.weightEntries || [], 'weightEntries', setWeightEntries);
+                                save(backup.exercises || [], 'exercises', setExercises);
+                                
+                                setShowBackups(false);
+                                setToastMessage('Backup restored successfully!');
+                                setShowToast(true);
+                                setTimeout(() => setShowToast(false), 3000);
+                              }
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded text-xs font-semibold transition-colors"
+                          >
+                            Restore
+                          </button>
+                        </div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {backup.workouts?.length || 0} workouts • {backup.presets?.length || 0} presets • {backup.weightEntries?.length || 0} weight entries
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              <button
+                onClick={() => setShowBackups(false)}
+                className={`w-full mt-4 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-3 rounded-lg font-semibold transition-colors`}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Workout Confirmation */}
+        {deleteWorkout !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
+              <h3 className="text-xl font-bold mb-4 text-red-400">Delete Workout?</h3>
+              <p className="mb-6">Are you sure you want to delete this workout? This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    save(workouts.filter((_, idx) => idx !== deleteWorkout), 'workouts', setWorkouts);
+                    setDeleteWorkout(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeleteWorkout(null)}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Preset Confirmation */}
+        {deletePreset !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
+              <h3 className="text-xl font-bold mb-4 text-red-400">Delete Preset?</h3>
+              <p className="mb-6">Are you sure you want to delete this preset? This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    save(presets.filter((_, idx) => idx !== deletePreset), 'presets', setPresets);
+                    setDeletePreset(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeletePreset(null)}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Close Workout Confirmation */}
+        {showCloseConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
+              <h3 className="text-xl font-bold mb-4 text-yellow-400">Discard Workout?</h3>
+              <p className="mb-6">You have unsaved changes. Are you sure you want to close?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowNew(false);
+                    setShowWorkoutModal(false);
+                    setEditing(null);
+                    setCurrent({
+                      date: getTodayDate(),
+                      exercises: [],
+                      notes: '',
+                      location: '',
+                      structure: '',
+                      structureDuration: ''
+                    });
+                    setShowCloseConfirm(false);
+                    // Reset timer
+                    setWorkoutStarted(false);
+                    setWorkoutTimer(0);
+                    setTimerRunning(false);
+                    setPausedTime(0);
+                    setLastStartTime(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Discard
+                </button>
+                <button
+                  onClick={() => setShowCloseConfirm(false)}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Keep Editing
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* End Workout Confirmation */}
+        {showEndWorkoutConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
+              <h3 className="text-xl font-bold mb-4 text-blue-400">Finish Workout?</h3>
+              <p className="mb-6">Save this workout to your log?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    // Pass elapsed time directly to saveWorkout
+                    saveWorkout(workoutTimer);
+                    setShowWorkoutModal(false);
+                    setWorkoutStarted(false);
+                    setWorkoutTimer(0);
+                    setTimerRunning(false);
+                    setPausedTime(0);
+                    setLastStartTime(null);
+                    setShowEndWorkoutConfirm(false);
+                    
+                    // Offer to save as preset if it's a manual workout
+                    if (current.location === 'Manual' && current.exercises.length > 0) {
+                      setShowSaveAsPreset(true);
+                    }
+                  }}
+                  className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 py-3 rounded-lg font-semibold"
+                >
+                  Save Workout
+                </button>
+                <button
+                  onClick={() => setShowEndWorkoutConfirm(false)}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Preset Modal */}
+        {editingPreset !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto`}>
+              <h3 className="text-xl font-bold mb-4">Edit Preset</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Preset Name</label>
+                  <input
+                    type="text"
+                    value={editPresetName}
+                    onChange={(e) => setEditPresetName(e.target.value)}
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? '' : 'text-gray-700'}`}>Color</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {presetColors.map(color => (
+                      <button
+                        key={color.name}
+                        onClick={() => setEditPresetColor(color.name)}
+                        className={`h-10 rounded-lg border-2 transition-all ${
+                          editPresetColor === color.name 
+                            ? `${color.border} border-opacity-100 scale-105` 
+                            : `${color.border} border-opacity-30 hover:border-opacity-60`
+                        } ${color.bg}`}
+                        title={color.name}
+                      >
+                        <div className={`text-xs font-semibold ${color.text}`}>{color.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Exercises</label>
+                  {editPresetExercises.map((ex, i) => (
+                    <div key={i} className="flex gap-2 mb-2">
+                      <select
+                        value={ex}
+                        onChange={(e) => {
+                          const updated = [...editPresetExercises];
+                          updated[i] = e.target.value;
+                          setEditPresetExercises(updated);
+                        }}
+                        className={`flex-1 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                      >
+                        {exercises.map((e, ei) => (
+                          <option key={ei} value={e}>{e}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          const updated = editPresetExercises.filter((_, idx) => idx !== i);
+                          setEditPresetExercises(updated);
+                        }}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Icons.Trash />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setEditPresetExercises([...editPresetExercises, exercises[0]])}
+                    className="text-blue-400 hover:text-blue-300 text-sm"
+                  >
+                    + Add Exercise
+                  </button>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editPresetIncludeInMenu}
+                      onChange={(e) => setEditPresetIncludeInMenu(e.target.checked)}
+                      className="w-4 h-4 rounded"
+                    />
+                    <span className="text-sm">Show in New Workout menu</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    const updated = [...presets];
+                    updated[editingPreset] = {
+                      name: editPresetName,
+                      exercises: editPresetExercises,
+                      color: editPresetColor,
+                      includeInMenu: editPresetIncludeInMenu
+                    };
+                    save(updated, 'presets', setPresets);
+                    setEditingPreset(null);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => setEditingPreset(null)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Create New Preset Modal */}
+        {showCreatePreset && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto`}>
+              <h3 className="text-xl font-bold mb-4">Create New Preset</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Preset Name</label>
+                  <input
+                    type="text"
+                    value={newPresetName}
+                    onChange={(e) => setNewPresetName(e.target.value)}
+                    placeholder="e.g., Upper Body Day"
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? '' : 'text-gray-700'}`}>Color</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {presetColors.map(color => (
+                      <button
+                        key={color.name}
+                        onClick={() => setNewPresetColor(color.name)}
+                        className={`h-10 rounded-lg border-2 transition-all ${
+                          newPresetColor === color.name 
+                            ? `${color.border} border-opacity-100 scale-105` 
+                            : `${color.border} border-opacity-30 hover:border-opacity-60`
+                        } ${color.bg}`}
+                      >
+                        <div className={`text-xs font-semibold ${color.text}`}>{color.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Exercises</label>
+                  {newPresetExercises.map((ex, i) => (
+                    <div key={i} className="flex gap-2 mb-2">
+                      <select
+                        value={ex}
+                        onChange={(e) => {
+                          const updated = [...newPresetExercises];
+                          updated[i] = e.target.value;
+                          setNewPresetExercises(updated);
+                        }}
+                        className={`flex-1 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                      >
+                        {exercises.map((e, ei) => (
+                          <option key={ei} value={e}>{e}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => {
+                          const updated = newPresetExercises.filter((_, idx) => idx !== i);
+                          setNewPresetExercises(updated);
+                        }}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Icons.Trash />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setNewPresetExercises([...newPresetExercises, exercises[0]])}
+                    className="text-blue-400 hover:text-blue-300 text-sm"
+                  >
+                    + Add Exercise
+                  </button>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newPresetIncludeInMenu}
+                      onChange={(e) => setNewPresetIncludeInMenu(e.target.checked)}
+                      className="w-4 h-4 rounded"
+                    />
+                    <span className="text-sm">Show in New Workout menu</span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    if (newPresetName.trim() && newPresetExercises.length > 0) {
+                      const newPreset = {
+                        name: newPresetName.trim(),
+                        exercises: newPresetExercises,
+                        color: newPresetColor,
+                        includeInMenu: newPresetIncludeInMenu
+                      };
+                      save([...presets, newPreset], 'presets', setPresets);
+                      setToastMessage('Preset created!');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }
+                    setShowCreatePreset(false);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                >
+                  Create Preset
+                </button>
+                <button
+                  onClick={() => setShowCreatePreset(false)}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Save Manual Workout as Preset */}
+        {showSaveAsPreset && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full`}>
+              <h3 className="text-xl font-bold mb-4">Save as Preset?</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>Would you like to save this workout as a preset for future use?</p>
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Preset Name</label>
+                <input
+                  type="text"
+                  value={newPresetName}
+                  onChange={(e) => setNewPresetName(e.target.value)}
+                  placeholder="e.g., My Custom Workout"
+                  className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                />
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    if (newPresetName.trim()) {
+                      // Find next available color
+                      const usedColors = presets.map(p => p.color).filter(Boolean);
+                      const availableColor = presetColors.find(c => !usedColors.includes(c.name)) || presetColors[0];
+                      
+                      const newPreset = {
+                        name: newPresetName.trim(),
+                        exercises: current.exercises.map(ex => ex.name),
+                        color: availableColor.name
+                      };
+                      save([...presets, newPreset], 'presets', setPresets);
+                      setToastMessage('Preset saved!');
+                      setShowToast(true);
+                      setTimeout(() => setShowToast(false), 3000);
+                    }
+                    setShowSaveAsPreset(false);
+                    setNewPresetName('');
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                >
+                  Save Preset
+                </button>
+                <button
+                  onClick={() => {
+                    setShowSaveAsPreset(false);
+                    setNewPresetName('');
+                  }}
+                  className="flex-1 bg-gray-700 py-3 rounded-lg font-semibold"
+                >
+                  Skip
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Exercise Confirmation */}
+        {deleteExercise !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[70] p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
+              <h3 className="text-xl font-bold mb-4 text-red-400">Delete Exercise?</h3>
+              <p className="mb-6">Remove this exercise from your workout?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    const u = [...current.exercises];
+                    u.splice(deleteExercise, 1);
+                    setCurrent({ ...current, exercises: u });
+                    setDeleteExercise(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeleteExercise(null)}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add/Edit Weight Modal */}
+        {showWeightModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto`}>
+              <h3 className="text-xl font-bold mb-4">{editingWeight !== null ? 'Edit' : 'Add'} Weight Entry</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Date</label>
+                  <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3`}>
+                    {/* Month/Year selector */}
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (weightCalendarMonth === 0) {
+                            setWeightCalendarMonth(11);
+                            setWeightCalendarYear(weightCalendarYear - 1);
+                          } else {
+                            setWeightCalendarMonth(weightCalendarMonth - 1);
+                          }
+                        }}
+                        className={`p-1 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <div className="font-semibold">
+                        {new Date(weightCalendarYear, weightCalendarMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (weightCalendarMonth === 11) {
+                            setWeightCalendarMonth(0);
+                            setWeightCalendarYear(weightCalendarYear + 1);
+                          } else {
+                            setWeightCalendarMonth(weightCalendarMonth + 1);
+                          }
+                        }}
+                        className={`p-1 ${darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'} rounded`}
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    {/* Day headers - Monday first */}
+                    <div className="grid grid-cols-7 gap-1 mb-1">
+                      {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                        <div key={i} className="text-center text-xs text-gray-500 font-bold">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Calendar days */}
+                    <div className="grid grid-cols-7 gap-1">
+                      {(() => {
+                        const firstDay = new Date(weightCalendarYear, weightCalendarMonth, 1).getDay();
+                        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; // Monday = 0
+                        const daysInMonth = new Date(weightCalendarYear, weightCalendarMonth + 1, 0).getDate();
+                        const today = new Date();
+                        
+                        const days = [];
+                        
+                        // Empty cells before first day
+                        for (let i = 0; i < adjustedFirstDay; i++) {
+                          days.push(<div key={`empty-${i}`} />);
+                        }
+                        
+                        // Days
+                        for (let i = 1; i <= daysInMonth; i++) {
+                          const day = i;
+                          const dateStr = `${weightCalendarYear}-${String(weightCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                          const isSelected = currentWeight.date === dateStr;
+                          const isToday = day === today.getDate() && 
+                                        weightCalendarMonth === today.getMonth() && 
+                                        weightCalendarYear === today.getFullYear();
+                          
+                          days.push(
+                            <button
+                              key={day}
+                              type="button"
+                              onClick={() => setCurrentWeight({ ...currentWeight, date: dateStr })}
+                              className={`
+                                aspect-square rounded text-sm font-medium
+                                ${isSelected 
+                                  ? 'bg-blue-600 text-white' 
+                                  : isToday
+                                  ? darkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-300 hover:bg-gray-400'
+                                  : darkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200'
+                                }
+                              `}
+                            >
+                              {day}
+                            </button>
+                          );
+                        }
+                        
+                        return days;
+                      })()}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Weight (lbs)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={currentWeight.weight}
+                    onChange={(e) => setCurrentWeight({ ...currentWeight, weight: e.target.value })}
+                    placeholder="185.5"
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? '' : 'text-gray-700'}`}>Notes (optional)</label>
+                  <textarea
+                    value={currentWeight.notes}
+                    onChange={(e) => setCurrentWeight({ ...currentWeight, notes: e.target.value })}
+                    placeholder="Morning weigh-in, after workout, etc."
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2 resize-none h-20`}
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    if (!currentWeight.date || !currentWeight.weight) return;
+                    
+                    const entry = {
+                      date: currentWeight.date,
+                      weight: parseFloat(currentWeight.weight),
+                      notes: currentWeight.notes
+                    };
+                    
+                    let updated;
+                    if (editingWeight !== null) {
+                      updated = [...weightEntries];
+                      updated[editingWeight] = entry;
+                    } else {
+                      updated = [...weightEntries, entry];
+                    }
+                    
+                    save(updated, 'weightEntries', setWeightEntries);
+                    setShowWeightModal(false);
+                    setCurrentWeight({ date: '', weight: '', notes: '' });
+                    setEditingWeight(null);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-lg font-semibold"
+                >
+                  {editingWeight !== null ? 'Update' : 'Add'} Entry
+                </button>
+                <button
+                  onClick={() => {
+                    setShowWeightModal(false);
+                    setCurrentWeight({ date: '', weight: '', notes: '' });
+                    setEditingWeight(null);
+                  }}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Weight Confirmation */}
+        {deleteWeight !== null && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 max-w-md`}>
+              <h3 className="text-xl font-bold mb-4 text-red-400">Delete Weight Entry?</h3>
+              <p className="mb-6">Are you sure you want to delete this weight entry? This cannot be undone.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    const updated = weightEntries.filter((_, idx) => idx !== deleteWeight);
+                    save(updated, 'weightEntries', setWeightEntries);
+                    setDeleteWeight(null);
+                  }}
+                  className="flex-1 bg-red-600 hover:bg-red-700 py-3 rounded-lg font-semibold"
+                >
+                  Delete
+                </button>
+                <button
+                  onClick={() => setDeleteWeight(null)}
+                  className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} py-3 rounded-lg font-semibold`}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className={`fixed top-0 left-0 right-0 z-20 bg-gradient-to-b ${currentTheme.headerGradient} ${currentTheme.headerBorder} border-b py-2 px-4 shadow-lg`}>
+  <div className="max-w-4xl mx-auto flex items-center justify-between">
+    
+  {/* Start Workout Button - Left side, only on Home and Home V1 */}
+    {view === 'home' ? (
+      <button
+        onClick={() => {
+          setQuickAddTab('workout');
+          setShowPresetSelector(true);
+        }}
+        className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-lg p-2 shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+        title="Quick Add"
+      >
+        <Icons.Plus className="w-5 h-5" />
+      </button>
+    ) : (
+      <div className="w-10"></div>
+    )}
+    
+    {/* Centered GORS LOG */}
+      <button 
+        onClick={() => {
+            const themeOrder = ['light', 'dark', 'neon', 'forest'];
+            const currentIndex = themeOrder.indexOf(theme);
+            const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
+            setTheme(nextTheme);
+            localStorage.setItem('theme', nextTheme);
+          }}
+          className="cursor-pointer hover:opacity-80 transition-opacity text-center"
+        >
+          <h1 className={`text-xl font-extrabold tracking-tight bg-gradient-to-r ${darkMode ? 'from-white to-gray-300' : 'from-gray-900 to-gray-700'} bg-clip-text text-transparent`}>GORS LOG</h1>
+        </button>
+            
+            {view === 'home' ? (
+              <button
+                onClick={() => {
+                  setSearchExpanded(!searchExpanded);
+                  if (!searchExpanded) setSearch('');
+                }}
+                className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} p-2`}
+                title="Search"
+              >
+                <Icons.Search className="w-5 h-5" />
+              </button>
+            ) : (
+              <div className="w-10"></div>
+            )}
+            </div>
+            </div>
+
+        <div className="max-w-4xl mx-auto p-3 pb-24 pt-12">
+        <div className="h-12"></div>
+          
+          {/* HOME V1 - Weekly Calendar Layout */}
+          {view === 'home' && (
+            <div className="pb-32 relative">
+              
+              {/* Weekly Calendar - Sticky */}
+              <div data-calendar className={`fixed left-0 right-0 z-10 ${currentTheme.bg} pt-2 pb-1 px-3`} style={{ top: '52px' }}>
+                <div className="max-w-4xl mx-auto">
+                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 shadow-sm`}>
+                  {(() => {
+                    const now = new Date();
+                    const currentDay = now.getDay();
+                    const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+                    const thisMonday = new Date(now);
+                    thisMonday.setDate(now.getDate() - daysToMonday);
+                    thisMonday.setHours(0, 0, 0, 0);
+                    
+                    const displayMonday = new Date(thisMonday);
+                    displayMonday.setDate(thisMonday.getDate() + (weekOffset * 7));
+                    
+                    const weekDays = [];
+                    for (let i = 0; i < 7; i++) {
+                      const day = new Date(displayMonday);
+                      day.setDate(displayMonday.getDate() + i);
+                      const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+                      const workout = workouts.find(w => w.date === dateStr);
+                      const isToday = dateStr === getTodayDate();
+                      weekDays.push({ date: day, dateStr, dayName: day.toLocaleDateString('en-US', { weekday: 'short' }), dayNum: day.getDate(), workout, isToday });
+                    }
+                    
+                    const weekStart = weekDays[0].date;
+                    const weekEnd = weekDays[6].date;
+                    const isThisWeek = weekOffset === 0;
+                    const isLastWeek = weekOffset === -1;
+                    
+                    let weekLabel = isThisWeek ? 'This Week' : isLastWeek ? 'Last Week' : `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                    
+                    return (
+                      <>
+                        <style>{`
+                          @keyframes slideUp {
+                            from { transform: translateY(100%); opacity: 0.5; }
+                            to { transform: translateY(0); opacity: 1; }
+                          }
+                        `}</style>
+                        <div className="flex items-center justify-between mb-4">
+                          <button onClick={() => { setWeekOffset(prev => prev - 1); setTimeout(() => { const now = new Date(); const currentDay = now.getDay(); const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; const thisMonday = new Date(now); thisMonday.setDate(now.getDate() - daysToMonday); const targetMonday = new Date(thisMonday); targetMonday.setDate(thisMonday.getDate() + ((weekOffset - 1) * 7)); const key = `${targetMonday.getFullYear()}-${String(targetMonday.getMonth() + 1).padStart(2, '0')}-${String(targetMonday.getDate()).padStart(2, '0')}`; const el = document.getElementById(`week-${key}`); const cal = document.querySelector('[data-calendar]'); if (el && cal) { const calBottom = cal.getBoundingClientRect().bottom; const elTop = el.getBoundingClientRect().top; const offset = elTop - calBottom - 12; window.scrollBy({ top: offset, behavior: 'smooth' }); } }, 100); }} className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                          </button>
+                          <div className="font-bold text-lg">{weekLabel}</div>
+                          <button onClick={() => { setWeekOffset(prev => prev + 1); setTimeout(() => { const now = new Date(); const currentDay = now.getDay(); const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; const thisMonday = new Date(now); thisMonday.setDate(now.getDate() - daysToMonday); const targetMonday = new Date(thisMonday); targetMonday.setDate(thisMonday.getDate() + ((weekOffset + 1) * 7)); const key = `${targetMonday.getFullYear()}-${String(targetMonday.getMonth() + 1).padStart(2, '0')}-${String(targetMonday.getDate()).padStart(2, '0')}`; const el = document.getElementById(`week-${key}`); const cal = document.querySelector('[data-calendar]'); if (el && cal) { const calBottom = cal.getBoundingClientRect().bottom; const elTop = el.getBoundingClientRect().top; const offset = elTop - calBottom - 12; window.scrollBy({ top: offset, behavior: 'smooth' }); } }, 100); }} className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                          </button>
+                    </div>
+                        <div className="grid grid-cols-7 gap-2">
+                          {weekDays.map(({ dateStr, dayName, dayNum, workout, isToday }) => {
+                            const color = workout ? getPresetColor(workout.location) : null;
+                            return (
+                              <button key={dateStr} onClick={() => { if (workout) { setSelectedDay(dateStr); setShowDayModal(true); } }} className={`flex flex-col items-center p-2 rounded-lg transition-all ${isToday ? 'ring-2 ring-blue-500' : ''} ${workout ? `${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} cursor-pointer` : `${darkMode ? 'bg-gray-800' : 'bg-gray-50'} opacity-60`}`}>
+                                <div className={`text-xs font-medium ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{dayName}</div>
+                                <div className={`text-lg font-bold ${isToday ? 'text-blue-500' : ''}`}>{dayNum}</div>
+                                {workout ? <div className={`w-3 h-3 rounded-full mt-1 ${color.border.replace('border-', 'bg-')}`}></div> : <div className="w-3 h-3 mt-1"></div>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+                </div>
+              </div>
+
+               {/* Spacer for fixed calendar */}
+                <div className="h-32"></div>
+    
+              {/* Search Input */}
+              {searchExpanded && (
+                <div className="relative mt-3">
+                  <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search workouts..." className={`w-full ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl px-4 py-3 pl-10 text-sm shadow-sm`} autoFocus onBlur={() => { if (!search) setSearchExpanded(false); }} />
+                  <Icons.Search className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                  {search && <button onClick={() => { setSearch(''); setSearchExpanded(false); }} className={`absolute right-3 top-3 ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}><Icons.X className="w-4 h-4" /></button>}
+                </div>
+              )}
+
+              {/* Workout Feed */}
+              <div className="space-y-2 mt-1">
+                {(() => {
+                  const getWeekKey = (dateStr) => {
+                    const [year, month, day] = dateStr.split('-');
+                    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                    const dayOfWeek = date.getDay();
+                    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                    const monday = new Date(date);
+                    monday.setDate(date.getDate() - daysToMonday);
+                    return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+                  };
+                  
+                  const getWeekLabel = (mondayStr) => {
+                    const [year, month, day] = mondayStr.split('-');
+                    const monday = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                    const sunday = new Date(monday);
+                    sunday.setDate(monday.getDate() + 6);
+                    const now = new Date();
+                    const currentDay = now.getDay();
+                    const daysToCurrentMonday = currentDay === 0 ? 6 : currentDay - 1;
+                    const currentMonday = new Date(now);
+                    currentMonday.setDate(now.getDate() - daysToCurrentMonday);
+                    currentMonday.setHours(0, 0, 0, 0);
+                    const lastMonday = new Date(currentMonday);
+                    lastMonday.setDate(currentMonday.getDate() - 7);
+                    const mondayTime = monday.getTime();
+                    if (mondayTime === currentMonday.getTime()) return 'THIS WEEK';
+                    if (mondayTime === lastMonday.getTime()) return 'LAST WEEK';
+                    const startMonth = monday.toLocaleDateString('en-US', { month: 'short' });
+                    const endMonth = sunday.toLocaleDateString('en-US', { month: 'short' });
+                    return startMonth === endMonth ? `${startMonth.toUpperCase()} ${monday.getDate()}-${sunday.getDate()}` : `${startMonth.toUpperCase()} ${monday.getDate()} - ${endMonth.toUpperCase()} ${sunday.getDate()}`;
+                  };
+                  
+                  let filteredWorkouts = [...workouts];
+                  if (search.trim()) {
+                    const q = search.toLowerCase();
+                    filteredWorkouts = filteredWorkouts.filter(w => w.date.includes(q) || (w.location && w.location.toLowerCase().includes(q)) || w.exercises.some(e => e.name.toLowerCase().includes(q)) || (w.notes && w.notes.toLowerCase().includes(q)));
+                  }
+                  
+                  const weekGroups = {};
+                  filteredWorkouts.forEach(w => {
+                    const weekKey = getWeekKey(w.date);
+                    if (!weekGroups[weekKey]) weekGroups[weekKey] = [];
+                    weekGroups[weekKey].push(w);
+                  });
+                  
+                  const sortedWeeks = Object.keys(weekGroups).sort((a, b) => b.localeCompare(a));
+                  
+                  if (sortedWeeks.length === 0) return <div className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>{search ? 'No workouts found' : 'No workouts yet'}</div>;
+                  
+                  return sortedWeeks.map(weekKey => {
+                    const weekWorkouts = weekGroups[weekKey].sort((a, b) => b.date.localeCompare(a.date));
+                    const weekLabel = getWeekLabel(weekKey);
+                    
+                    return (
+                      <div key={weekKey}>
+                        <div id={`week-${weekKey}`} className={`py-2 px-3 mb-3 mt-1 rounded-lg font-bold text-xs tracking-wider ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>{weekLabel}</div>
+                        <div className="space-y-2">
+                          {weekWorkouts.map((w, i) => {
+                            const [year, month, day] = w.date.split('-');
+                            const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                            const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                            const color = getPresetColor(w.location);
+                            const dayProtein = proteinEntries.filter(e => e.date === w.date).reduce((sum, e) => sum + e.grams, 0);
+                            
+                            return (
+                              <button key={`${w.date}-${i}`} onClick={() => { setSelectedDay(w.date); setShowDayModal(true); }} className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md border-l-4 ${color.border}`}>
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="font-bold text-base">{dayOfWeek} {month}/{day}/{year.slice(2)}{w.location && <span className="ml-2 text-base font-bold opacity-70">· {w.location}</span>}</div>
+                                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{w.exercises.length} exercise{w.exercises.length !== 1 ? 's' : ''}{w.structure && ` · ${w.structure === 'pairs' ? `Pairs ${w.structureDuration}'` : 'Circuit'}`}{w.elapsedTime && ` · ${formatTimeHHMMSS(w.elapsedTime)}`}{dayProtein > 0 && ` · ${dayProtein}g protein`}</div>
+                                  </div>
+                                  <svg className={`w-5 h-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          )}
+
+          {/* ==================== STATS VIEWS ==================== */} 
+          {/* Stats Menu */}
+          {view === 'stats' && statsView === 'menu' && (
+            <div className="space-y-3 -mt-9">
+              
+              {/* Volume Trend Chart - AT TOP with Exercise Filter */}
+              {(() => {
+                // Limited exercises for the filter
+                const filterExercises = ['Pull-ups', 'Chin-ups', 'Dips', 'Push-ups', 'Inverted rows', 'Pike push-ups', 'Decline push-ups', 'Bicep curls', 'Hammer curls', 'Lateral raises', 'Overhead press', 'Deadhang'];
+                
+                // Get Monday of current week using local time
+                const now = new Date();
+                const currentDay = now.getDay();
+                const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+                const thisMonday = new Date(now);
+                thisMonday.setDate(now.getDate() - daysToMonday);
+                thisMonday.setHours(0, 0, 0, 0);
+                
+                // Build weekly data
+                const weeklyData = [];
+                for (let i = 11; i >= 0; i--) {
+                  const weekStart = new Date(thisMonday);
+                  weekStart.setDate(thisMonday.getDate() - (i * 7));
+                  
+                  // Format week start using local time
+                  const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
+                  
+                  // Week end is 6 days after start (Mon-Sun)
+                  const weekEnd = new Date(weekStart);
+                  weekEnd.setDate(weekStart.getDate() + 6);
+                  const weekEndStr = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
+                  
+                  const weekWorkouts = workouts.filter(w => {
+                    return w.date >= weekStartStr && w.date <= weekEndStr;
+                  });
+                  
+                  // Calculate reps per exercise for stacked bars
+                  const exerciseReps = {};
+                  let totalReps = 0;
+                  
+                  weekWorkouts.forEach(w => {
+                    w.exercises.forEach(ex => {
+                      const reps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      // If filtering by exercises, only count selected ones
+                      if (!selectedVolumeExercises || selectedVolumeExercises.length === 0 || selectedVolumeExercises.includes(ex.name)) {
+                        exerciseReps[ex.name] = (exerciseReps[ex.name] || 0) + reps;
+                        totalReps += reps;
+                      }
+                    });
+                  });
+                  
+                  weeklyData.push({
+                    label: `${weekStart.getMonth() + 1}/${weekStart.getDate()}`,
+                    value: totalReps,
+                    exerciseReps,
+                    isCurrentWeek: i === 0
+                  });
+                }
+                
+                const maxVolume = Math.max(...weeklyData.map(d => d.value), 1);
+                
+                // Colors for stacked bars
+                const exerciseColors = [
+                  'from-blue-600 to-blue-400',
+                  'from-purple-600 to-purple-400',
+                  'from-green-600 to-green-400',
+                  'from-orange-600 to-orange-400',
+                  'from-pink-600 to-pink-400',
+                  'from-cyan-600 to-cyan-400',
+                  'from-yellow-600 to-yellow-400',
+                  'from-red-600 to-red-400',
+                ];
+                
+                return (
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <h3 className="font-bold text-lg">Volume Trend</h3>
+                      <button
+                        onClick={() => setShowVolumeFilter(!showVolumeFilter)}
+                        className={`text-xs px-2 py-1 rounded-lg ${
+                          selectedVolumeExercises && selectedVolumeExercises.length > 0
+                            ? 'bg-blue-600 text-white'
+                            : darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {selectedVolumeExercises && selectedVolumeExercises.length > 0
+                          ? `${selectedVolumeExercises.length} selected`
+                          : 'Filter'}
+                      </button>
+                    </div>
+                    
+                    {/* Exercise Filter Dropdown */}
+                    {showVolumeFilter && (
+                      <div className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-3 mb-3`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-semibold">Filter by Exercise</span>
+                          {selectedVolumeExercises && selectedVolumeExercises.length > 0 && (
+                            <button
+                              onClick={() => setSelectedVolumeExercises([])}
+                              className="text-xs text-blue-400 hover:text-blue-300"
+                            >
+                              Clear all
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                          {filterExercises.map((exercise, idx) => {
+                            const isSelected = selectedVolumeExercises && selectedVolumeExercises.includes(exercise);
+                            const colorClass = exerciseColors[idx % exerciseColors.length];
+                            return (
+                              <button
+                                key={exercise}
+                                onClick={() => {
+                                  if (isSelected) {
+                                    setSelectedVolumeExercises(selectedVolumeExercises.filter(e => e !== exercise));
+                                  } else {
+                                    setSelectedVolumeExercises([...(selectedVolumeExercises || []), exercise]);
+                                  }
+                                }}
+                                className={`text-xs px-2 py-1 rounded-full transition-all ${
+                                  isSelected
+                                    ? `bg-gradient-to-r ${colorClass} text-white`
+                                    : darkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-700'
+                                }`}
+                              >
+                                {exercise}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
+                      Total reps per week (last 12 weeks)
+                    </div>
+                    
+                    {/* Chart */}
+                    <div className="h-48 flex items-end gap-1">
+                      {weeklyData.map((week, i) => {
+                        const height = maxVolume > 0 ? (week.value / maxVolume) * 100 : 0;
+                        
+                        // Build stacked segments if multiple exercises selected
+                        const segments = [];
+                        if (selectedVolumeExercises && selectedVolumeExercises.length > 1) {
+                          selectedVolumeExercises.forEach((exercise, idx) => {
+                            const reps = week.exerciseReps[exercise] || 0;
+                            if (reps > 0 && week.value > 0) {
+                              const segmentHeight = (reps / week.value) * 100;
+                              segments.push({
+                                exercise,
+                                reps,
+                                height: segmentHeight,
+                                color: exerciseColors[filterExercises.indexOf(exercise) % exerciseColors.length]
+                              });
+                            }
+                          });
+                        }
+                        
+                        return (
+                          <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                            <div className="w-full flex flex-col justify-end relative" style={{ height: '170px' }}>
+                              {week.value > 0 && (
+                                <>
+                                  {segments.length > 1 ? (
+                                    <div className="w-full flex flex-col-reverse" style={{ height: `${height}%` }}>
+                                      {segments.map((seg, si) => (
+                                        <div
+                                          key={si}
+                                          className={`w-full bg-gradient-to-t ${seg.color} ${si === segments.length - 1 ? 'rounded-t' : ''}`}
+                                          style={{ height: `${seg.height}%` }}
+                                          title={`${seg.exercise}: ${seg.reps}`}
+                                        />
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div 
+                                      className="w-full bg-gradient-to-t from-blue-600 to-blue-400 rounded-t transition-all hover:opacity-80"
+                                      style={{ height: `${height}%` }}
+                                    />
+                                  )}
+                                  <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                    {week.value}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            <div className={`text-[9px] ${darkMode ? 'text-gray-500' : 'text-gray-600'} truncate w-full text-center ${week.isCurrentWeek ? 'font-bold text-blue-400' : ''}`}>
+                              {week.label}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Legend for stacked bars */}
+                    {selectedVolumeExercises && selectedVolumeExercises.length > 1 && (
+                      <div className="flex flex-wrap gap-2 mt-3 justify-center">
+                        {selectedVolumeExercises.map((exercise, idx) => (
+                          <div key={exercise} className="flex items-center gap-1">
+                            <div className={`w-3 h-3 rounded bg-gradient-to-r ${exerciseColors[filterExercises.indexOf(exercise) % exerciseColors.length]}`} />
+                            <span className="text-xs text-gray-400">{exercise}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 text-center`}>
+                      This week: {weeklyData[weeklyData.length - 1].value} reps
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {/* Protein Tracker Card - Compact with Add button */}
+              <button
+                onClick={() => {
+                  setStatsView('protein');
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">🥩</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Protein Intake</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {(() => {
+                          const today = getTodayDate();
+                          const todayTotal = proteinEntries
+                            .filter(e => e.date === today)
+                            .reduce((sum, e) => sum + e.grams, 0);
+                          return todayTotal > 0 ? `${todayTotal}g today` : 'Track daily protein intake';
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowAddProtein(true);
+                      }}
+                      className="bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                    >
+                      + Add
+                    </button>
+                    <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+              
+              {/* Body Weight Card - With Add button */}
+              <button
+                onClick={() => {
+                  setStatsView('weight');
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">⚖️</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Body Weight</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {weightEntries.length > 0 
+                          ? `${weightEntries[weightEntries.length - 1].weight} lbs • ${weightEntries.length} entries`
+                          : 'Track your weight over time'
+                        }
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const today = new Date();
+                        setCurrentWeight({ date: getTodayDate(), weight: '', notes: '' });
+                        setEditingWeight(null);
+                        setWeightCalendarMonth(today.getMonth());
+                        setWeightCalendarYear(today.getFullYear());
+                        setShowWeightModal(true);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                    >
+                      + Add
+                    </button>
+                    <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </button>
+              
+              {/* Exercise Stats Card */}
+              <button
+                onClick={() => {
+                  setStatsView('exercises');
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                }}
+                className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">📊</div>
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">Exercise Stats</h3>
+                      <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                        {[...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].length} exercises tracked
+                      </div>
+                    </div>
+                  </div>
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </button>
+            </div>
+          )}
+          
+          {/* Exercise List View - WITH MONTHLY VOLUME WIDGET */}
+          {view === 'stats' && statsView === 'exercises' && !selectedExercise && (
+            <div className="space-y-3 -mt-9">
+              <button
+                onClick={() => {
+                  setStatsView('menu');
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                }}
+                className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} mb-2`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="font-semibold">Back to Stats</span>
+              </button>
+              
+              <h2 className="text-base font-semibold mb-2">Exercise Statistics</h2>
+              
+              {/* Monthly Volume Widget */}
+              <div className={`${darkMode ? 'bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-blue-500/30' : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-300'} rounded-xl p-2 shadow-xl border-2 mb-3`}>
+                <div className="flex items-center justify-between mb-1">
+                  <button
+                    onClick={() => {
+                      const newDate = new Date(volumeWidgetDate);
+                      newDate.setMonth(newDate.getMonth() - 1);
+                      setVolumeWidgetDate(newDate);
+                    }}
+                    className={`p-1 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded transition-colors`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <h3 className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                    {volumeWidgetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  </h3>
+                  <button
+                    onClick={() => {
+                      const newDate = new Date(volumeWidgetDate);
+                      newDate.setMonth(newDate.getMonth() + 1);
+                      setVolumeWidgetDate(newDate);
+                    }}
+                    className={`p-1 ${darkMode ? 'hover:bg-blue-500/20 text-blue-400' : 'hover:bg-blue-100 text-blue-600'} rounded transition-colors`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="space-y-2">
+                  {['Pull-ups', 'Dips', 'Chin-ups'].map((exerciseName, idx) => {
+                    const emoji = idx === 0 ? '💪' : idx === 1 ? '🔥' : '⚡';
+                    const monthStr = `${volumeWidgetDate.getFullYear()}-${String(volumeWidgetDate.getMonth() + 1).padStart(2, '0')}`;
+                    const monthlyVolume = workouts.filter(w => w.date.startsWith(monthStr)).reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === exerciseName);
+                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                    }, 0);
+                    
+                    const prevMonthDate = new Date(volumeWidgetDate);
+                    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+                    const prevMonthStr = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
+                    const prevMonthVolume = workouts.filter(w => w.date.startsWith(prevMonthStr)).reduce((total, w) => {
+                      const exercise = w.exercises.find(e => e.name === exerciseName);
+                      return total + (exercise ? exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0) : 0);
+                    }, 0);
+                    
+                    const percentage = prevMonthVolume > 0 ? Math.min((monthlyVolume / prevMonthVolume) * 100, 100) : 0;
+                    
+                    return (
+                      <div key={exerciseName} className={`${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} rounded-lg p-3`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{emoji}</span>
+                            <span className={`text-sm font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{exerciseName}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{monthlyVolume}</span>
+                            {prevMonthVolume > 0 && (
+                              <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}> / {prevMonthVolume}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className={`w-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded-full overflow-hidden`}>
+                          <div className="h-full bg-blue-500 transition-all" style={{ width: `${percentage}%` }}></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              
+              {/* Exercise List */}
+              {(() => {
+                const allExercises = [...new Set(workouts.flatMap(w => w.exercises.map(ex => ex.name)))].sort();
+                
+                return allExercises.map(exerciseName => {
+                  const totalVolume = workouts.reduce((total, w) => {
+                    const exercise = w.exercises.find(ex => ex.name === exerciseName);
+                    if (exercise) {
+                      return total + exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                    }
+                    return total;
+                  }, 0);
+                  
+                  const workoutCount = workouts.filter(w => 
+                    w.exercises.some(ex => ex.name === exerciseName)
+                  ).length;
+                  
+                  return (
+                    <button
+                      key={exerciseName}
+                      onClick={() => {
+                        setSelectedExercise(exerciseName);
+                        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                      }}
+                      className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50 border border-gray-200'} rounded-xl p-4 text-left transition-colors shadow-md`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-bold text-lg mb-1">{exerciseName}</h3>
+                          <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {workoutCount} workout{workoutCount !== 1 ? 's' : ''} • {totalVolume.toLocaleString()} total reps
+                          </div>
+                        </div>
+                        <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </button>
+                  );
+                });
+              })()}
+            </div>
+          )}
+          
+          {/* Exercise Detail View */}
+          {view === 'stats' && statsView === 'exercises' && selectedExercise && (() => {
+            const stats = (() => {
+              const weekly = {};
+              const monthly = {};
+              
+              workouts.forEach(w => {
+                const wDate = new Date(w.date);
+                const dayOfWeek = wDate.getDay();
+                const monday = new Date(wDate);
+                monday.setDate(wDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                const weekKey = monday.toISOString().split('T')[0];
+                
+                const monthKey = w.date.substring(0, 7);
+                
+                const exercise = w.exercises.find(ex => ex.name === selectedExercise);
+                if (exercise) {
+                  const reps = exercise.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                  weekly[weekKey] = (weekly[weekKey] || 0) + reps;
+                  monthly[monthKey] = (monthly[monthKey] || 0) + reps;
+                }
+              });
+              
+              return { weekly, monthly };
+            })();
+            
+            return (
+              <div className="space-y-4 -mt-9">
+                <button
+                  onClick={() => setSelectedExercise(null)}
+                  className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="font-semibold">Back to All Exercises</span>
+                </button>
+                
+                <h2 className="text-2xl font-bold">{selectedExercise}</h2>
+                
+                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                  <h3 className="font-bold text-lg mb-3">Weekly Volume</h3>
+                  <div className="space-y-2">
+                    {Object.entries(stats.weekly)
+                      .sort(([a], [b]) => b.localeCompare(a))
+                      .map(([week, reps]) => (
+                        <button
+                          key={week}
+                          onClick={() => {
+                            const weekDate = new Date(week);
+                            setLogCalendarDate(weekDate);
+                            setView('home');
+                            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 300);
+                          }}
+                          className={`flex items-center gap-2 w-full ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded px-2 -mx-2 py-1`}
+                        >
+                          <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} w-24 text-right`}>
+                            {new Date(week).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          </span>
+                          <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-6 relative overflow-hidden`}>
+                            <div
+                              className="bg-gradient-to-r from-blue-500 to-purple-500 h-full rounded-full shadow-sm"
+                              style={{ width: `${(reps / Math.max(...Object.values(stats.weekly))) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-base font-semibold w-16 text-right">{reps}</span>
+                        </button>
+                      ))}
+                  </div>
+                </div>
+                
+                <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+                  <h3 className="font-bold text-lg mb-3">Monthly Volume</h3>
+                  <div className="space-y-2">
+                    {Object.entries(stats.monthly)
+                      .sort(([a], [b]) => b.localeCompare(a))
+                      .map(([month, reps]) => (
+                        <div key={month} className="flex items-center gap-2">
+                          <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} w-24 text-right`}>{month}</span>
+                          <div className={`flex-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-6 relative overflow-hidden`}>
+                            <div
+                              className="bg-green-500 h-full rounded-full"
+                              style={{ width: `${(reps / Math.max(...Object.values(stats.monthly))) * 100}%` }}
+                            />
+                          </div>
+                          <span className="text-base font-semibold w-16 text-right">{reps}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+          
+          {/* Body Weight View */}
+          {view === 'stats' && statsView === 'weight' && (
+            <div className="space-y-3 -mt-9">
+              <button
+                onClick={() => {
+                  setStatsView('menu');
+                  setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                }}
+                className={`flex items-center gap-2 ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} mb-2`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="font-semibold">Back to Stats</span>
+              </button>
+              
+              <h2 className="text-base font-semibold mb-2">Body Weight</h2>
+              
+              <button
+                onClick={() => {
+                  const today = new Date();
+                  setCurrentWeight({ date: getTodayDate(), weight: '', notes: '' });
+                  setEditingWeight(null);
+                  setWeightCalendarMonth(today.getMonth());
+                  setWeightCalendarYear(today.getFullYear());
+                  setShowWeightModal(true);
+                }}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl p-3 mb-3 flex items-center justify-center gap-2 text-lg font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+              >
+                <Icons.Plus className="w-6 h-6" />
+                Add Weight Entry
+              </button>
+              
+              {weightEntries.length > 0 && (() => {
+                const sorted = [...weightEntries].sort((a, b) => b.date.localeCompare(a.date));
+                const latest = sorted[0];
+                const oldest = sorted[sorted.length - 1];
+                const change = latest.weight - oldest.weight;
+                
+                const oldestDate = new Date(oldest.date);
+                const latestDate = new Date(latest.date);
+                const daysDiff = (latestDate - oldestDate) / (1000 * 60 * 60 * 24);
+                const weeksDiff = daysDiff / 7;
+                const changeRate = weeksDiff > 0 ? (change / weeksDiff).toFixed(2) : null;
+                
+                return (
+                  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
+                    <h3 className="font-bold text-lg mb-3">Summary</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Current</div>
+                        <div className="text-2xl font-bold">{latest.weight} <span className="text-sm font-normal">lbs</span></div>
+                      </div>
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Starting</div>
+                        <div className="text-2xl font-bold">{oldest.weight} <span className="text-sm font-normal">lbs</span></div>
+                      </div>
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Total Change</div>
+                        <div className="text-xl font-bold">{change > 0 ? '+' : ''}{change.toFixed(1)} lbs</div>
+                      </div>
+                      {changeRate && weeksDiff >= 1 && (
+                        <div>
+                          <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Rate</div>
+                          <div className="text-xl font-bold">{changeRate > 0 ? '+' : ''}{changeRate} <span className="text-sm font-normal">lbs/week</span></div>
+                        </div>
+                      )}
+                      <div>
+                        <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1`}>Entries</div>
+                        <div className="text-xl font-bold">{weightEntries.length}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+              
+              {/* IMPROVED Weight Chart */}
+{weightEntries.length > 1 && (() => {
+  const sorted = [...weightEntries].sort((a, b) => a.date.localeCompare(b.date));
+  const weights = sorted.map(e => parseFloat(e.weight));
+  const dates = sorted.map(e => e.date);
+  
+  const minWeight = Math.min(...weights);
+  const maxWeight = Math.max(...weights);
+  const range = maxWeight - minWeight;
+  const padding = range * 0.15 || 2;
+  const chartMin = Math.floor(minWeight - padding);
+  const chartMax = Math.ceil(maxWeight + padding);
+  const chartRange = chartMax - chartMin;
+  
+  // Generate Y-axis ticks
+  const yTicks = [];
+  const tickCount = 4;
+  for (let i = 0; i <= tickCount; i++) {
+    yTicks.push(chartMax - (i * chartRange / tickCount));
+  }
+  
+  const points = weights.map((w, i) => {
+    const x = weights.length > 1 ? (i / (weights.length - 1)) * 100 : 50;
+    const y = ((chartMax - w) / chartRange) * 100;
+    return { x, y, weight: w, date: dates[i] };
+  });
+  
+  const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+  const fillPath = `${pathData} L 100 100 L 0 100 Z`;
+  
+  return (
+    <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md mb-4`}>
+      <h3 className="font-bold text-lg mb-3">Weight Trend</h3>
+      <div className="relative" style={{ height: '200px' }}>
+        {/* Y-axis labels */}
+        <div className="absolute left-0 top-0 bottom-6 flex flex-col justify-between w-10 text-right pr-2">
+          {yTicks.map((tick, i) => (
+            <span key={i} className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              {tick.toFixed(0)}
+            </span>
+          ))}
+        </div>
+        
+        {/* Chart area */}
+        <div className="absolute left-10 right-0 top-0 bottom-6">
+          {/* Grid lines */}
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+            {yTicks.map((_, i) => (
+              <line
+                key={i}
+                x1="0"
+                y1={i * 100 / tickCount}
+                x2="100"
+                y2={i * 100 / tickCount}
+                stroke={darkMode ? '#374151' : '#e5e7eb'}
+                strokeWidth="0.5"
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+          </svg>
+          
+          {/* Chart fill and line */}
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+            <defs>
+              <linearGradient id="weightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.05" />
+              </linearGradient>
+            </defs>
+            <path d={fillPath} fill="url(#weightGradient)" />
+            <path d={pathData} fill="none" stroke="#3b82f6" strokeWidth="2" vectorEffect="non-scaling-stroke" strokeLinejoin="round" strokeLinecap="round" />
+          </svg>
+          
+          {/* Data points */}
+          <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
+            {points.map((p, i) => (
+              <circle key={i} cx={p.x} cy={p.y} r="1.5" fill="#3b82f6" stroke="white" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
+            ))}
+          </svg>
+        </div>
+        
+        {/* X-axis labels */}
+        <div className="absolute bottom-0 left-10 right-0 flex justify-between px-1">
+          <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            {new Date(dates[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+          {dates.length > 2 && (
+            <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+              {new Date(dates[Math.floor(dates.length / 2)]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </span>
+          )}
+          <span className={`text-[10px] ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+            {new Date(dates[dates.length - 1]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+})()}
+
+{/* Weight History List */}
+{weightEntries.length > 0 && (
+  <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl p-4 shadow-md`}>
+    <h3 className="font-bold text-lg mb-3">History</h3>
+    <div className="space-y-2 max-h-96 overflow-y-auto">
+      {[...weightEntries]
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .map((entry, idx) => {
+          const [year, month, day] = entry.date.split('-');
+          const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+          const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+          
+          // Calculate change from previous entry
+          const sortedEntries = [...weightEntries].sort((a, b) => b.date.localeCompare(a.date));
+          const currentIdx = sortedEntries.findIndex(e => e.date === entry.date);
+          const prevEntry = sortedEntries[currentIdx + 1];
+          const change = prevEntry ? entry.weight - prevEntry.weight : null;
+          
+          return (
+            <div 
+              key={entry.date + '-' + entry.weight}
+              className={`${darkMode ? 'bg-gray-700/50 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'} rounded-lg p-3 transition-colors`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">{dayOfWeek} {month}/{day}/{year.slice(2)}</span>
+                    {change !== null && (
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                        change > 0 
+                          ? 'bg-red-500/20 text-red-400' 
+                          : change < 0 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        {change > 0 ? '+' : ''}{change.toFixed(1)}
+                      </span>
+                    )}
+                  </div>
+                  {entry.notes && (
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-0.5`}>
+                      {entry.notes}
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold">{entry.weight}</span>
+                  <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>lbs</span>
+                  <div className="flex gap-1 ml-2">
+                    <button
+                      onClick={() => {
+                        const entryIdx = weightEntries.findIndex(e => e.date === entry.date && e.weight === entry.weight);
+                        setEditingWeight(entryIdx);
+                        setCurrentWeight({ date: entry.date, weight: entry.weight.toString(), notes: entry.notes || '' });
+                        const entryDate = new Date(entry.date);
+                        setWeightCalendarMonth(entryDate.getMonth());
+                        setWeightCalendarYear(entryDate.getFullYear());
+                        setShowWeightModal(true);
+                      }}
+                      className={`p-1.5 rounded ${darkMode ? 'hover:bg-gray-600 text-gray-400' : 'hover:bg-gray-200 text-gray-500'}`}
+                    >
+                      <Icons.Edit />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const entryIdx = weightEntries.findIndex(e => e.date === entry.date && e.weight === entry.weight);
+                        setDeleteWeight(entryIdx);
+                      }}
+                      className={`p-1.5 rounded ${darkMode ? 'hover:bg-red-900/50 text-red-400' : 'hover:bg-red-100 text-red-500'}`}
+                    >
+                      <Icons.Trash />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+    </div>
+  </div>
+)}
+            </div>
+          )}
+          
+          {/* Protein View - 30 days, today expanded, past collapsible */}
+          {view === 'stats' && statsView === 'protein' && (
+            <div className="space-y-3 -mt-9">
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  onClick={() => {
+                    setStatsView('menu');
+                    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+                  }}
+                  className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-1`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <h2 className="text-xl font-bold">🥩 Protein Intake</h2>
+              </div>
+              
+              <button
+                onClick={() => setShowAddProtein(true)}
+                className="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-xl text-base font-bold transition-colors flex items-center justify-center gap-2 shadow-md"
+              >
+                <span className="text-xl">+</span>
+                Add Protein
+              </button>
+              
+              <div className="space-y-2">
+                {(() => {
+                  const last30Days = [];
+                  const now = new Date();
+                  for (let i = 0; i < 30; i++) {
+                    const date = new Date(now);
+                    date.setDate(now.getDate() - i);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
+                    const dayEntries = proteinEntries.filter(e => e.date === dateStr);
+                    const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
+                    const dayName = i === 0 ? 'Today' : i === 1 ? 'Yesterday' : date.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dateDisplay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    last30Days.push({ date: dateStr, dayName, dateDisplay, total, entries: dayEntries, isToday: i === 0 });
+                  }
+                  
+                  return last30Days.map(({ date, dayName, dateDisplay, total, entries, isToday }) => {
+                    const isExpanded = isToday || expandedProteinDays.has(date);
+                    
+                    return (
+                      <div key={date} data-protein-date={date} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                        {isToday ? (
+                          <div className="p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div>
+                                <div className="font-bold text-base">{dayName}</div>
+                                <div className="text-xs text-gray-500">{dateDisplay}</div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="text-right">
+                                  <div className="text-2xl font-black text-green-500">{total}g</div>
+                                  <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
+                                </div>
+                                <button
+                                  onClick={() => setEditingProteinDate(date)}
+                                  className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-2`}
+                                >
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                            {entries.length > 0 && (
+                              <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
+                                {entries.map((entry) => {
+                                  const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase() : '';
+                                  return (
+                                    <div key={entry.timestamp} className="flex items-center text-sm">
+                                      <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
+                                      <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
+                                      <span className="w-12 text-right font-bold">{entry.grams}g</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                const newExpanded = new Set(expandedProteinDays);
+                                if (newExpanded.has(date)) {
+                                  newExpanded.delete(date);
+                                } else {
+                                  newExpanded.add(date);
+                                  const element = e.currentTarget.closest('[data-protein-date]');
+                                  requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                      setTimeout(() => {
+                                        if (element) {
+                                          const rect = element.getBoundingClientRect();
+                                          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                          const targetY = rect.top + scrollTop - 120;
+                                          window.scrollTo({ top: targetY, behavior: 'smooth' });
+                                        }
+                                      }, 100);
+                                    });
+                                  });
+                                }
+                                setExpandedProteinDays(newExpanded);
+                              }}
+                              className={`w-full p-3 text-left transition-colors ${darkMode ? 'hover:bg-white/5' : 'hover:bg-gray-50'}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="font-bold text-base">{dayName}</div>
+                                  <div className="text-xs text-gray-500">{dateDisplay}</div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <div className="text-right">
+                                    <div className="text-2xl font-black text-green-500">{total}g</div>
+                                    <div className="text-xs text-gray-500">{entries.length} meal{entries.length !== 1 ? 's' : ''}</div>
+                                  </div>
+                                  <div className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                    <Icons.ChevronDown />
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                            {isExpanded && (
+                              <div className="px-3 pb-3">
+                                <div className="flex justify-end mb-2">
+                                  <button
+                                    onClick={() => setEditingProteinDate(date)}
+                                    className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-1 text-xs flex items-center gap-1`}
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Edit
+                                  </button>
+                                </div>
+                                {entries.length > 0 ? (
+                                  <div className={`${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-2 space-y-1`}>
+                                    {entries.map((entry) => {
+                                      const time = entry.timestamp ? new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase() : '';
+                                      return (
+                                        <div key={entry.timestamp} className="flex items-center text-sm">
+                                          <span className={`flex-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{entry.food}</span>
+                                          <span className={`w-16 text-center ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-xs`}>{time}</span>
+                                          <span className="w-12 text-right font-bold">{entry.grams}g</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className={`text-sm ${darkMode ? 'text-gray-500' : 'text-gray-400'} text-center py-2`}>No entries</div>
+                                )}
+                                <button
+                                  onClick={() => {
+                                    const newExpanded = new Set(expandedProteinDays);
+                                    newExpanded.delete(date);
+                                    setExpandedProteinDays(newExpanded);
+                                  }}
+                                  className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 mt-2`}
+                                >
+                                  <div className="transform rotate-180">
+                                    <Icons.ChevronDown className="w-3 h-3" />
+                                  </div>
+                                  Collapse
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          )}
+          
+          {/* ==================== END STATS VIEWS ==================== */}
+          {view === 'settings' && (
+            <div className="space-y-3 -mt-9">
+              <h2 className="text-base font-semibold mb-2">Settings</h2>
+              
+              {/* Workout Presets - Collapsed at top */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                <button
+                  onClick={() => setShowPresetsMenu(!showPresetsMenu)}
+                  className={`w-full p-4 flex items-center justify-between ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">💪</span>
+                    <span className="font-bold">Workout Presets</span>
+                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>({presets.length})</span>
+                  </div>
+                  <div className={`transform transition-transform ${showPresetsMenu ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
+                </button>
+                
+                {showPresetsMenu && (
+                  <div className={`p-3 space-y-2 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
+                    {presets.map((p, i) => {
+                      const color = getPresetColor(p.name);
+                      return (
+                        <div 
+                          key={i} 
+                          className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg overflow-hidden transition-all hover:shadow-md`}
+                        >
+                          <div className={`flex items-center border-l-4 ${color.border}`}>
+                            {/* Reorder Buttons */}
+                            <div className="flex flex-col px-1">
+                              <button
+                                onClick={() => {
+                                  if (i > 0) {
+                                    const updated = [...presets];
+                                    [updated[i - 1], updated[i]] = [updated[i], updated[i - 1]];
+                                    save(updated, 'presets', setPresets);
+                                  }
+                                }}
+                                disabled={i === 0}
+                                className={`p-1 ${i === 0 ? 'opacity-30 cursor-not-allowed' : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}`}
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (i < presets.length - 1) {
+                                    const updated = [...presets];
+                                    [updated[i], updated[i + 1]] = [updated[i + 1], updated[i]];
+                                    save(updated, 'presets', setPresets);
+                                  }
+                                }}
+                                disabled={i === presets.length - 1}
+                                className={`p-1 ${i === presets.length - 1 ? 'opacity-30 cursor-not-allowed' : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}`}
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
+                            
+                            {/* Color Indicator & Content */}
+                            <button
+                              onClick={() => {
+                                setEditingPreset(i);
+                                setEditPresetName(p.name);
+                                setEditPresetExercises([...p.exercises]);
+                                setEditPresetColor(p.color || 'Blue');
+                                setEditPresetIncludeInMenu(p.includeInMenu !== false);
+                              }}
+                              className="flex-1 text-left flex items-center gap-3 py-3 pr-3"
+                            >
+                              {/* Color Badge */}
+                              <div className={`w-3 h-3 rounded-full ${color.border.replace('border-', 'bg-')} flex-shrink-0`}></div>
+                              
+                              {/* Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-sm">{p.name}</div>
+                                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} truncate`}>
+                                  {p.exercises.length} exercises • {color.name}
+                                </div>
+                              </div>
+                              
+                              {/* Edit Icon */}
+                              <Icons.Edit className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'} flex-shrink-0`} />
+                            </button>
+                            
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => setDeletePreset(i)}
+                              className={`px-3 py-3 ${darkMode ? 'text-red-400 hover:text-red-300' : 'text-red-500 hover:text-red-600'} transition-colors`}
+                            >
+                              <Icons.Trash />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Create New Preset Button */}
+                    <button
+                      onClick={() => {
+                        setNewPresetName('');
+                        setNewPresetExercises(exercises.length > 0 ? [exercises[0]] : []);
+                        setNewPresetColor('Blue');
+                        setNewPresetIncludeInMenu(true);
+                        setShowCreatePreset(true);
+                      }}
+                      className={`w-full py-3 rounded-lg border-2 border-dashed transition-all ${
+                        darkMode 
+                          ? 'border-gray-600 hover:border-blue-500 text-gray-400 hover:text-blue-400' 
+                          : 'border-gray-300 hover:border-blue-500 text-gray-600 hover:text-blue-600'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <Icons.Plus />
+                        <span className="font-semibold">Create New Preset</span>
+                      </div>
+                    </button>
+                    
+                    {presets.length === 0 && (
+                      <div className={`text-center py-8 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        <div className="text-4xl mb-2">💪</div>
+                        <div className="text-sm">No presets yet</div>
+                        <div className="text-xs mt-1">Create a Manual workout and save it as a preset!</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Exercise Presets */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                <button
+                  onClick={() => setShowExercisesMenu(!showExercisesMenu)}
+                  className={`w-full p-4 flex items-center justify-between ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🏋️</span>
+                    <span className="font-bold">Exercise Presets</span>
+                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>({exercises.length})</span>
+                  </div>
+                  <div className={`transform transition-transform ${showExercisesMenu ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
+                </button>
+                
+                {showExercisesMenu && (
+                  <div className={`p-3 space-y-2 ${darkMode ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
+                    {exercises.sort((a, b) => a.localeCompare(b)).map((ex, i) => (
+                      <div 
+                        key={i} 
+                        className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3 flex items-center justify-between`}
+                      >
+                        <span className="font-medium">{ex}</span>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Delete "${ex}"?`)) {
+                              const updated = exercises.filter(e => e !== ex);
+                              setExercises(updated);
+                              localStorage.setItem('exercises', JSON.stringify(updated));
+                            }
+                          }}
+                          className="text-red-500 hover:text-red-400 p-1"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                    
+                    <button
+                      onClick={() => {
+                        const newExercise = prompt('Enter exercise name:');
+                        if (newExercise && newExercise.trim()) {
+                          const trimmed = newExercise.trim();
+                          if (!exercises.includes(trimmed)) {
+                            const updated = [...exercises, trimmed];
+                            setExercises(updated);
+                            localStorage.setItem('exercises', JSON.stringify(updated));
+                          } else {
+                            alert('Exercise already exists!');
+                          }
+                        }
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-1"
+                    >
+                      <span className="text-lg">+</span>
+                      Add Exercise
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Data Import/Export Section */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md overflow-hidden`}>
+                <button
+                  onClick={() => setShowDataManagement(!showDataManagement)}
+                  className="w-full p-4 flex items-center justify-between text-left"
+                >
+                  <h3 className="font-bold flex items-center gap-2">
+                    <span className="text-lg">💾</span>
+                    Data Management
+                  </h3>
+                  <div className={`transform transition-transform ${showDataManagement ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
+                </button>
+                
+                {showDataManagement && (
+                  <div className="px-4 pb-4 space-y-2 border-t border-gray-700">
+                    <label className="cursor-pointer block mt-2">
+                      <div className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
+                        <Icons.Upload />
+                        Import Presets
+                      </div>
+                      <input type="file" accept=".csv" onChange={importPresets} className="hidden" />
+                    </label>
+                    
+                    <label className="cursor-pointer block">
+                      <div className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all">
+                        <Icons.Upload />
+                        Import Workouts
+                      </div>
+                      <input type="file" accept=".csv" onChange={importWorkouts} className="hidden" />
+                    </label>
+                    
+                    <button 
+                      onClick={() => {
+                        exportCSV();
+                        setToastMessage('CSV file downloaded!');
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 3000);
+                      }}
+                      className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
+                    >
+                      <Icons.Download />
+                      Export All Data
+                    </button>
+                    
+                    <button 
+                    onClick={async () => {
+                      try {
+                        const request = indexedDB.open('GorsLogBackups', 1);
+                        request.onsuccess = (e) => {
+                          const db = e.target.result;
+                          const transaction = db.transaction(['backups'], 'readonly');
+                          const store = transaction.objectStore('backups');
+                          const getAllRequest = store.getAll();
+                          
+                          getAllRequest.onsuccess = () => {
+                            const backups = getAllRequest.result.sort((a, b) => b.timestamp - a.timestamp);
+                            setBackupsList(backups);
+                            setShowBackups(true);
+                          };
+                        };
+                      } catch (err) {
+                        console.error('Failed to load backups:', err);
+                        setToastMessage('Failed to load backups');
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 3000);
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-md transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    View Backups
+                  </button>
+                  
+                  <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-3 px-1`}>
+                    Auto-backups every 7 days • Last 5 backups kept
+                  </div>
+                </div>
+                )}
+              </div>
+
+              {/* Data Deletion Section */}
+              <div className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-xl shadow-md border-2 ${darkMode ? 'border-red-900/30' : 'border-red-200'} overflow-hidden`}>
+                <button
+                  onClick={() => setShowDataDeletion(!showDataDeletion)}
+                  className="w-full p-4 flex items-center justify-between text-left"
+                >
+                  <h3 className="font-bold flex items-center gap-2 text-red-400">
+                    <span className="text-lg">⚠️</span>
+                    Data Deletion
+                  </h3>
+                  <div className={`transform transition-transform ${showDataDeletion ? 'rotate-180' : ''}`}>
+                    <Icons.ChevronDown />
+                  </div>
+                </button>
+                
+                {showDataDeletion && (
+                  <div className="px-4 pb-4 border-t border-gray-700">
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3 mt-2`}>
+                      Permanently delete all workout data. This action cannot be undone.
+                    </p>
+                    <button 
+                      onClick={() => setShowClear(true)} 
+                      className="w-full bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-3 rounded-lg text-sm font-bold shadow-md transition-all">
+                      Delete All Workouts
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Day Details Modal */}
+{showDayModal && selectedDay && (() => {
+  const workout = workouts.find(w => w.date === selectedDay);
+  if (!workout) return null;
+
+  const [year, month, day] = selectedDay.split('-');
+  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+  
+  const workoutIndex = workouts.findIndex(w => w.date === selectedDay);
+  
+  const totalReps = workout.exercises.reduce((sum, ex) => 
+    sum + ex.sets.reduce((s, set) => s + (set.reps || 0), 0), 0
+  );
+  
+  const dayProtein = proteinEntries
+    .filter(e => e.date === selectedDay)
+    .reduce((sum, e) => sum + e.grams, 0);
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" 
+      onClick={() => setShowDayModal(false)}
+    >
+      <div 
+  className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[85vh] overflow-y-auto pb-8`}
+  onClick={(e) => e.stopPropagation()}
+  style={{ animation: 'slideUp 0.35s ease-out' }}
+  onTouchStart={(e) => {
+    const el = e.currentTarget;
+    el.dataset.startY = e.touches[0].clientY;
+    el.dataset.scrollTop = el.scrollTop;
+  }}
+  onTouchMove={(e) => {
+    const el = e.currentTarget;
+    const startY = parseFloat(el.dataset.startY);
+    const scrollTop = parseFloat(el.dataset.scrollTop);
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    
+    // Only allow drag down when at top of scroll
+    if (scrollTop <= 0 && diff > 0) {
+      el.style.transform = `translateY(${diff}px)`;
+      el.style.transition = 'none';
+    }
+  }}
+  onTouchEnd={(e) => {
+    const el = e.currentTarget;
+    const startY = parseFloat(el.dataset.startY);
+    const scrollTop = parseFloat(el.dataset.scrollTop);
+    const currentY = e.changedTouches[0].clientY;
+    const diff = currentY - startY;
+    
+    el.style.transition = 'transform 0.2s ease-out';
+    
+    // Close if dragged down more than 100px when at top
+    if (scrollTop <= 0 && diff > 100) {
+      el.style.transform = 'translateY(100%)';
+      setTimeout(() => setShowDayModal(false), 200);
+    } else {
+      el.style.transform = '';
+    }
+  }}
+>
+        {/* Drag handle */}
+        <div className={`flex justify-center pt-3 pb-2 sticky top-0 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+        </div>
+        
+        <div className="p-4">
+          {/* Header with Stats */}
+          {(() => {
+            const color = getPresetColor(workout.location);
+            return (
+              <div className={`mb-4 p-3 rounded-lg border-l-4 ${color.border} ${darkMode ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-lg">{dayOfWeek}, {month}/{day}/{year.slice(2)}</h3>
+                      {workout.location && <span className="font-bold text-lg opacity-70">· {workout.location}</span>}
+                    </div>
+                    <div className={`flex items-center gap-1.5 text-xs mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      <span>{workout.exercises.length} exercises</span>
+                      <span className="opacity-50">·</span>
+                      <span>{workout.structure === 'pairs' ? `Pairs ${workout.structureDuration}'` : workout.structure === 'circuit' ? 'Circuit' : '--'}</span>
+                      <span className="opacity-50">·</span>
+                      <span>{workout.elapsedTime ? formatTimeHHMMSS(workout.elapsedTime) : '--'}</span>
+                      <span className="opacity-50">·</span>
+                      <span>{dayProtein > 0 ? `${dayProtein}g protein` : '--'}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowDayModal(false)}
+                    className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Exercises Table */}
+          <div className={`rounded-lg overflow-hidden mb-4 ${darkMode ? 'bg-gray-700/30' : 'bg-gray-50'}`}>
+            {workout.exercises.map((ex, ei) => {
+              const exReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+              return (
+                <div key={ei} className={`flex items-center justify-between p-3 ${ei !== workout.exercises.length - 1 ? (darkMode ? 'border-b border-gray-700' : 'border-b border-gray-200') : ''}`}>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{ex.name}</div>
+                    {ex.notes && <div className={`text-xs mt-0.5 ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>{ex.notes}</div>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {ex.sets.map((s, si) => (
+                        <span key={si}>
+                          {s.reps}{si < ex.sets.length - 1 && <span className="mx-1">·</span>}
+                        </span>
+                      ))}
+                    </div>
+                    <div className={`font-bold text-sm min-w-[40px] text-right ${darkMode ? 'text-white' : 'text-gray-900'}`}>{exReps}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Workout Notes */}
+          {workout.notes && (
+            <div className={`p-3 rounded-lg mb-4 ${darkMode ? 'bg-yellow-900/20 border border-yellow-700/30' : 'bg-yellow-50 border border-yellow-200'}`}>
+              <div className={`text-xs font-semibold mb-1 ${darkMode ? 'text-yellow-500' : 'text-yellow-700'}`}>NOTES</div>
+              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{workout.notes}</div>
+            </div>
+          )}
+          
+          {/* Action Buttons */}
+<div className={`grid grid-cols-4 gap-2 pt-3 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+  <button
+    onClick={() => {
+      copyToSheets(workout);
+      setShowDayModal(false);
+    }}
+    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+  >
+    <div className="w-5 h-5 flex items-center justify-center text-blue-400">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+    </div>
+    <span className="text-xs font-medium">Copy</span>
+  </button>
+  <button
+    onClick={() => {
+      shareWorkout(workout);
+      setShowDayModal(false);
+    }}
+    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+  >
+    <div className="w-5 h-5 flex items-center justify-center text-purple-400">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+        <polyline points="16 6 12 2 8 6"/>
+        <line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+    </div>
+    <span className="text-xs font-medium">Share</span>
+  </button>
+  <button
+    onClick={() => {
+      if (workoutIndex !== -1) {
+        editWorkout(workoutIndex);
+        setShowDayModal(false);
+      }
+    }}
+    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+  >
+    <div className="w-5 h-5 flex items-center justify-center text-green-400">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+    </div>
+    <span className="text-xs font-medium">Edit</span>
+  </button>
+  <button
+    onClick={() => {
+      if (workoutIndex !== -1) {
+        setDeleteWorkout(workoutIndex);
+        setShowDayModal(false);
+      }
+    }}
+    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+  >
+    <div className="w-5 h-5 flex items-center justify-center text-red-400">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+      </svg>
+    </div>
+    <span className="text-xs font-medium">Delete</span>
+  </button>
+</div>
+            </div>
+      </div>
+    </div>
+  );
+})()}
+        
+        {/* {/* Preset Selector Modal - 3 Tab Menu */}
+{showPresetSelector && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPresetSelector(false)}>
+    <div 
+      className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col`} 
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header with Tabs */}
+      <div className={`${darkMode ? 'border-gray-700' : 'border-gray-200'} border-b`}>
+        <div className="flex items-center justify-between px-4 pt-3 pb-2">
+          <h3 className="font-bold text-lg">Quick Add</h3>
+          <button
+            onClick={() => setShowPresetSelector(false)}
+            className={`${darkMode ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            <Icons.X />
+          </button>
+        </div>
+        
+        {/* Tab Buttons */}
+        <div className="flex">
+          {[
+            { id: 'workout', label: '🏋️ Workout', color: 'blue' },
+            { id: 'protein', label: '🥩 Protein', color: 'green' },
+            { id: 'weight', label: '⚖️ Weight', color: 'purple' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setQuickAddTab(tab.id)}
+              className={`flex-1 py-3 text-sm font-semibold transition-all border-b-2 ${
+                quickAddTab === tab.id
+                  ? tab.color === 'blue' 
+                    ? 'border-blue-500 text-blue-500' 
+                    : tab.color === 'green'
+                    ? 'border-green-500 text-green-500'
+                    : 'border-purple-500 text-purple-500'
+                  : `border-transparent ${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Tab Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {/* Workout Tab */}
+        {quickAddTab === 'workout' && (
+          <div className="space-y-2">
+            {presets.filter(p => p.includeInMenu !== false).map((p, i) => {
+              const color = getPresetColor(p.name);
+              return (
+                <button
+                  key={i}
+                  onClick={() => {
+                    loadPreset(p);
+                    setShowPresetSelector(false);
+                    setShowWorkoutModal(true);
+                    setEditing(null);
+                    setWorkoutStarted(false);
+                    setWorkoutTimer(0);
+                    setTimerRunning(false);
+                  }}
+                  className={`w-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} p-4 rounded-lg text-left border-l-4 ${color.border} transition-all`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`w-3 h-3 rounded-full ${color.border.replace('border-', 'bg-')}`}></div>
+                    <div className="font-medium text-base">{p.name}</div>
+                  </div>
+                  {p.name === 'Manual' ? (
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-5`}>Build your own</div>
+                  ) : p.exercises.length > 0 && (
+                    <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} ml-5`}>{p.exercises.length} exercises</div>
+                  )}
+                </button>
+              );
+            })}
+            
+            {presets.length === 0 && (
+              <div className="text-center text-gray-500 py-8 text-sm">
+                No presets yet. Add some in Settings!
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Protein Tab */}
+        {quickAddTab === 'protein' && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const grams = formData.get('grams');
+              const food = formData.get('food');
+              
+              if (grams && !isNaN(grams) && parseInt(grams) > 0) {
+                const today = getTodayDate();
+                const newEntry = {
+                  date: today,
+                  grams: parseInt(grams),
+                  food: food || 'Food',
+                  timestamp: Date.now()
+                };
+                const updated = [...proteinEntries, newEntry];
+                setProteinEntries(updated);
+                localStorage.setItem('proteinEntries', JSON.stringify(updated));
+                setShowPresetSelector(false);
+                setToastMessage(`Added ${grams}g protein`);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Grams of Protein</label>
+              <input
+                type="number"
+                name="grams"
+                placeholder="45"
+                autoFocus
+                required
+                min="1"
+                className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3 text-lg font-bold`}
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>What did you eat?</label>
+              <input
+                type="text"
+                name="food"
+                placeholder="Chicken breast, protein shake..."
+                className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3`}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg font-bold transition-colors text-white"
+            >
+              Add Protein
+            </button>
+          </form>
+        )}
+        
+        {/* Weight Tab */}
+        {quickAddTab === 'weight' && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const weight = formData.get('weight');
+              const notes = formData.get('notes');
+              
+              if (weight && !isNaN(weight) && parseFloat(weight) > 0) {
+                const today = getTodayDate();
+                const entry = {
+                  date: today,
+                  weight: parseFloat(weight),
+                  notes: notes || ''
+                };
+                const updated = [...weightEntries, entry];
+                save(updated, 'weightEntries', setWeightEntries);
+                setShowPresetSelector(false);
+                setToastMessage(`Logged ${weight} lbs`);
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Weight (lbs)</label>
+              <input
+                type="number"
+                name="weight"
+                step="0.1"
+                placeholder="185.5"
+                autoFocus
+                required
+                min="1"
+                className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3 text-lg font-bold`}
+              />
+            </div>
+            
+            <div>
+              <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Notes (optional)</label>
+              <input
+                type="text"
+                name="notes"
+                placeholder="Morning weigh-in..."
+                className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3`}
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-3 rounded-lg font-bold transition-colors text-white"
+            >
+              Log Weight
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+        
+        {/* Calendar Legend Modal - Improved */}
+        {showCalendarLegend && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4 overflow-hidden"
+            onClick={() => setShowCalendarLegend(false)}
+            onTouchMove={(e) => e.preventDefault()}
+          >
+            <div 
+              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 max-w-sm w-full shadow-2xl max-h-[80vh] flex flex-col`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-bold">Workout Colors</h3>
+                <button
+                  onClick={() => setShowCalendarLegend(false)}
+                  className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} p-1`}
+                >
+                  <Icons.X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-3`}>
+                Each workout preset has a unique color.
+              </p>
+              
+              <div className="space-y-2 overflow-y-auto flex-1">
+                {presets.map((preset, i) => {
+                  const color = getPresetColor(preset.name);
+                  return (
+                    <div key={i} className={`flex items-center gap-2.5 p-2.5 rounded-lg ${darkMode ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+                      <div className={`w-10 h-10 rounded-lg border-l-[3px] ${color.border} ${darkMode ? 'bg-gray-600' : 'bg-white'} flex-shrink-0 shadow-sm`}></div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm truncate">{preset.name}</div>
+                        <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {preset.exercises.length} exercise{preset.exercises.length !== 1 ? 's' : ''}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Workout Modal */}
+        {showWorkoutModal && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-50"
+            onClick={() => {
+              if (current.exercises.length > 0) {
+                setShowCloseConfirm(true);
+              } else {
+                setShowWorkoutModal(false);
+              }
+            }}
+          >
+            <div 
+              className={`fixed inset-x-0 top-0 bottom-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} overflow-y-auto flex flex-col`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className={`${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 py-2`}>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-semibold">{editing !== null ? 'Edit' : 'New'} Workout</h2>
+                  
+                  {/* Timer - in header */}
+                  {workoutStarted && editing === null && (
+                    <div className="flex items-center gap-2">
+                      <div className="text-xl font-mono font-bold text-blue-400">{formatTime(workoutTimer)}</div>
+                      <button
+                        onClick={() => {
+                          if (timerRunning) {
+                            // Pausing - save accumulated time
+                            setPausedTime(workoutTimer);
+                            setTimerRunning(false);
+                          } else {
+                            // Resuming - set new start time
+                            setLastStartTime(Date.now());
+                            setTimerRunning(true);
+                          }
+                        }}
+                        className="text-blue-400 hover:text-blue-300 p-1"
+                      >
+                        {timerRunning ? <Icons.Pause /> : <Icons.Play />}
+                      </button>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setShowHistoryModal(true)}
+                      className="text-blue-400 hover:text-blue-300"
+                      title="View past workouts"
+                    >
+                      <Icons.Calendar />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (current.exercises.length > 0) {
+                          setShowCloseConfirm(true);
+                        } else {
+                          setShowWorkoutModal(false);
+                          setCurrent({
+                            date: getTodayDate(),
+                            exercises: [],
+                            notes: '',
+                            location: ''
+                          });
+                        }
+                      }}
+                    >
+                      <Icons.X />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Content - reuse workout form */}
+              <div className="flex-1 p-4 space-y-3">
+                {/* Hide exercises for Day Off */}
+                {current.location !== 'Day Off' && (
+                  <>
+                {/* View mode toggle */}
+                <div className={`flex gap-2 ${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} p-1 rounded-lg`}>
+                  <button
+                    onClick={() => setWorkoutViewMode('table')}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      workoutViewMode === 'table' 
+                        ? 'bg-blue-600 text-white shadow-md' 
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    Table View
+                  </button>
+                  <button
+                    onClick={() => setWorkoutViewMode('cards')}
+                    className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+                      workoutViewMode === 'cards' 
+                        ? 'bg-blue-600 text-white shadow-md' 
+                        : darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    Card View
+                  </button>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className={`block text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1.5`}>Date</label>
+                    <input
+                      type="text"
+                      value={current.date}
+                      onChange={(e) => setCurrent({ ...current, date: e.target.value })}
+                      placeholder="YYYY-MM-DD"
+                      className={`w-full ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1.5`}>Workout & Structure</label>
+                    <div className="flex gap-2">
+                      {/* Workout Dropdown */}
+                      <select
+                        key={JSON.stringify(presets.map(p => ({n: p.name, m: p.includeInMenu})))}
+                        value={current.location}
+                        onChange={(e) => {
+                          const selectedPreset = presets.find(p => p.name === e.target.value);
+                          if (selectedPreset && editing === null) {
+                            // Only load preset exercises for NEW workouts, not when editing
+                            loadPreset(selectedPreset);
+                          } else {
+                            // Just change the location name, keep exercises intact
+                            setCurrent({ ...current, location: e.target.value });
+                          }
+                        }}
+                        className={`flex-1 ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors`}
+                      >
+                        <option value="">Select</option>
+                        {presets.filter(p => p.includeInMenu !== false).map((p, i) => {
+                          const color = getPresetColor(p.name);
+                          return (
+                            <option key={i} value={p.name}>
+                              {p.name}
+                            </option>
+                          );
+                        })}
+                      </select>
+                      
+                      {/* Structure Buttons */}
+                      <button
+                        onClick={() => setCurrent({ ...current, structure: current.structure === 'pairs' ? '' : 'pairs', structureDuration: current.structure === 'pairs' ? '' : '3' })}
+                        className={`px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                          current.structure === 'pairs' 
+                            ? 'bg-blue-600 text-white' 
+                            : `${darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`
+                        }`}
+                      >
+                        Pairs
+                      </button>
+                      
+                      <button
+                        onClick={() => setCurrent({ ...current, structure: current.structure === 'circuit' ? '' : 'circuit', structureDuration: '' })}
+                        className={`px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                          current.structure === 'circuit' 
+                            ? 'bg-green-600 text-white' 
+                            : `${darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`
+                        }`}
+                      >
+                        Circuit
+                      </button>
+                    </div>
+                    
+                    {/* Pairs Duration Selector */}
+                    {current.structure === 'pairs' && (
+                      <div className="flex gap-2 mt-2">
+                        <span className="text-xs text-gray-400 self-center">Duration:</span>
+                        {['3', '4', '5'].map(duration => (
+                          <button
+                            key={duration}
+                            onClick={() => setCurrent({ ...current, structureDuration: duration })}
+                            className={`px-3 py-1.5 rounded text-xs font-semibold transition-all ${
+                              current.structureDuration === duration
+                                ? 'bg-blue-600 text-white'
+                                : `${darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`
+                            }`}
+                          >
+                            {duration}'
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Workout Form */}
+                {workoutViewMode === 'table' ? (
+                  // Table View
+                  <div className="overflow-x-auto -mx-3 px-3">
+                    {current.exercises.map((ex, ei) => {
+                      const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      const maxSets = Math.max(4, ex.sets.length);
+                      
+                      return (
+                        <div key={ei} className="flex gap-0.5 mb-1 overflow-x-auto pb-1">
+                          {/* Frozen exercise name */}
+                          <div className={`sticky left-0 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} z-10 pr-0.5`}>
+                            <select
+                              value={ex.name}
+                              onChange={(e) => updateEx(ei, 'name', e.target.value)}
+                              className={`w-[100px] ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded px-1 py-1 text-[11px]`}
+                            >
+                              <option value="">Select</option>
+                              {exercises.map((e, i) => (
+                                <option key={i} value={e}>{e}</option>
+                              ))}
+                            </select>
+                          </div>
+                          
+                          {/* Sets */}
+                          {Array.from({ length: maxSets }, (_, si) => (
+                            <div key={si} className="relative">
+                              <input
+                                type="number"
+                                inputMode="numeric"
+                                value={ex.sets[si]?.reps || ''}
+                                onChange={(e) => {
+                                  const u = [...current.exercises];
+                                  if (!u[ei].sets[si]) u[ei].sets[si] = { reps: 0, weight: null };
+                                  u[ei].sets[si].reps = parseInt(e.target.value) || 0;
+                                  setCurrent({ ...current, exercises: u });
+                                }}
+                                onFocus={(e) => {
+                                  e.target.nextElementSibling?.classList.remove('hidden');
+                                }}
+                                onBlur={(e) => {
+                                  setTimeout(() => {
+                                    e.target.nextElementSibling?.classList.add('hidden');
+                                  }, 200);
+                                }}
+                                disabled={!workoutStarted}
+                                placeholder="0"
+                                className={`w-[40px] ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded px-1 py-1 text-[11px] text-center flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed`}
+                              />
+                              {ex.sets[si] && (
+                                <button
+                                  onClick={() => {
+                                    const u = [...current.exercises];
+                                    u[ei].sets.splice(si, 1);
+                                    setCurrent({ ...current, exercises: u });
+                                  }}
+                                  className="hidden absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs z-10"
+                                >
+                                  ×
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                          
+                          {/* Total */}
+                          <div className={`w-[35px] ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-300'} border rounded px-1 py-1 text-[11px] text-center font-bold flex-shrink-0`}>
+                            {total}
+                          </div>
+                          
+                          {/* Notes */}
+                          <input
+                            type="text"
+                            value={ex.notes}
+                            onChange={(e) => updateEx(ei, 'notes', e.target.value)}
+                            placeholder="..."
+                            className={`w-[80px] ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border rounded px-1 py-1 text-[11px] flex-shrink-0`}
+                          />
+                          
+                          {/* Delete */}
+                          <button
+                            onClick={() => setDeleteExercise(ei)}
+                            className="w-[24px] text-red-400 hover:text-red-300 text-lg flex-shrink-0"
+                          >
+                            ×
+                          </button>
+                          
+                          {/* Add Set */}
+                          <button
+                            onClick={() => {
+                              const u = [...current.exercises];
+                              u[ei].sets.push({ reps: 0, weight: null });
+                              setCurrent({ ...current, exercises: u });
+                            }}
+                            className={`w-[36px] text-blue-400 hover:text-blue-300 text-xs ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded flex-shrink-0`}
+                          >
+                            +
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  // Card View
+                  <div className="space-y-2">
+                    {current.exercises.map((ex, ei) => {
+                      const total = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                      return (
+                        <div key={ei} className={`${darkMode ? 'bg-gray-800' : 'bg-white border border-gray-200'} rounded-lg p-2`}>
+                          {/* Exercise name */}
+                          <select
+                            value={ex.name}
+                            onChange={(e) => updateEx(ei, 'name', e.target.value)}
+                            className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded px-2 py-1 text-xs font-medium mb-2`}
+                          >
+                            <option value="">Select Exercise</option>
+                            {exercises.map((e, i) => (
+                              <option key={i} value={e}>{e}</option>
+                            ))}
+                          </select>
+                          
+                          {/* Sets row */}
+                          <div className="flex items-center gap-1 mb-2 overflow-x-auto">
+                            {ex.sets.map((s, si) => (
+                              <div key={si} className="flex flex-col items-center">
+                                <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-0.5`}>S{si + 1}</div>
+                                <input
+                                  type="number"
+                                  inputMode="numeric"
+                                  value={s.reps || ''}
+                                  onChange={(e) => {
+                                    const u = [...current.exercises];
+                                    u[ei].sets[si].reps = parseInt(e.target.value) || 0;
+                                    setCurrent({ ...current, exercises: u });
+                                  }}
+                                  disabled={!workoutStarted}
+                                  placeholder="0"
+                                  className={`w-12 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded px-1 py-1 text-[11px] text-center disabled:opacity-50 disabled:cursor-not-allowed`}
+                                />
+                              </div>
+                            ))}
+                            
+                            {/* Total */}
+                            <div className="flex flex-col items-center">
+                              <div className={`text-[10px] ${darkMode ? 'text-gray-400' : 'text-gray-600'} mb-0.5`}>Tot</div>
+                              <div className={`w-12 ${darkMode ? 'bg-gray-900 border-gray-700' : 'bg-gray-100 border-gray-300'} border rounded px-1 py-1 text-[11px] text-center font-bold`}>
+                                {total}
+                              </div>
+                            </div>
+                            
+                            {/* Add Set button */}
+                            <button
+                              onClick={() => {
+                                const u = [...current.exercises];
+                                u[ei].sets.push({ reps: 0, weight: null });
+                                setCurrent({ ...current, exercises: u });
+                              }}
+                              className="flex flex-col items-center justify-end"
+                            >
+                              <div className="text-[10px] text-transparent mb-0.5">.</div>
+                              <div className={`text-blue-400 hover:text-blue-300 text-xs px-2 py-1 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'} rounded`}>
+                                +
+                              </div>
+                            </button>
+                          </div>
+                          
+                          {/* Notes and delete */}
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={ex.notes}
+                              onChange={(e) => updateEx(ei, 'notes', e.target.value)}
+                              placeholder="Notes..."
+                              className={`flex-1 ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded px-2 py-1 text-[11px]`}
+                            />
+                            <button
+                              onClick={() => setDeleteExercise(ei)}
+                              className="text-red-400 hover:text-red-300 px-2 py-1"
+                            >
+                              <Icons.Trash />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <button
+                  onClick={addEx}
+                  className={`w-full ${darkMode ? 'bg-gray-800 hover:bg-gray-700 border-gray-600' : 'bg-white hover:bg-gray-50 border-gray-300'} py-3 rounded-xl border-2 border-dashed hover:border-blue-500 text-sm font-semibold transition-all flex items-center justify-center gap-2`}
+                >
+                  <span className="text-lg">+</span>
+                  Add Exercise
+                </button>
+                  </>
+                )}
+
+                <div>
+                  <label className={`block text-xs font-semibold ${darkMode ? 'text-gray-400' : 'text-gray-600'} uppercase tracking-wide mb-1.5`}>
+                    {current.location === 'Day Off' ? 'Rest Day Notes' : 'Workout Notes'}
+                  </label>
+                  <textarea
+                    value={current.notes}
+                    onChange={(e) => setCurrent({ ...current, notes: e.target.value })}
+                    placeholder={current.location === 'Day Off' ? 'Why did you skip today?' : 'How did it go? Any PRs or notes to remember...'}
+                    className={`w-full ${darkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-none ${
+                      current.location === 'Day Off' ? 'h-40' : 'h-24'
+                    }`}
+                  />
+                </div>
+              </div>
+              
+              {/* Footer with Timer Button */}
+              <div className={`sticky bottom-0 ${darkMode ? 'bg-gradient-to-t from-gray-900 via-gray-900 to-transparent border-gray-700/50' : 'bg-gradient-to-t from-gray-50 via-gray-50 to-transparent border-gray-200'} border-t p-4`}>
+                {editing !== null ? (
+                  // Show Update/Cancel when editing a saved workout
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => {
+                        saveWorkout();
+                        setShowWorkoutModal(false);
+                        setEditing(null);
+                      }}
+                      className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+                    >
+                      Update
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowWorkoutModal(false);
+                        setEditing(null);
+                        setCurrent({
+                          date: getTodayDate(),
+                          exercises: [],
+                          notes: '',
+                          location: ''
+                        });
+                      }}
+                      className={`${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} py-4 rounded-xl font-bold text-lg transition-all active:scale-[0.98]`}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : !workoutStarted ? (
+                  <button
+                    onClick={() => {
+                      setWorkoutStarted(true);
+                      setTimerRunning(true);
+                      setLastStartTime(Date.now());
+                      setPausedTime(0);
+                      setWorkoutTimer(0);
+                    }}
+                    className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <span className="text-2xl">▶</span>
+                    Start Workout
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowEndWorkoutConfirm(true)}
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98]"
+                  >
+                    Save Workout
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* History Modal - For workout reference */}
+        {showHistoryModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowHistoryModal(false)}>
+            <div 
+              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[75vh] overflow-y-auto pb-8`} 
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => {
+                e.currentTarget.dataset.startY = e.touches[0].clientY;
+                e.currentTarget.dataset.scrollTop = e.currentTarget.scrollTop;
+              }}
+              onTouchMove={(e) => {
+                const startY = parseFloat(e.currentTarget.dataset.startY);
+                const scrollTop = parseFloat(e.currentTarget.dataset.scrollTop);
+                const currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                
+                if (scrollTop === 0 && diff > 0) {
+                  e.preventDefault();
+                  e.currentTarget.style.transform = `translateY(${diff}px)`;
+                  e.currentTarget.style.transition = 'none';
+                }
+              }}
+              onTouchEnd={(e) => {
+                const startY = parseFloat(e.currentTarget.dataset.startY);
+                const scrollTop = parseFloat(e.currentTarget.dataset.scrollTop);
+                const currentY = e.changedTouches[0].clientY;
+                const diff = currentY - startY;
+                
+                e.currentTarget.style.transition = 'transform 0.2s ease-out';
+                
+                if (scrollTop === 0 && diff > 100) {
+                  e.currentTarget.style.transform = 'translateY(100%)';
+                  setTimeout(() => setShowHistoryModal(false), 200);
+                } else {
+                  e.currentTarget.style.transform = '';
+                }
+              }}
+            >
+              <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}>
+                <div className="flex justify-center pb-2">
+                  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                </div>
+                <div className="flex items-center justify-between px-4">
+                  <h3 className="font-bold text-lg">Recent Workouts</h3>
+                  <button
+                    onClick={() => setShowHistoryModal(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 space-y-2">
+                {[...workouts].sort((a, b) => b.date.localeCompare(a.date)).map((w, i) => {
+                  const [year, month, day] = w.date.split('-');
+                  const dateObj = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                  const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+                  
+                  // Use getPresetColor function for correct colors
+                  const color = getPresetColor(w.location);
+                  const borderColor = color.border;
+                  const bgColor = color.bg;
+                  
+                  return (
+                    <div key={i} className={`${bgColor} rounded-lg p-3 border-l-4 ${borderColor}`}>
+                      <div className="font-bold text-sm mb-2">
+                        {dayOfWeek} {month}/{day}
+                        {w.location && <span className="ml-2 text-xs font-normal text-gray-400">· {w.location}</span>}
+                      </div>
+                      
+                      <div className="space-y-1">
+                        {w.exercises.map((ex, ei) => {
+                          const totalReps = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
+                          return (
+                            <div key={ei}>
+                              <div className="flex items-start text-xs">
+                                <div className="w-28 font-medium">{ex.name}</div>
+                                <div className="flex-1 flex items-center gap-1">
+                                  {ex.sets.map((s, si) => (
+                                    <span key={si} className="text-gray-400">
+                                      {s.reps}
+                                      {si < ex.sets.length - 1 && <span className="text-gray-600 mx-0.5">·</span>}
+                                    </span>
+                                  ))}
+                                  <span className="ml-1 font-bold text-white">({totalReps})</span>
+                                </div>
+                              </div>
+                              {ex.notes && (
+                                <div className="text-[10px] text-gray-500 ml-28 -mt-0.5">{ex.notes}</div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Toast Notification */}
+        {showToast && (
+          <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
+            {toastMessage}
+          </div>
+        )}
+        
+        {/* Add Protein Modal */}
+        {showAddProtein && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setShowAddProtein(false)}>
+            <div 
+              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full pb-8`} 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}>
+                <div className="flex justify-center pb-2">
+                  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                </div>
+                <div className="flex items-center justify-between px-4">
+                  <h3 className="font-bold text-lg">Add Protein</h3>
+                  <button
+                    onClick={() => setShowAddProtein(false)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+              </div>
+              
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target);
+                  const grams = formData.get('grams');
+                  const food = formData.get('food');
+                  
+                  if (grams && !isNaN(grams) && parseInt(grams) > 0) {
+                    const today = getTodayDate();
+                    const newEntry = {
+                      date: editingProteinDate || today,
+                      grams: parseInt(grams),
+                      food: food || 'Food',
+                      timestamp: Date.now()
+                    };
+                    const updated = [...proteinEntries, newEntry];
+                    setProteinEntries(updated);
+                    localStorage.setItem('proteinEntries', JSON.stringify(updated));
+                    setShowAddProtein(false);
+                    setEditingProteinDate(null);
+                  }
+                }}
+                className="p-4 space-y-4"
+              >
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Grams of Protein</label>
+                  <input
+                    type="number"
+                    name="grams"
+                    placeholder="45"
+                    autoFocus
+                    required
+                    min="1"
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3 text-lg font-bold`}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold mb-2">What did you eat?</label>
+                  <input
+                    type="text"
+                    name="food"
+                    placeholder="Protein shake"
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3`}
+                  />
+                </div>
+                
+                <button
+                  type="submit"
+                  className="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg font-bold transition-colors"
+                >
+                  Add Entry
+                </button>
+                
+                {/* Extra padding for keyboard */}
+                <div className="h-40"></div>
+              </form>
+            </div>
+          </div>
+        )}
+        
+        {/* Edit Protein Modal */}
+        {editingProteinDate && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setEditingProteinDate(null)}>
+            <div 
+              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full max-h-[75vh] overflow-y-auto pb-8`} 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}>
+                <div className="flex justify-center pb-2">
+                  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                </div>
+                <div className="flex items-center justify-between px-4">
+                  <h3 className="font-bold text-lg">
+                    Edit Protein - {(() => {
+                      const date = new Date(editingProteinDate + 'T00:00:00');
+                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    })()}
+                  </h3>
+                  <button
+                    onClick={() => setEditingProteinDate(null)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-4 space-y-3">
+                {/* Add New Entry for this date */}
+                <button
+                  onClick={() => setShowAddProtein(true)}
+                  className="w-full bg-green-600 hover:bg-green-700 px-4 py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <span className="text-xl">+</span>
+                  Add Entry
+                </button>
+                
+                {/* Existing Entries */}
+                {(() => {
+                  const dayEntries = proteinEntries.filter(e => e.date === editingProteinDate);
+                  const total = dayEntries.reduce((sum, e) => sum + e.grams, 0);
+                  
+                  return (
+                    <>
+                      <div className={`${darkMode ? 'bg-green-900/30' : 'bg-green-50'} rounded-lg p-3`}>
+                        <div className="text-sm font-semibold text-green-600 mb-1">Total</div>
+                        <div className="text-3xl font-black">{total}g</div>
+                      </div>
+                      
+                      {dayEntries.length > 0 ? (
+                        <div className="space-y-2">
+                          <div className="text-sm font-semibold">Meals ({dayEntries.length})</div>
+                          {dayEntries.map((entry) => (
+                            <div key={entry.timestamp} className={`${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg p-3`}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="font-semibold">{entry.food}</div>
+                                  <div className="text-2xl font-bold text-green-500 mt-1">{entry.grams}g</div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => setEditingProteinEntry(entry)}
+                                    className={`${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} p-2`}
+                                    title="Edit"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Delete ${entry.food}?`)) {
+                                        const updated = proteinEntries.filter(e => e.timestamp !== entry.timestamp);
+                                        setProteinEntries(updated);
+                                        localStorage.setItem('proteinEntries', JSON.stringify(updated));
+                                      }
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-bold transition-colors"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center text-gray-500 py-8">
+                          No protein entries for this day
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Edit Protein Entry Modal */}
+        {editingProteinEntry && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end" onClick={() => setEditingProteinEntry(null)}>
+            <div 
+              className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-t-2xl w-full pb-8`} 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={`sticky top-0 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} z-10 pt-3 pb-2 border-b`}>
+                <div className="flex justify-center pb-2">
+                  <div className={`w-10 h-1 ${darkMode ? 'bg-gray-600' : 'bg-gray-300'} rounded-full`}></div>
+                </div>
+                <div className="flex items-center justify-between px-4">
+                  <h3 className="font-bold text-lg">Edit Entry</h3>
+                  <button
+                    onClick={() => setEditingProteinEntry(null)}
+                    className="text-gray-400 hover:text-white"
+                  >
+                    <Icons.X />
+                  </button>
+                </div>
+              </div>
+              
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.target);
+                  const grams = formData.get('grams');
+                  const food = formData.get('food');
+                  
+                  if (grams && !isNaN(grams) && parseInt(grams) > 0) {
+                    const updated = proteinEntries.map(entry =>
+                      entry.timestamp === editingProteinEntry.timestamp
+                        ? { ...entry, grams: parseInt(grams), food: food || 'Food' }
+                        : entry
+                    );
+                    setProteinEntries(updated);
+                    localStorage.setItem('proteinEntries', JSON.stringify(updated));
+                    setEditingProteinEntry(null);
+                  }
+                }}
+                className="p-4 space-y-4"
+              >
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Grams of Protein</label>
+                  <input
+                    type="number"
+                    name="grams"
+                    defaultValue={editingProteinEntry.grams}
+                    autoFocus
+                    required
+                    min="1"
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3 text-lg font-bold`}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-semibold mb-2">What did you eat?</label>
+                  <input
+                    type="text"
+                    name="food"
+                    defaultValue={editingProteinEntry.food}
+                    className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} border rounded-lg px-4 py-3`}
+                  />
+                </div>
+                
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded-lg font-bold transition-colors"
+                >
+                  Save Changes
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+        
+        {/* Bottom Navigation */}
+        <div className={`fixed bottom-0 left-0 right-0 ${darkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-gray-100/95 border-gray-300'} backdrop-blur-sm border-t safe-area-pb shadow-2xl pb-2 z-20`}>
+          <div className="max-w-4xl mx-auto flex">
+            <button
+              onClick={() => {
+                setView('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex-1 py-4 transition-colors ${view === 'home' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.Calendar className={view === 'home' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'home' ? 'font-bold' : ''}`}>Home</span>
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                setView('stats');
+                setStatsView('menu');
+                setSelectedExercise(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex-1 py-4 transition-colors ${view === 'stats' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.TrendingUp className={view === 'stats' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'stats' ? 'font-bold' : ''}`}>Stats</span>
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                setView('settings');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex-1 py-4 transition-colors ${view === 'settings' ? 'text-blue-400' : darkMode ? 'text-gray-500 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}
+            >
+              <div className="flex flex-col items-center">
+                <Icons.Settings className={view === 'settings' ? 'scale-110' : ''} />
+                <span className={`text-xs mt-1 font-medium ${view === 'settings' ? 'font-bold' : ''}`}>Settings</span>
+              </div>
+            </button>
+          </div>
+        </div>
+        
+        {/* Hidden div to ensure Tailwind includes all color classes */}
+        <div className="hidden">
+          <div className="border-blue-400 border-purple-400 border-green-400 border-yellow-400 border-red-400 border-pink-400 border-orange-400 border-cyan-400"></div>
+          <div className="bg-blue-500/10 bg-purple-500/10 bg-green-500/10 bg-yellow-500/10 bg-red-500/10 bg-pink-500/10 bg-orange-500/10 bg-cyan-500/10"></div>
+          <div className="text-blue-400 text-purple-400 text-green-400 text-yellow-400 text-red-400 text-pink-400 text-orange-400 text-cyan-400"></div>
+          <div className="bg-blue-400 bg-purple-400 bg-green-400 bg-yellow-400 bg-red-400 bg-pink-400 bg-orange-400 bg-cyan-400"></div>
+        </div>
       </div>
     </>
   );
