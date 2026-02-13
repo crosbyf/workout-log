@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronUp, ChevronDown, Plus, Trash2, Upload, Download, Pencil } from 'lucide-react';
+import { ChevronUp, ChevronDown, Plus, Trash2, Upload, Download, Pencil, Cloud, LogOut, RefreshCw } from 'lucide-react';
 import { useThemeStore } from '../../stores/themeStore';
 import { usePresetStore } from '../../stores/presetStore';
 import { useWorkoutStore } from '../../stores/workoutStore';
@@ -9,6 +9,8 @@ import { PRESET_COLORS } from '../../lib/constants';
 import { exportWorkoutsCSV, downloadCSV } from '../../lib/csvExport';
 import { importPresetsFromCSV, importWorkoutsFromCSV } from '../../lib/csvImport';
 import { createBackup } from '../../lib/backup';
+import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { useSession, useSyncStatus, initSync, pushAllToCloud } from '../../lib/sync';
 import PresetForm from '../settings/PresetForm';
 import BackupsModal from '../settings/BackupsModal';
 
@@ -48,6 +50,220 @@ function CollapsibleSection({ title, count, isOpen, onToggle, currentTheme, chil
         </div>
       )}
     </div>
+  );
+}
+
+function CloudSyncSection({ currentTheme, showToastMessage }) {
+  const { session, loading: authLoading } = useSession();
+  const syncStatus = useSyncStatus();
+  const [email, setEmail] = useState('');
+  const [loginState, setLoginState] = useState('idle'); // 'idle' | 'sending' | 'sent' | 'error'
+  const [loginError, setLoginError] = useState('');
+  const [showCloudSync, setShowCloudSync] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSignIn = async () => {
+    if (!email.trim() || !supabase) return;
+    setLoginState('sending');
+    setLoginError('');
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          emailRedirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+        },
+      });
+
+      if (error) throw error;
+      setLoginState('sent');
+    } catch (err) {
+      setLoginState('error');
+      setLoginError(err.message || 'Failed to send login email');
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    showToastMessage('Signed out');
+    setLoginState('idle');
+    setEmail('');
+  };
+
+  const handleForceSync = async () => {
+    setSyncing(true);
+    try {
+      await initSync();
+      showToastMessage('Sync complete');
+    } catch (err) {
+      showToastMessage('Sync failed');
+    }
+    setSyncing(false);
+  };
+
+  const handlePushToCloud = async () => {
+    setSyncing(true);
+    try {
+      const ok = await pushAllToCloud();
+      showToastMessage(ok ? 'Data pushed to cloud' : 'Push failed');
+    } catch (err) {
+      showToastMessage('Push failed');
+    }
+    setSyncing(false);
+  };
+
+  const statusLabel = {
+    idle: 'Not connected',
+    syncing: 'Syncing...',
+    synced: 'Synced',
+    error: 'Sync error',
+  };
+
+  const statusColor = {
+    idle: currentTheme.rawText,
+    syncing: '#facc15',
+    synced: '#4ade80',
+    error: '#f87171',
+  };
+
+  const userEmail = session?.user?.email;
+  const isLoggedIn = !!session;
+
+  return (
+    <CollapsibleSection
+      title={'☁\uFE0F Cloud Sync'}
+      isOpen={showCloudSync}
+      onToggle={() => setShowCloudSync(!showCloudSync)}
+      currentTheme={currentTheme}
+    >
+      {authLoading ? (
+        <p style={{ color: currentTheme.rawText, opacity: 0.6 }} className="py-4">Loading...</p>
+      ) : isLoggedIn ? (
+        <div className="space-y-4">
+          {/* Signed in status */}
+          <div className="p-3 rounded-lg" style={{ backgroundColor: currentTheme.rawInputBg }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium" style={{ color: currentTheme.rawText }}>
+                  Signed in as
+                </p>
+                <p className="text-sm" style={{ color: currentTheme.rawText, opacity: 0.7 }}>
+                  {userEmail}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: statusColor[syncStatus] || statusColor.idle }}
+                />
+                <span className="text-xs font-medium" style={{ color: statusColor[syncStatus] || statusColor.idle }}>
+                  {statusLabel[syncStatus] || 'Unknown'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sync buttons */}
+          <button
+            onClick={handleForceSync}
+            disabled={syncing}
+            className="w-full py-3 px-4 rounded-lg border hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+            style={{
+              borderColor: currentTheme.rawCardBorder,
+              color: currentTheme.rawText,
+              opacity: syncing ? 0.5 : 1,
+            }}
+          >
+            <RefreshCw size={18} className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Syncing...' : 'Sync Now'}
+          </button>
+
+          <button
+            onClick={handlePushToCloud}
+            disabled={syncing}
+            className="w-full py-3 px-4 rounded-lg border hover:opacity-80 transition-opacity flex items-center justify-center gap-2"
+            style={{
+              borderColor: currentTheme.rawCardBorder,
+              color: currentTheme.rawText,
+              opacity: syncing ? 0.5 : 1,
+            }}
+          >
+            <Cloud size={18} />
+            Push Local Data to Cloud
+          </button>
+
+          {/* Sign out */}
+          <button
+            onClick={handleSignOut}
+            className="w-full py-3 px-4 rounded-lg border hover:opacity-80 transition-opacity flex items-center justify-center gap-2 text-red-400"
+            style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}
+          >
+            <LogOut size={18} />
+            Sign Out
+          </button>
+
+          {/* Info */}
+          <div className="p-3 rounded-lg text-sm" style={{ backgroundColor: currentTheme.rawInputBg, color: currentTheme.rawText, opacity: 0.75 }}>
+            <p>Your data syncs automatically when you make changes. Use "Sync Now" to pull the latest from the cloud, or "Push" to force-upload your local data.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Description */}
+          <p className="text-sm" style={{ color: currentTheme.rawText, opacity: 0.7 }}>
+            Back up your data to the cloud and access it from any device. Sign in with your email — no password needed.
+          </p>
+
+          {loginState === 'sent' ? (
+            <div className="p-4 rounded-lg text-center" style={{ backgroundColor: currentTheme.rawInputBg }}>
+              <p className="font-medium mb-1" style={{ color: '#4ade80' }}>Check your email!</p>
+              <p className="text-sm" style={{ color: currentTheme.rawText, opacity: 0.7 }}>
+                We sent a sign-in link to {email}. Click it to log in.
+              </p>
+              <button
+                onClick={() => { setLoginState('idle'); setEmail(''); }}
+                className="mt-3 text-sm text-blue-400 hover:underline"
+              >
+                Use a different email
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="flex-1 px-4 py-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{
+                    borderColor: currentTheme.rawCardBorder,
+                    backgroundColor: currentTheme.rawInputBg,
+                    color: currentTheme.rawText,
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSignIn();
+                  }}
+                  disabled={loginState === 'sending'}
+                />
+                <button
+                  onClick={handleSignIn}
+                  disabled={loginState === 'sending' || !email.trim()}
+                  className="px-4 py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition-colors font-medium text-sm whitespace-nowrap"
+                  style={{ opacity: loginState === 'sending' || !email.trim() ? 0.5 : 1 }}
+                >
+                  {loginState === 'sending' ? 'Sending...' : 'Sign In'}
+                </button>
+              </div>
+              {loginState === 'error' && (
+                <p className="mt-2 text-sm text-red-400">{loginError}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </CollapsibleSection>
   );
 }
 
@@ -507,6 +723,14 @@ export default function SettingsScreen() {
             </div>
           </div>
         </CollapsibleSection>
+
+        {/* Cloud Sync Section — only shown if Supabase is configured */}
+        {/* Cloud Sync — temporarily always shown for debugging */}
+        <CloudSyncSection currentTheme={currentTheme} showToastMessage={showToastMessage} />
+        {/* Debug: remove after testing */}
+        <div className="mb-4 p-3 rounded-lg text-xs font-mono" style={{ backgroundColor: currentTheme.rawInputBg, color: currentTheme.rawText, opacity: 0.6 }}>
+          Supabase configured: {isSupabaseConfigured() ? 'YES' : 'NO'} | URL set: {process.env.NEXT_PUBLIC_SUPABASE_URL ? 'YES' : 'NO'} | Key set: {process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'YES' : 'NO'}
+        </div>
 
         {/* Data Deletion Section */}
         <CollapsibleSection
