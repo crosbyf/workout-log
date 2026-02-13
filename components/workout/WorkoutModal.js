@@ -113,7 +113,7 @@ export default function WorkoutModal() {
     >
       {/* Header */}
       <div
-        className="sticky top-0 px-6 py-4 border-b z-10 flex items-center justify-between"
+        className="sticky top-0 px-4 py-3 border-b z-10 flex items-center justify-between"
         style={{
           backgroundColor: currentTheme.rawCardBg,
           borderColor: currentTheme.rawCardBorder,
@@ -160,14 +160,14 @@ export default function WorkoutModal() {
 
       {/* Body - Scrollable */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-6 py-6 space-y-6">
+        <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
           {/* View Mode Toggle */}
           <div className="flex gap-2">
             {['table', 'card'].map((mode) => (
               <button
                 key={mode}
                 onClick={() => useUIStore.setState({ workoutViewMode: mode })}
-                className="px-4 py-2 rounded-full font-medium transition-all"
+                className="px-3 py-1 text-sm rounded-full font-medium transition-all"
                 style={{
                   backgroundColor:
                     workoutViewMode === mode ? '#3b82f6' : currentTheme.rawInputBg,
@@ -183,7 +183,7 @@ export default function WorkoutModal() {
           {/* Date */}
           <div>
             <label
-              className="block text-xs uppercase tracking-wider opacity-50 mb-2"
+              className="block text-xs uppercase tracking-wider opacity-50 mb-1"
             >
               Date
             </label>
@@ -201,7 +201,7 @@ export default function WorkoutModal() {
           </div>
 
           {/* Workout & Structure */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h3 className="text-sm font-medium">WORKOUT & STRUCTURE</h3>
 
             {/* Preset Dropdown */}
@@ -238,7 +238,7 @@ export default function WorkoutModal() {
                     <button
                       key={structure}
                       onClick={() => handleStructureToggle(structure)}
-                      className="flex-1 px-4 py-2 rounded-lg font-medium transition-all border"
+                      className="flex-1 px-3 py-1.5 rounded-lg font-medium transition-all border"
                       style={{
                         backgroundColor:
                           current.structure === structure
@@ -264,7 +264,7 @@ export default function WorkoutModal() {
 
           {/* Exercise Table */}
           {!isDayOff && current.exercises.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-2">
               <h2 className="text-lg font-bold">Exercises</h2>
               {workoutViewMode === 'table' ? (
                 <ExercisesTableView
@@ -282,7 +282,7 @@ export default function WorkoutModal() {
           {!isDayOff && (
             <button
               onClick={addExercise}
-              className="w-full px-4 py-3 rounded-xl border-2 border-dashed font-medium transition-all"
+              className="w-full px-4 py-2 rounded-xl border-2 border-dashed font-medium transition-all"
               style={{
                 borderColor: currentTheme.rawInputBorder,
                 color: 'inherit',
@@ -302,8 +302,8 @@ export default function WorkoutModal() {
               value={current.notes}
               onChange={handleNotesChange}
               placeholder="How did it go? Any PRs or notes to remember..."
-              className="w-full px-4 py-3 rounded-lg border resize-none"
-              rows={4}
+              className="w-full px-4 py-2 rounded-lg border resize-none"
+              rows={3}
               style={{
                 backgroundColor: currentTheme.rawInputBg,
                 borderColor: currentTheme.rawInputBorder,
@@ -316,7 +316,7 @@ export default function WorkoutModal() {
 
       {/* Footer - Sticky */}
       <div
-        className="sticky bottom-0 px-6 py-4 border-t flex gap-3"
+        className="sticky bottom-0 px-4 py-3 border-t flex gap-3"
         style={{
           backgroundColor: currentTheme.rawCardBg,
           borderColor: currentTheme.rawCardBorder,
@@ -404,7 +404,7 @@ function ExercisesTableView({ expandedExercise, setExpandedExercise, currentThem
             style={{ borderColor: currentTheme.rawCardBorder }}
           >
             {/* Exercise Row */}
-            <div className="px-4 py-3 flex items-center gap-3 bg-opacity-50">
+            <div className="px-3 py-2 flex items-center gap-3 bg-opacity-50">
               <input
                 type="text"
                 value={exercise.name}
@@ -465,7 +465,7 @@ function ExercisesTableView({ expandedExercise, setExpandedExercise, currentThem
             {/* Expanded Options */}
             {expandedExercise === ei && (
               <div
-                className="px-4 py-3 space-y-2 border-t"
+                className="px-3 py-2 space-y-2 border-t"
                 style={{ borderColor: currentTheme.rawCardBorder }}
               >
                 <div className="flex items-center justify-between">
@@ -527,7 +527,7 @@ function ExercisesCardView({ currentTheme }) {
         return (
           <div
             key={ei}
-            className="border rounded-lg p-4"
+            className="border rounded-lg p-3"
             style={{ borderColor: currentTheme.rawCardBorder }}
           >
             <div className="flex gap-2 mb-4">
@@ -605,4 +605,3 @@ function ExercisesCardView({ currentTheme }) {
     </div>
   );
 }
-
