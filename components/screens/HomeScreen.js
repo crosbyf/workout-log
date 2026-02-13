@@ -12,7 +12,7 @@ export default function HomeScreen() {
   const currentTheme = getCurrentTheme();
 
   return (
-    <div className={`flex flex-col min-h-screen ${currentTheme.bg}`}>
+    <div className="min-h-screen pt-16 pb-24" style={{ backgroundColor: currentTheme.rawBg }}>
       {/* Search Bar - shown only when expanded */}
       {searchExpanded && <SearchBar />}
 
@@ -20,10 +20,8 @@ export default function HomeScreen() {
       <WeeklyCalendar />
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto pb-24">
-        <div className="px-4">
-          <WorkoutFeed />
-        </div>
+      <div className="px-4 pt-4">
+        <WorkoutFeed />
       </div>
     </div>
   );
