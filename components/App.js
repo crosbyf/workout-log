@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useThemeStore, THEMES } from '../stores/themeStore';
+import { useThemeStore } from '../stores/themeStore';
 import { useUIStore } from '../stores/uiStore';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { initSync, destroySync } from '../lib/sync';
 import Header from './layout/Header';
 import BottomNav from './layout/BottomNav';
 import LoadingScreen from './layout/LoadingScreen';
@@ -19,11 +21,41 @@ export default function App() {
   const { getCurrentTheme } = useThemeStore();
   const { view } = useUIStore();
 
+  // Loading splash
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Cloud sync initialization
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !supabase) return;
+
+    let subscription = null;
+
+    // Check for existing session and start sync
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        initSync();
+      }
+    });
+
+    // Listen for auth state changes (magic link callback, sign out)
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        initSync();
+      } else if (event === 'SIGNED_OUT') {
+        destroySync();
+      }
+    });
+    subscription = data.subscription;
+
+    return () => {
+      if (subscription) subscription.unsubscribe();
+      destroySync();
+    };
   }, []);
 
   if (isLoading) {
