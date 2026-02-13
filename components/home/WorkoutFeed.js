@@ -64,12 +64,12 @@ export default function WorkoutFeed() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {sortedWeeks.map((weekKey) => (
         <div key={weekKey}>
           {/* Week Header */}
           <div
-            className="text-xs font-bold uppercase tracking-wider rounded-lg px-4 py-2 mb-3"
+            className="text-xs font-bold uppercase tracking-wider rounded-lg px-4 py-2 mb-4"
             style={{
               backgroundColor: currentTheme.rawCardBg,
               color: currentTheme.rawText,
@@ -80,7 +80,7 @@ export default function WorkoutFeed() {
           </div>
 
           {/* Week's Workouts */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             {grouped[weekKey].map((workout, idx) => (
               <WorkoutCard
                 key={`${weekKey}-${idx}`}
