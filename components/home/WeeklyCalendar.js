@@ -80,76 +80,77 @@ export default function WeeklyCalendar() {
 
   return (
     <div
-      className="sticky top-12 z-10 p-4"
+      className="sticky z-10 px-4 py-3"
       style={{
-        backgroundColor: currentTheme.rawCardBg,
-        borderRadius: '0.75rem',
-        margin: '0.5rem',
+        top: '4rem',
+        backgroundColor: currentTheme.rawBg,
       }}
     >
-      {/* Week Label and Navigation */}
-      <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => setWeekOffset(weekOffset - 1)}
-          className="p-1 transition-all"
-          style={{ color: currentTheme.rawText }}
-          aria-label="Previous week"
-        >
-          <ChevronLeft size={20} />
-        </button>
-        <span className="text-sm font-bold uppercase tracking-wider" style={{ color: currentTheme.rawText }}>
-          {getWeekLabel(targetWeekMonday)}
-        </span>
-        <button
-          onClick={() => setWeekOffset(weekOffset + 1)}
-          className="p-1 transition-all"
-          style={{ color: currentTheme.rawText }}
-          aria-label="Next week"
-        >
-          <ChevronRight size={20} />
-        </button>
-      </div>
+      <div className="rounded-xl p-4" style={{ backgroundColor: currentTheme.rawCardBg }}>
+        {/* Week Label and Navigation */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => setWeekOffset(weekOffset - 1)}
+            className="p-1 transition-all"
+            style={{ color: currentTheme.rawText }}
+            aria-label="Previous week"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <span className="text-sm font-bold uppercase tracking-wider" style={{ color: currentTheme.rawText }}>
+            {getWeekLabel(targetWeekMonday)}
+          </span>
+          <button
+            onClick={() => setWeekOffset(weekOffset + 1)}
+            className="p-1 transition-all"
+            style={{ color: currentTheme.rawText }}
+            aria-label="Next week"
+          >
+            <ChevronRight size={20} />
+          </button>
+        </div>
 
-      {/* Day Pills */}
-      <div className="grid grid-cols-7 gap-2">
-        {days.map((day) => {
-          const hasWorkout = workoutsByDate[day.dateStr];
-          const isToday = day.dateStr === today;
-          const dayNum = day.date.getDate();
+        {/* Day Pills */}
+        <div className="grid grid-cols-7 gap-2">
+          {days.map((day) => {
+            const hasWorkout = workoutsByDate[day.dateStr];
+            const isToday = day.dateStr === today;
+            const dayNum = day.date.getDate();
 
-          // Get color from first workout's location/preset
-          let colorHex = '';
-          if (hasWorkout && hasWorkout[0]) {
-            const color = getPresetColor(hasWorkout[0].location, presets);
-            colorHex = getColorHex(color.text);
-          }
+            // Get color from first workout's location/preset
+            let colorHex = '';
+            if (hasWorkout && hasWorkout[0]) {
+              const color = getPresetColor(hasWorkout[0].location, presets);
+              colorHex = getColorHex(color.text);
+            }
 
-          return (
-            <button
-              key={day.dateStr}
-              onClick={() => handleDayClick(day.dateStr)}
-              className="py-2 rounded-lg text-center transition-all cursor-pointer flex flex-col items-center"
-              style={{
-                backgroundColor: currentTheme.rawInputBg,
-                border: isToday ? `2px solid ${colorHex || '#3b82f6'}` : 'none',
-                borderRadius: '0.5rem',
-              }}
-            >
-              <div className="text-xs opacity-60" style={{ color: currentTheme.rawText }}>
-                {day.dayOfWeek}
-              </div>
-              <div className="text-lg font-semibold mt-1" style={{ color: currentTheme.rawText }}>
-                {dayNum}
-              </div>
-              {hasWorkout && colorHex && (
-                <div
-                  className="w-1.5 h-1.5 rounded-full mt-1"
-                  style={{ backgroundColor: colorHex }}
-                />
-              )}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={day.dateStr}
+                onClick={() => handleDayClick(day.dateStr)}
+                className="py-2 rounded-lg text-center transition-all cursor-pointer flex flex-col items-center"
+                style={{
+                  backgroundColor: currentTheme.rawInputBg,
+                  border: isToday ? `2px solid ${colorHex || '#3b82f6'}` : 'none',
+                  borderRadius: '0.5rem',
+                }}
+              >
+                <div className="text-xs opacity-60" style={{ color: currentTheme.rawText }}>
+                  {day.dayOfWeek}
+                </div>
+                <div className="text-lg font-semibold mt-1" style={{ color: currentTheme.rawText }}>
+                  {dayNum}
+                </div>
+                {hasWorkout && colorHex && (
+                  <div
+                    className="w-1.5 h-1.5 rounded-full mt-1"
+                    style={{ backgroundColor: colorHex }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
