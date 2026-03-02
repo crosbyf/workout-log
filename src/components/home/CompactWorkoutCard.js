@@ -40,7 +40,7 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
         }}
       >
         <div className="w-1 self-stretch shrink-0" style={{ backgroundColor: '#f59e0b' }} />
-        <div className="flex-1 flex items-center px-3 py-2 min-w-0 gap-3">
+        <div className="flex-1 flex items-center px-3 py-2.5 min-w-0 gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <Footprints size={14} style={{ color: '#f59e0b' }} />
@@ -85,7 +85,7 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
     return (
       <button
         onClick={onToggle}
-        className="w-full text-left rounded-lg mb-1 px-3 py-2 flex items-center gap-2"
+        className="w-full text-left rounded-lg mb-1 px-3 py-2.5 flex items-center gap-2"
         style={{
           backgroundColor: 'var(--color-surface)',
           opacity: isExpanded ? 0.8 : 0.5,
@@ -121,7 +121,7 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
       <div className="w-1 self-stretch shrink-0" style={{ backgroundColor: color }} />
 
       {/* Content */}
-      <div className="flex-1 flex items-center px-3 py-2 min-w-0 gap-3">
+      <div className="flex-1 flex items-center px-3 py-2.5 min-w-0 gap-3">
         {/* Date + Location */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
