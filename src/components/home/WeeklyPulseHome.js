@@ -203,55 +203,55 @@ export default function WeeklyPulseHome({
   };
 
   return (
-    <div className="px-3 pb-4">
+    <div className="px-3 pb-4 pt-0.5">
       {/* ── Scoreboard ── */}
       <div
-        className="rounded-xl px-4 pt-3 pb-2 mt-2 mb-3"
+        className="rounded-xl px-3 pt-2 pb-1.5 mt-1 mb-2"
         style={{ backgroundColor: 'var(--color-surface)' }}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
         {/* Header with nav arrows — cycle continuously */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1">
           <button
             onClick={() => setViewIndex(v => (v + 2) % 3)}
-            className="p-1 rounded-lg"
+            className="p-0.5 rounded-lg"
             style={{ color: 'var(--color-accent)' }}
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={16} />
           </button>
           <span
-            className="text-xs font-bold tracking-wider"
+            className="text-[10px] font-bold tracking-wider"
             style={{ color: 'var(--color-text-dim)' }}
           >
             {VIEW_LABELS[viewIndex]}
           </span>
           <button
             onClick={() => setViewIndex(v => (v + 1) % 3)}
-            className="p-1 rounded-lg"
+            className="p-0.5 rounded-lg"
             style={{ color: 'var(--color-accent)' }}
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={16} />
           </button>
         </div>
 
         {/* Big numbers row: reps, miles, time, avg protein — GORS colors */}
-        <div className="flex items-start justify-between mb-1">
+        <div className="flex items-start justify-between mb-0.5">
           <div className="text-center flex-1">
             <div
-              className="text-3xl font-bold leading-none"
+              className="text-2xl font-bold leading-none"
               style={{ color: '#4a9eff' }}
             >
               {currentStats.totalReps}
             </div>
-            <div className="text-[10px] mt-1 font-medium" style={{ color: 'var(--color-text-dim)' }}>
+            <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
               reps
             </div>
           </div>
 
           <div className="text-center flex-1">
             <div
-              className="text-3xl font-bold leading-none"
+              className="text-2xl font-bold leading-none"
               style={{ color: '#f59e0b' }}
             >
               {currentStats.totalMiles > 0
@@ -261,14 +261,14 @@ export default function WeeklyPulseHome({
                 : '—'
               }
             </div>
-            <div className="text-[10px] mt-1 font-medium" style={{ color: 'var(--color-text-dim)' }}>
+            <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
               miles
             </div>
           </div>
 
           <div className="text-center flex-1">
             <div
-              className="text-3xl font-bold leading-none"
+              className="text-2xl font-bold leading-none"
               style={{ color: '#a855f7' }}
             >
               {currentStats.totalTime > 0
@@ -276,27 +276,27 @@ export default function WeeklyPulseHome({
                 : '—'
               }
             </div>
-            <div className="text-[10px] mt-1 font-medium" style={{ color: 'var(--color-text-dim)' }}>
+            <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
               time
             </div>
           </div>
 
           <div className="text-center flex-1">
             <div
-              className="text-3xl font-bold leading-none"
+              className="text-2xl font-bold leading-none"
               style={{ color: '#22c55e' }}
             >
               {currentStats.proteinAvg > 0 ? currentStats.proteinAvg : '—'}
             </div>
-            <div className="text-[10px] mt-1 font-medium" style={{ color: 'var(--color-text-dim)' }}>
-              avg protein
+            <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
+              protein
             </div>
           </div>
         </div>
 
         {/* Week dots (This Week and Last Week only) — multi-dot like CalendarStrip */}
         {showDots && currentDates && (
-          <div className="flex items-center justify-between px-2 mt-3">
+          <div className="flex items-center justify-between px-1 mt-1.5 mb-0.5">
             {DAYS.map((label, i) => {
               const dateStr = currentDates[i];
               const isToday = dateStr === todayStr;
@@ -306,9 +306,9 @@ export default function WeeklyPulseHome({
               const hasActivity = dots.length > 0;
 
               return (
-                <div key={i} className="flex flex-col items-center gap-1">
+                <div key={i} className="flex flex-col items-center gap-0.5">
                   <span
-                    className="text-[10px] font-medium"
+                    className="text-[9px] font-medium"
                     style={{
                       color: isToday ? 'var(--color-accent)' : 'var(--color-text-dim)',
                       fontWeight: isToday ? 700 : 500,
@@ -318,28 +318,28 @@ export default function WeeklyPulseHome({
                   </span>
                   {hasActivity ? (
                     /* Multiple dots stacked/side-by-side for each workout */
-                    <div className="w-6 h-6 flex items-center justify-center gap-0.5 flex-wrap">
+                    <div className="w-5 h-5 flex items-center justify-center gap-0.5 flex-wrap">
                       {dots.slice(0, 4).map((dot, di) => (
                         <div
                           key={di}
                           className="rounded-full flex items-center justify-center"
                           style={{
-                            width: dots.length === 1 ? '24px' : dots.length <= 2 ? '10px' : '9px',
-                            height: dots.length === 1 ? '24px' : dots.length <= 2 ? '10px' : '9px',
+                            width: dots.length === 1 ? '20px' : dots.length <= 2 ? '9px' : '8px',
+                            height: dots.length === 1 ? '20px' : dots.length <= 2 ? '9px' : '8px',
                             backgroundColor: dot.color,
                           }}
                         >
                           {dots.length === 1 && (
                             dot.isRun
-                              ? <Footprints size={10} color="#ffffff" />
-                              : <Dumbbell size={10} color="#ffffff" />
+                              ? <Footprints size={9} color="#ffffff" />
+                              : <Dumbbell size={9} color="#ffffff" />
                           )}
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center"
+                      className="w-5 h-5 rounded-full flex items-center justify-center"
                       style={{
                         backgroundColor: isDayOff ? 'var(--color-surface-hover)' : 'transparent',
                         border: isToday
@@ -350,7 +350,7 @@ export default function WeeklyPulseHome({
                       }}
                     >
                       {isDayOff && (
-                        <span className="text-[8px]" style={{ color: 'var(--color-text-dim)' }}>—</span>
+                        <span className="text-[7px]" style={{ color: 'var(--color-text-dim)' }}>—</span>
                       )}
                     </div>
                   )}
@@ -363,8 +363,8 @@ export default function WeeklyPulseHome({
       </div>
 
       {/* ── Recent Workouts ── */}
-      <div className="mb-3">
-        <div className="flex items-center justify-between mb-1.5 px-1">
+      <div className="mb-2">
+        <div className="flex items-center justify-between mb-1 px-1">
           <span
             className="text-xs font-bold tracking-wider"
             style={{ color: 'var(--color-text-dim)' }}
