@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { Dumbbell } from 'lucide-react';
+import { Dumbbell, GitCompareArrows, X, Check } from 'lucide-react';
 import EmptyState from '@/components/shared/EmptyState';
 import WorkoutCard from './WorkoutCard';
 import CalendarStrip from './CalendarStrip';
+import WorkoutCompare from './WorkoutCompare';
 import { getWeekKey, getWeekLabel } from '@/utils/format';
 
 /**
@@ -53,7 +54,7 @@ function calcWeekOffset(dateStr) {
   return Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
 }
 
-export default function HomeTab({ workouts = [], allWorkouts = [], selectedDate, onSelectDate, onEdit, onDelete, onStartWorkout, proteinEntries = [], presets = [] }) {
+export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, onSelectDate, onEdit, onDelete, onStartWorkout, proteinEntries = [], presets = [] }) {
   const [expandedId, setExpandedId] = useState(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [activeWeekLabel, setActiveWeekLabel] = useState(null);
@@ -61,6 +62,43 @@ export default function HomeTab({ workouts = [], allWorkouts = [], selectedDate,
   const isUserScrolling = useRef(true);
   const rafRef = useRef(null);
   const lastSyncedOffset = useRef(0);
+
+  // Compare mode state
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareSelections, setCompareSelections] = useState([]);
+  const [showCompare, setShowCompare] = useState(false);
+
+  const handleToggleCompareMode = useCallback(() => {
+    setCompareMode(prev => {
+      if (prev) {
+        setCompareSelections([]);
+        return false;
+      }
+      setExpandedId(null);
+      return true;
+    });
+  }, []);
+
+  const handleCompareSelect = useCallback((workoutId) => {
+    setCompareSelections(prev => {
+      if (prev.includes(workoutId)) {
+        return prev.filter(id => id !== workoutId);
+      }
+      if (prev.length >= 2) return prev;
+      const next = [...prev, workoutId];
+      if (next.length === 2) {
+        // Auto-open comparison when 2 selected
+        window.setTimeout(() => setShowCompare(true), 150);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleCloseCompare = useCallback(() => {
+    setShowCompare(false);
+    setCompareSelections([]);
+    setCompareMode(false);
+  }, []);
 
   const handleToggle = (workoutId) => {
     setExpandedId(prev => prev === workoutId ? null : workoutId);
@@ -187,13 +225,40 @@ export default function HomeTab({ workouts = [], allWorkouts = [], selectedDate,
           weekOffset={weekOffset}
           onWeekChange={handleWeekChange}
         />
+        {/* Compare mode bar */}
+        {compareMode && (
+          <div
+            className="flex items-center justify-between px-4 py-2"
+            style={{
+              backgroundColor: 'var(--color-surface)',
+              borderBottom: '1px solid var(--color-border)',
+            }}
+          >
+            <span className="text-xs font-medium" style={{ color: 'var(--color-accent)' }}>
+              {compareSelections.length === 0
+                ? 'Tap two workouts to compare'
+                : compareSelections.length === 1
+                  ? 'Tap one more workout'
+                  : 'Comparing...'}
+            </span>
+            <button
+              onClick={handleToggleCompareMode}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              <X size={14} /> Cancel
+            </button>
+          </div>
+        )}
+
         {/* Fixed week label — always visible, updates on scroll */}
         {!selectedDate && weekGroups.length > 0 && (
           <div
+            className="flex items-center justify-between"
             style={{
               backgroundColor: 'var(--color-bg)',
               paddingLeft: '16px',
-              paddingRight: '16px',
+              paddingRight: '12px',
               paddingTop: '6px',
               paddingBottom: '6px',
               borderBottom: '1px solid var(--color-border)',
@@ -205,6 +270,17 @@ export default function HomeTab({ workouts = [], allWorkouts = [], selectedDate,
             >
               {displayedWeekLabel}
             </span>
+            {!compareMode && (
+              <button
+                onClick={handleToggleCompareMode}
+                className="flex items-center gap-1 px-2 py-1 rounded-lg"
+                style={{ color: 'var(--color-text-dim)' }}
+                aria-label="Compare workouts"
+              >
+                <GitCompareArrows size={14} />
+                <span className="text-[10px] font-medium">Compare</span>
+              </button>
+            )}
           </div>
         )}
         {/* Divider line (only when no week label shown) */}
@@ -256,22 +332,80 @@ export default function HomeTab({ workouts = [], allWorkouts = [], selectedDate,
               )}
 
               {/* Workout cards for this week */}
-              {group.workouts.map(workout => (
-                <WorkoutCard
-                  key={workout.id}
-                  workout={workout}
-                  isExpanded={expandedId === workout.id}
-                  onToggle={() => handleToggle(workout.id)}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  proteinGrams={proteinByDate[workout.date] || 0}
-                  presets={presets}
-                />
-              ))}
+              {group.workouts.map(workout => {
+                const isSelected = compareSelections.includes(workout.id);
+                const isComparable = !workout.isDayOff;
+
+                if (compareMode && isComparable) {
+                  return (
+                    <button
+                      key={workout.id}
+                      onClick={() => handleCompareSelect(workout.id)}
+                      className="w-full text-left relative"
+                    >
+                      <WorkoutCard
+                        workout={workout}
+                        isExpanded={false}
+                        onToggle={() => {}}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        proteinGrams={proteinByDate[workout.date] || 0}
+                        presets={presets}
+                      />
+                      {/* Selection overlay */}
+                      {isSelected && (
+                        <div
+                          className="absolute inset-0 rounded-xl flex items-center justify-center pointer-events-none"
+                          style={{
+                            backgroundColor: 'rgba(74, 158, 255, 0.12)',
+                            border: '2px solid var(--color-accent)',
+                            borderRadius: '12px',
+                          }}
+                        >
+                          <div
+                            className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: 'var(--color-accent)' }}
+                          >
+                            <Check size={12} color="#ffffff" strokeWidth={3} />
+                          </div>
+                        </div>
+                      )}
+                    </button>
+                  );
+                }
+
+                return (
+                  <WorkoutCard
+                    key={workout.id}
+                    workout={workout}
+                    isExpanded={expandedId === workout.id}
+                    onToggle={() => handleToggle(workout.id)}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    proteinGrams={proteinByDate[workout.date] || 0}
+                    presets={presets}
+                  />
+                );
+              })}
             </div>
           ))}
         </div>
       )}
+
+      {/* Compare overlay */}
+      {showCompare && compareSelections.length === 2 && (() => {
+        const wA = workouts.find(w => w.id === compareSelections[0]);
+        const wB = workouts.find(w => w.id === compareSelections[1]);
+        if (!wA || !wB) return null;
+        return (
+          <WorkoutCompare
+            workoutA={wA}
+            workoutB={wB}
+            presets={presets}
+            onClose={handleCloseCompare}
+          />
+        );
+      })()}
     </div>
   );
 }
