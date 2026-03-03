@@ -224,7 +224,7 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
           </div>
           {latest && (
             <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>
-              Last weighed {formatShortDate(latest.date)} \u00b7 {entries.length} total
+              Last weighed {formatShortDate(latest.date)} {'\u00b7'} {entries.length} total
             </span>
           )}
         </div>
