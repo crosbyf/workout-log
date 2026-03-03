@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useCallback } from 'react';
-import { Plus, X, Dumbbell, Footprints, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, X, Dumbbell, Footprints, ChevronLeft, ChevronRight } from 'lucide-react';
 import { calculateTotalReps } from '@/utils/exercise';
 import { getTodayStr } from '@/utils/format';
 import { PRESET_COLORS } from '@/hooks/usePresets';
@@ -100,17 +100,16 @@ export default function WeeklyPulseHome({
   onStartWorkout,
   proteinData,
   presets = [],
+  onOpenProteinDetail,
 }) {
   const [expandedId, setExpandedId] = useState(null);
   const [viewIndex, setViewIndex] = useState(0);
 
   const [showProteinForm, setShowProteinForm] = useState(false);
-  const [showProteinDetails, setShowProteinDetails] = useState(false);
   const [grams, setGrams] = useState('');
   const [food, setFood] = useState('');
 
   const proteinEntries = proteinData ? proteinData.entries : [];
-  const proteinEntriesByDate = proteinData ? proteinData.entriesByDate : [];
 
   // Swipe handling
   const touchStartX = useRef(0);
@@ -203,7 +202,7 @@ export default function WeeklyPulseHome({
   };
 
   return (
-    <div className="px-3 pb-4 pt-0.5">
+    <div className="px-3 pb-1 pt-0.5">
       {/* ── Scoreboard ── */}
       <div
         className="rounded-xl px-3 pt-2 pb-1.5 mt-1 mb-2"
@@ -289,7 +288,7 @@ export default function WeeklyPulseHome({
               {currentStats.proteinAvg > 0 ? currentStats.proteinAvg : '—'}
             </div>
             <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
-              protein
+              avg protein
             </div>
           </div>
         </div>
@@ -426,17 +425,21 @@ export default function WeeklyPulseHome({
         style={{ backgroundColor: 'var(--color-surface)' }}
       >
         <div className="p-4 flex items-center justify-between">
-          <div>
+          <button
+            onClick={onOpenProteinDetail}
+            className="flex-1 text-left"
+            style={{ outline: 'none' }}
+          >
             <div className="text-xs font-medium mb-0.5" style={{ color: 'var(--color-text-dim)' }}>
               Protein Today
             </div>
             <div className="text-2xl font-bold" style={{ color: 'var(--color-green, #22c55e)' }}>
               {todayProteinTotal}g
             </div>
-          </div>
+          </button>
           <button
             onClick={() => setShowProteinForm(!showProteinForm)}
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
             style={{ backgroundColor: 'var(--color-green, #22c55e)', color: '#ffffff' }}
           >
             {showProteinForm ? <X size={18} /> : <Plus size={18} />}
@@ -480,45 +483,6 @@ export default function WeeklyPulseHome({
             >
               Add Protein
             </button>
-          </div>
-        )}
-
-        {proteinEntriesByDate.length > 0 && proteinEntriesByDate[0].date === todayStr && (
-          <div style={{ borderTop: '1px solid var(--color-border)' }}>
-            <button
-              onClick={() => setShowProteinDetails(!showProteinDetails)}
-              className="w-full flex items-center justify-between px-4 py-2"
-            >
-              <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-dim)' }}>
-                {proteinEntriesByDate[0].entries.length} entries today
-              </span>
-              {showProteinDetails
-                ? <ChevronUp size={14} style={{ color: 'var(--color-text-dim)' }} />
-                : <ChevronDown size={14} style={{ color: 'var(--color-text-dim)' }} />
-              }
-            </button>
-            {showProteinDetails && (
-              <div className="px-4 pb-2">
-                {proteinEntriesByDate[0].entries.map(entry => (
-                  <div key={entry.id} className="flex items-center justify-between py-1">
-                    <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-                      {entry.food || 'Protein'} — {entry.grams}g
-                    </span>
-                    {entry.timestamp && (
-                      <span
-                        className="text-[10px]"
-                        style={{ color: 'var(--color-text-dim)', opacity: 0.6 }}
-                      >
-                        {new Date(entry.timestamp).toLocaleTimeString([], {
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
       </div>

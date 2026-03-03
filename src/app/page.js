@@ -45,6 +45,9 @@ export default function App() {
   // Delete confirmation state
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  // Cross-tab navigation: open a specific detail view on Stats tab
+  const [statsInitialView, setStatsInitialView] = useState(null);
+
   // Counter that increments on same-tab taps (used to tell child components to reset/close)
   const [tabTapCount, setTabTapCount] = useState(0);
 
@@ -130,6 +133,11 @@ export default function App() {
     }
   };
 
+  const handleOpenProteinDetail = useCallback(() => {
+    setStatsInitialView('protein');
+    setActiveTab('stats');
+  }, []);
+
   const handleDeleteWorkout = (workout) => {
     setDeleteTarget(workout);
   };
@@ -181,6 +189,7 @@ export default function App() {
             onStartWorkout={handleStartWorkout}
             proteinData={proteinData}
             presets={presets}
+            onOpenProteinDetail={handleOpenProteinDetail}
           />
         )}
         {activeTab === 'log' && (
@@ -202,6 +211,8 @@ export default function App() {
             workouts={workouts}
             proteinData={proteinData}
             weightData={weightData}
+            initialDetailView={statsInitialView}
+            onClearInitialView={() => setStatsInitialView(null)}
           />
         )}
         {activeTab === 'settings' && (

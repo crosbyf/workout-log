@@ -176,9 +176,18 @@ export default function StatsTab({
   workouts = [],
   proteinData = {},
   weightData = {},
+  initialDetailView = null,
+  onClearInitialView,
 }) {
-  const [detailView, setDetailView] = useState(null); // null | 'running' | 'protein' | 'weight' | 'exercises'
+  const [detailView, setDetailView] = useState(initialDetailView); // null | 'running' | 'protein' | 'weight' | 'exercises'
   const [showProteinQuickAdd, setShowProteinQuickAdd] = useState(false);
+
+  // Clear the initial view flag after opening so it doesn't re-trigger
+  useEffect(() => {
+    if (initialDetailView && onClearInitialView) {
+      onClearInitialView();
+    }
+  }, [initialDetailView, onClearInitialView]);
 
   const hasWorkouts = workouts.filter(w => !w.isDayOff).length > 0;
   const hasAnyData = hasWorkouts || proteinData.todayTotal > 0 || weightData.latest;

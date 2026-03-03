@@ -24,7 +24,7 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
   const totalReps = calculateTotalReps(workout.exercises);
 
   const structureLabel = workout.structure !== 'standard'
-    ? workout.structure === 'pairs' ? 'P' : 'C'
+    ? workout.structure === 'pairs' ? 'Pairs' : 'Circuit'
     : null;
 
   // Run card — green accent
@@ -63,6 +63,11 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
               {workout.runPace && (
                 <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
                   · {workout.runPace}/mi
+                </span>
+              )}
+              {proteinGrams > 0 && (
+                <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
+                  · {proteinGrams}g
                 </span>
               )}
             </div>
@@ -135,7 +140,7 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
           {/* Stats row */}
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-              {workout.exercises.length} ex
+              {workout.exercises.length} exercises
             </span>
             {workout.elapsedTime > 0 && (
               <span className="text-xs flex items-center gap-0.5" style={{ color: 'var(--color-text-dim)' }}>
