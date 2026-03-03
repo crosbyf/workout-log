@@ -202,7 +202,10 @@ export default function WeeklyPulseHome({
   };
 
   return (
-    <div className="px-3 pb-3 pt-0.5">
+    <div
+      className="px-3 pt-0.5 flex flex-col"
+      style={{ minHeight: 'calc(100dvh - 3.5rem - 4rem - env(safe-area-inset-top) - env(safe-area-inset-bottom))' }}
+    >
       {/* ── Scoreboard ── */}
       <div
         className="rounded-xl px-3 pt-2 pb-1.5 mt-1 mb-2"
@@ -421,7 +424,7 @@ export default function WeeklyPulseHome({
 
       {/* ── Protein Today ── */}
       <div
-        className="rounded-xl overflow-hidden"
+        className="rounded-xl overflow-hidden mt-auto"
         style={{ backgroundColor: 'var(--color-surface)' }}
       >
         <div className="p-4 flex items-center justify-between">
