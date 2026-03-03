@@ -202,7 +202,7 @@ export default function WeeklyPulseHome({
   };
 
   return (
-    <div className="px-3 pb-1 pt-0.5">
+    <div className="px-3 pb-3 pt-0.5">
       {/* ── Scoreboard ── */}
       <div
         className="rounded-xl px-3 pt-2 pb-1.5 mt-1 mb-2"
