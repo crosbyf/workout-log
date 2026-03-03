@@ -365,7 +365,7 @@ export default function WeeklyPulseHome({
       </div>
 
       {/* ── Recent Workouts ── */}
-      <div className="mb-2">
+      <div className="flex-1 flex flex-col mb-1.5">
         <div className="flex items-center justify-between mb-1 px-1">
           <span
             className="text-xs font-bold tracking-wider"
@@ -377,7 +377,7 @@ export default function WeeklyPulseHome({
 
         {recentWorkouts.length === 0 ? (
           <div
-            className="rounded-xl p-6 text-center"
+            className="rounded-xl p-6 text-center flex-1 flex flex-col items-center justify-center"
             style={{ backgroundColor: 'var(--color-surface)' }}
           >
             <Dumbbell
@@ -396,27 +396,28 @@ export default function WeeklyPulseHome({
             </button>
           </div>
         ) : (
-          <div>
+          <div className="flex-1 flex flex-col gap-1">
             {recentWorkouts.map(workout => (
-              expandedId === workout.id ? (
-                <InlineExpandedWorkout
-                  key={workout.id}
-                  workout={workout}
-                  onToggle={() => handleToggle(workout.id)}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  presets={presets}
-                />
-              ) : (
-                <CompactWorkoutCard
-                  key={workout.id}
-                  workout={workout}
-                  isExpanded={false}
-                  onToggle={() => handleToggle(workout.id)}
-                  presets={presets}
-                  proteinGrams={proteinByDate[workout.date] || 0}
-                />
-              )
+              <div key={workout.id} className="flex-1 flex flex-col min-h-0">
+                {expandedId === workout.id ? (
+                  <InlineExpandedWorkout
+                    workout={workout}
+                    onToggle={() => handleToggle(workout.id)}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    presets={presets}
+                  />
+                ) : (
+                  <CompactWorkoutCard
+                    workout={workout}
+                    isExpanded={false}
+                    onToggle={() => handleToggle(workout.id)}
+                    presets={presets}
+                    proteinGrams={proteinByDate[workout.date] || 0}
+                    fillHeight
+                  />
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -424,7 +425,7 @@ export default function WeeklyPulseHome({
 
       {/* ── Protein Today ── */}
       <div
-        className="rounded-xl overflow-hidden mt-auto"
+        className="rounded-xl overflow-hidden mb-1.5"
         style={{ backgroundColor: 'var(--color-surface)' }}
       >
         <div className="p-4 flex items-center justify-between">

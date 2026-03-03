@@ -18,8 +18,9 @@ function getColorForWorkout(location, presets) {
 /**
  * Compact workout card for the home/log feed.
  * [4px color bar] [Day · Location] [summary stats] [BIG rep number]
+ * fillHeight: when true, card stretches to fill parent flex container (Home tab)
  */
-export default function CompactWorkoutCard({ workout, isExpanded, onToggle, presets = [], proteinGrams = 0 }) {
+export default function CompactWorkoutCard({ workout, isExpanded, onToggle, presets = [], proteinGrams = 0, fillHeight = false }) {
   const color = getColorForWorkout(workout.location, presets);
   const totalReps = calculateTotalReps(workout.exercises);
 
@@ -27,16 +28,21 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
     ? workout.structure === 'pairs' ? 'Pairs' : 'Circuit'
     : null;
 
-  // Run card — green accent
+  // When fillHeight is true, remove mb and add flex:1
+  const mbClass = fillHeight ? '' : 'mb-1';
+  const fillStyle = fillHeight ? { flex: 1 } : {};
+
+  // Run card
   if (workout.isRun) {
     return (
       <button
         onClick={onToggle}
-        className="w-full text-left rounded-lg overflow-hidden mb-1 flex items-center"
+        className={`w-full text-left rounded-lg overflow-hidden ${mbClass} flex items-center`}
         style={{
           backgroundColor: 'var(--color-surface)',
           outline: 'none',
           border: isExpanded ? '1px solid #f59e0b' : '1px solid transparent',
+          ...fillStyle,
         }}
       >
         <div className="w-1 self-stretch shrink-0" style={{ backgroundColor: '#f59e0b' }} />
@@ -90,12 +96,13 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
     return (
       <button
         onClick={onToggle}
-        className="w-full text-left rounded-lg mb-1 px-3 py-2.5 flex items-center gap-2"
+        className={`w-full text-left rounded-lg ${mbClass} px-3 py-2.5 flex items-center gap-2`}
         style={{
           backgroundColor: 'var(--color-surface)',
           opacity: isExpanded ? 0.8 : 0.5,
           outline: 'none',
           border: isExpanded ? '1px solid var(--color-text-dim)' : '1px solid transparent',
+          ...fillStyle,
         }}
       >
         <Coffee size={14} style={{ color: 'var(--color-text-dim)' }} />
@@ -115,11 +122,12 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
   return (
     <button
       onClick={onToggle}
-      className="w-full text-left rounded-lg overflow-hidden mb-1 flex items-center"
+      className={`w-full text-left rounded-lg overflow-hidden ${mbClass} flex items-center`}
       style={{
         backgroundColor: 'var(--color-surface)',
         outline: 'none',
         border: isExpanded ? '1px solid var(--color-accent)' : '1px solid transparent',
+        ...fillStyle,
       }}
     >
       {/* Color bar */}
