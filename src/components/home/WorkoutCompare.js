@@ -203,10 +203,12 @@ export default function WorkoutCompare({ workoutA, workoutB, presets, onClose })
                     )}
                   </div>
                   <div
-                    className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    className="px-3 py-1 rounded-full text-sm font-extrabold"
                     style={{
                       color: diffColor,
-                      backgroundColor: row.diff !== 0 ? `${diffColor}15` : 'transparent',
+                      backgroundColor: row.diff !== 0 ? `${diffColor}20` : 'transparent',
+                      minWidth: '44px',
+                      textAlign: 'center',
                     }}
                   >
                     {diffLabel}
@@ -242,13 +244,18 @@ export default function WorkoutCompare({ workoutA, workoutB, presets, onClose })
                 <span className="text-[10px] ml-1" style={{ color: 'var(--color-text-dim)' }}>total</span>
               </div>
               <div
-                className="px-2 py-0.5 rounded-full text-xs font-bold"
+                className="px-3 py-1 rounded-full text-base font-extrabold"
                 style={{
                   color: totalRepsB - totalRepsA > 0
                     ? 'var(--color-green, #22c55e)'
                     : totalRepsB - totalRepsA < 0
                       ? 'var(--color-red, #ef4444)'
                       : 'var(--color-text-dim)',
+                  backgroundColor: totalRepsB - totalRepsA !== 0
+                    ? `${totalRepsB - totalRepsA > 0 ? 'var(--color-green, #22c55e)' : 'var(--color-red, #ef4444)'}20`
+                    : 'transparent',
+                  minWidth: '50px',
+                  textAlign: 'center',
                 }}
               >
                 {totalRepsB - totalRepsA > 0 ? `+${totalRepsB - totalRepsA}` : totalRepsB - totalRepsA < 0 ? `${totalRepsB - totalRepsA}` : '='}

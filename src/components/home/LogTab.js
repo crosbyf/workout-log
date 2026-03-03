@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { Dumbbell, GitCompareArrows, X, Check, Footprints } from 'lucide-react';
 import EmptyState from '@/components/shared/EmptyState';
 import WorkoutCard from './WorkoutCard';
@@ -45,9 +45,19 @@ function filterByType(workouts, filter) {
   return workouts;
 }
 
+/**
+ * Calculate month offset from today for a given date string
+ */
+function calcMonthOffset(dateStr) {
+  const today = new Date();
+  const [y, m] = dateStr.split('-').map(Number);
+  return (y - today.getFullYear()) * 12 + (m - 1 - today.getMonth());
+}
+
 export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, onSelectDate, onEdit, onDelete, onStartWorkout, proteinEntries = [], presets = [] }) {
   const [expandedId, setExpandedId] = useState(null);
   const [monthOffset, setMonthOffset] = useState(0);
+  const [calendarCollapsed, setCalendarCollapsed] = useState(false);
 
   // Filter state
   const [workoutTypeFilter, setWorkoutTypeFilter] = useState('all');
@@ -56,6 +66,12 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
   const [compareMode, setCompareMode] = useState(false);
   const [compareSelections, setCompareSelections] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
+
+  // Scroll-sync refs
+  const weekGroupRefs = useRef({});
+  const isUserScrolling = useRef(true);
+  const rafRef = useRef(null);
+  const lastSyncedOffset = useRef(0);
 
   const handleToggleCompareMode = useCallback(() => {
     setCompareMode(prev => {
@@ -89,11 +105,28 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
   }, []);
 
   const handleToggle = (workoutId) => {
-    setExpandedId(prev => prev === workoutId ? null : workoutId);
+    if (expandedId === workoutId) {
+      // Collapsing
+      setExpandedId(null);
+    } else {
+      // Expanding — collapse calendar to give more room
+      setExpandedId(workoutId);
+      setCalendarCollapsed(true);
+    }
   };
 
   const handleMonthChange = useCallback((newOffset) => {
+    isUserScrolling.current = false;
     setMonthOffset(newOffset);
+    lastSyncedOffset.current = newOffset;
+    const timer = window.setTimeout(() => {
+      isUserScrolling.current = true;
+    }, 600);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const handleToggleCollapse = useCallback(() => {
+    setCalendarCollapsed(prev => !prev);
   }, []);
 
   // Apply type filter + date filter to feed workouts
@@ -121,6 +154,67 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
 
   const weekGroups = groupByWeek(displayWorkouts);
 
+  // Scroll-sync: update calendar month based on feed scroll position
+  useEffect(() => {
+    if (selectedDate) return;
+
+    const handleScroll = () => {
+      if (!isUserScrolling.current) return;
+      if (rafRef.current) return;
+
+      rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = null;
+
+        const refs = weekGroupRefs.current;
+        const targetY = 180; // Just below sticky area
+        let activeKey = null;
+
+        Object.entries(refs).forEach(([key, el]) => {
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= targetY && rect.bottom > targetY) {
+            activeKey = key;
+          }
+        });
+
+        if (!activeKey) {
+          let bestKey = null;
+          let bestTop = Infinity;
+          Object.entries(refs).forEach(([key, el]) => {
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            if (rect.bottom > 0 && rect.top < bestTop) {
+              bestTop = rect.top;
+              bestKey = key;
+            }
+          });
+          activeKey = bestKey;
+        }
+
+        if (activeKey) {
+          const el = refs[activeKey];
+          const dateStr = el?.dataset?.weekDate;
+          if (dateStr) {
+            const offset = calcMonthOffset(dateStr);
+            if (offset !== lastSyncedOffset.current) {
+              lastSyncedOffset.current = offset;
+              setMonthOffset(offset);
+            }
+          }
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafRef.current) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [weekGroups, selectedDate]);
+
   // Empty state message based on filter
   const emptyMessage = useMemo(() => {
     if (selectedDate) return 'No workouts on this day.';
@@ -146,6 +240,8 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
           onSelectDate={onSelectDate}
           monthOffset={monthOffset}
           onMonthChange={handleMonthChange}
+          collapsed={calendarCollapsed}
+          onToggleCollapse={handleToggleCollapse}
         />
 
         {/* Compare mode bar */}
@@ -251,13 +347,16 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
           {weekGroups.map((group, groupIdx) => (
             <div
               key={group.weekKey}
+              ref={el => { weekGroupRefs.current[group.weekKey] = el; }}
+              data-week-date={group.firstDate}
+              data-week-label={group.label}
               style={{ marginTop: groupIdx > 0 ? '0' : '4px' }}
             >
-              {/* Inline week separator */}
-              {groupIdx > 0 && (
+              {/* Week header label */}
+              {!selectedDate && (
                 <div
                   style={{
-                    paddingTop: '10px',
+                    paddingTop: groupIdx > 0 ? '10px' : '4px',
                     paddingBottom: '6px',
                     paddingLeft: '1px',
                   }}
@@ -292,7 +391,6 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
                         proteinGrams={proteinByDate[workout.date] || 0}
                         presets={presets}
                       />
-                      {/* Selection overlay */}
                       {isSelected && (
                         <div
                           className="absolute inset-0 rounded-xl flex items-center justify-center pointer-events-none"

@@ -82,7 +82,7 @@ export default function SplashScreen({ onComplete }) {
           fontSize: '13px',
           fontWeight: '600',
           letterSpacing: '4px',
-          color: '#6366f1',
+          color: '#ffffff',
           textTransform: 'uppercase',
           animation: 'splash-fade-up 0.5s ease-out 0.7s both',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',

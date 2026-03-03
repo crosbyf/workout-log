@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useMemo, useRef, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { PRESET_COLORS } from '@/hooks/usePresets';
 
 const DAYS_LETTER = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -19,9 +19,6 @@ const LOCATION_COLOR_MAP = {
   'Garage BW': 'cyan',
 };
 
-/**
- * Format Date object to YYYY-MM-DD string
- */
 function toDateStr(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -29,31 +26,24 @@ function toDateStr(date) {
   return `${y}-${m}-${d}`;
 }
 
-/**
- * Get the grid of day objects for a month view (6 rows x 7 cols, Mon-Sun)
- */
 function getMonthGrid(year, month) {
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
 
-  // Day of week for the 1st (0=Sun, convert to Mon=0)
   let startDow = firstDay.getDay() - 1;
-  if (startDow < 0) startDow = 6; // Sunday becomes 6
+  if (startDow < 0) startDow = 6;
 
   const days = [];
 
-  // Previous month fill
   for (let i = startDow - 1; i >= 0; i--) {
     const d = new Date(year, month, -i);
     days.push({ date: d, currentMonth: false });
   }
 
-  // Current month
   for (let i = 1; i <= lastDay.getDate(); i++) {
     days.push({ date: new Date(year, month, i), currentMonth: true });
   }
 
-  // Next month fill (always pad to 42 = 6 rows, but trim if 5 rows suffice)
   const rows = Math.ceil(days.length / 7);
   const targetCells = rows * 7;
   let nextDay = 1;
@@ -64,14 +54,16 @@ function getMonthGrid(year, month) {
   return days;
 }
 
-export default function CalendarStrip({ workouts = [], selectedDate, onSelectDate, monthOffset = 0, onMonthChange, presets = [] }) {
+export default function CalendarStrip({ workouts = [], selectedDate, onSelectDate, monthOffset = 0, onMonthChange, presets = [], collapsed = false, onToggleCollapse }) {
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
+
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     return d;
   }, []);
 
-  // Calculate target month/year from offset
   const { year, month } = useMemo(() => {
     const d = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
     return { year: d.getFullYear(), month: d.getMonth() };
@@ -79,7 +71,6 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
 
   const monthGrid = useMemo(() => getMonthGrid(year, month), [year, month]);
 
-  // Build a map of date string → workout colors for dot indicators
   const workoutDotMap = useMemo(() => {
     const map = {};
     for (const w of workouts) {
@@ -111,12 +102,39 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
     onSelectDate(null);
   };
 
+  // Swipe handling
+  const handleTouchStart = useCallback((e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+
+    // Only count horizontal swipes (dx > dy, and enough distance)
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) {
+        // Swipe left = next month (only if not at current month)
+        if (monthOffset < 0) onMonthChange(monthOffset + 1);
+      } else {
+        // Swipe right = previous month
+        onMonthChange(monthOffset - 1);
+      }
+    }
+  }, [monthOffset, onMonthChange]);
+
   const todayStr = toDateStr(today);
 
   return (
     <div
       className="px-3 pt-1.5 pb-1"
       style={{ backgroundColor: 'var(--color-bg)' }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Month navigation row */}
       <div className="flex items-center justify-between mb-1">
@@ -129,16 +147,28 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
           <ChevronLeft size={18} />
         </button>
 
-        <button
-          onClick={handleGoToday}
-          className="text-xs font-semibold tracking-wide px-3 py-0.5 rounded-full"
-          style={{
-            color: monthOffset === 0 ? 'var(--color-accent)' : 'var(--color-text-muted)',
-            backgroundColor: monthOffset === 0 ? 'transparent' : 'var(--color-surface)',
-          }}
-        >
-          {monthLabel}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleGoToday}
+            className="text-xs font-semibold tracking-wide px-3 py-0.5 rounded-full"
+            style={{
+              color: monthOffset === 0 ? 'var(--color-accent)' : 'var(--color-text-muted)',
+              backgroundColor: monthOffset === 0 ? 'transparent' : 'var(--color-surface)',
+            }}
+          >
+            {monthLabel}
+          </button>
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="p-0.5 rounded"
+              style={{ color: 'var(--color-text-dim)' }}
+              aria-label={collapsed ? 'Expand calendar' : 'Collapse calendar'}
+            >
+              {collapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+            </button>
+          )}
+        </div>
 
         <button
           onClick={handleNextMonth}
@@ -154,86 +184,89 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
         </button>
       </div>
 
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-0 mb-0.5">
-        {DAYS_LETTER.map((letter, idx) => (
-          <div
-            key={idx}
-            className="text-center"
-            style={{ fontSize: '8px', fontWeight: 600, color: 'var(--color-text-dim)', lineHeight: '12px' }}
-          >
-            {letter}
-          </div>
-        ))}
-      </div>
-
-      {/* Month grid */}
-      <div className="grid grid-cols-7 gap-0">
-        {monthGrid.map((dayObj, idx) => {
-          const dateStr = toDateStr(dayObj.date);
-          const isToday = dateStr === todayStr;
-          const isSelected = selectedDate === dateStr;
-          const isFuture = dayObj.date > today;
-          const isCurrentMonth = dayObj.currentMonth;
-          const dots = workoutDotMap[dateStr] || [];
-
-          return (
-            <button
-              key={idx}
-              onClick={() => {
-                if (isFuture || !isCurrentMonth) return;
-                onSelectDate(isSelected ? null : dateStr);
-              }}
-              className="flex flex-col items-center justify-center rounded-lg"
-              style={{
-                padding: '3px 0 2px',
-                minHeight: '30px',
-                backgroundColor: isSelected
-                  ? 'var(--color-accent)'
-                  : isToday
-                    ? 'var(--color-surface)'
-                    : 'transparent',
-                opacity: !isCurrentMonth ? 0.2 : isFuture ? 0.3 : 1,
-                transition: 'background-color 0.15s ease',
-                cursor: (isFuture || !isCurrentMonth) ? 'default' : 'pointer',
-              }}
-              disabled={isFuture || !isCurrentMonth}
-            >
-              {/* Day number */}
-              <span
-                style={{
-                  fontSize: '11px',
-                  fontWeight: isToday ? 800 : 600,
-                  lineHeight: '14px',
-                  color: isSelected
-                    ? '#ffffff'
-                    : isToday
-                      ? 'var(--color-accent)'
-                      : 'var(--color-text)',
-                }}
+      {/* Collapsed: just show month nav, no grid */}
+      {!collapsed && (
+        <>
+          {/* Weekday headers */}
+          <div className="grid grid-cols-7 gap-0 mb-0.5">
+            {DAYS_LETTER.map((letter, idx) => (
+              <div
+                key={idx}
+                className="text-center"
+                style={{ fontSize: '8px', fontWeight: 600, color: 'var(--color-text-dim)', lineHeight: '12px' }}
               >
-                {dayObj.date.getDate()}
-              </span>
-
-              {/* Workout dots */}
-              <div className="flex gap-px mt-px" style={{ height: '4px' }}>
-                {dots.slice(0, 3).map((color, di) => (
-                  <div
-                    key={di}
-                    style={{
-                      width: '3px',
-                      height: '3px',
-                      borderRadius: '50%',
-                      backgroundColor: isSelected ? 'rgba(255,255,255,0.9)' : color,
-                      boxShadow: isSelected ? 'none' : `0 0 2px ${color}`,
-                    }}
-                  />
-                ))}
+                {letter}
               </div>
-            </button>
-          );
-        })}
-      </div>
+            ))}
+          </div>
+
+          {/* Month grid */}
+          <div className="grid grid-cols-7 gap-0">
+            {monthGrid.map((dayObj, idx) => {
+              const dateStr = toDateStr(dayObj.date);
+              const isToday = dateStr === todayStr;
+              const isSelected = selectedDate === dateStr;
+              const isFuture = dayObj.date > today;
+              const isCurrentMonth = dayObj.currentMonth;
+              const dots = workoutDotMap[dateStr] || [];
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    if (isFuture || !isCurrentMonth) return;
+                    onSelectDate(isSelected ? null : dateStr);
+                  }}
+                  className="flex flex-col items-center justify-center rounded-lg"
+                  style={{
+                    padding: '3px 0 2px',
+                    minHeight: '30px',
+                    backgroundColor: isSelected
+                      ? 'var(--color-accent)'
+                      : isToday
+                        ? 'var(--color-surface)'
+                        : 'transparent',
+                    opacity: !isCurrentMonth ? 0.2 : isFuture ? 0.3 : 1,
+                    transition: 'background-color 0.15s ease',
+                    cursor: (isFuture || !isCurrentMonth) ? 'default' : 'pointer',
+                  }}
+                  disabled={isFuture || !isCurrentMonth}
+                >
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: isToday ? 800 : 600,
+                      lineHeight: '14px',
+                      color: isSelected
+                        ? '#ffffff'
+                        : isToday
+                          ? 'var(--color-accent)'
+                          : 'var(--color-text)',
+                    }}
+                  >
+                    {dayObj.date.getDate()}
+                  </span>
+
+                  <div className="flex gap-px mt-px" style={{ height: '4px' }}>
+                    {dots.slice(0, 3).map((color, di) => (
+                      <div
+                        key={di}
+                        style={{
+                          width: '3px',
+                          height: '3px',
+                          borderRadius: '50%',
+                          backgroundColor: isSelected ? 'rgba(255,255,255,0.9)' : color,
+                          boxShadow: isSelected ? 'none' : `0 0 2px ${color}`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }
