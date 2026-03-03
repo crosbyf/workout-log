@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { Dumbbell, GitCompareArrows, X, Check } from 'lucide-react';
+import { useState, useMemo, useRef, useCallback } from 'react';
+import { Dumbbell, GitCompareArrows, X, Check, Footprints } from 'lucide-react';
 import EmptyState from '@/components/shared/EmptyState';
 import WorkoutCard from './WorkoutCard';
 import CalendarStrip from './CalendarStrip';
@@ -35,33 +35,22 @@ function groupByWeek(workouts) {
 }
 
 /**
- * Calculate week offset from today for a given date string
+ * Filter workouts by type: 'all', 'runs', or 'strength'
+ * Day offs are always included.
  */
-function calcWeekOffset(dateStr) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayDay = (today.getDay() + 6) % 7;
-  const todayMonday = new Date(today);
-  todayMonday.setDate(today.getDate() - todayDay);
-
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const target = new Date(y, m - 1, d);
-  const targetDay = (target.getDay() + 6) % 7;
-  const targetMonday = new Date(target);
-  targetMonday.setDate(target.getDate() - targetDay);
-
-  const diffMs = targetMonday.getTime() - todayMonday.getTime();
-  return Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
+function filterByType(workouts, filter) {
+  if (filter === 'all') return workouts;
+  if (filter === 'runs') return workouts.filter(w => w.isRun || w.isDayOff);
+  if (filter === 'strength') return workouts.filter(w => (!w.isRun && !w.isDayOff) || w.isDayOff);
+  return workouts;
 }
 
 export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, onSelectDate, onEdit, onDelete, onStartWorkout, proteinEntries = [], presets = [] }) {
   const [expandedId, setExpandedId] = useState(null);
-  const [weekOffset, setWeekOffset] = useState(0);
-  const [activeWeekLabel, setActiveWeekLabel] = useState(null);
-  const weekGroupRefs = useRef({});
-  const isUserScrolling = useRef(true);
-  const rafRef = useRef(null);
-  const lastSyncedOffset = useRef(0);
+  const [monthOffset, setMonthOffset] = useState(0);
+
+  // Filter state
+  const [workoutTypeFilter, setWorkoutTypeFilter] = useState('all');
 
   // Compare mode state
   const [compareMode, setCompareMode] = useState(false);
@@ -87,7 +76,6 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
       if (prev.length >= 2) return prev;
       const next = [...prev, workoutId];
       if (next.length === 2) {
-        // Auto-open comparison when 2 selected
         window.setTimeout(() => setShowCompare(true), 150);
       }
       return next;
@@ -104,22 +92,23 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
     setExpandedId(prev => prev === workoutId ? null : workoutId);
   };
 
-  // When user taps a calendar arrow or "today", don't sync from scroll briefly
-  const handleWeekChange = useCallback((newOffset) => {
-    isUserScrolling.current = false;
-    setWeekOffset(newOffset);
-    lastSyncedOffset.current = newOffset;
-    const timer = window.setTimeout(() => {
-      isUserScrolling.current = true;
-    }, 600);
-    return () => window.clearTimeout(timer);
+  const handleMonthChange = useCallback((newOffset) => {
+    setMonthOffset(newOffset);
   }, []);
 
-  // Apply date filter from calendar
+  // Apply type filter + date filter to feed workouts
   const displayWorkouts = useMemo(() => {
-    if (!selectedDate) return workouts;
-    return workouts.filter(w => w.date === selectedDate);
-  }, [workouts, selectedDate]);
+    let filtered = filterByType(workouts, workoutTypeFilter);
+    if (selectedDate) {
+      filtered = filtered.filter(w => w.date === selectedDate);
+    }
+    return filtered;
+  }, [workouts, workoutTypeFilter, selectedDate]);
+
+  // Apply type filter to calendar dot workouts
+  const calendarWorkouts = useMemo(() => {
+    return filterByType(allWorkouts, workoutTypeFilter);
+  }, [allWorkouts, workoutTypeFilter]);
 
   // Build protein-by-date lookup
   const proteinByDate = useMemo(() => {
@@ -132,84 +121,17 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
 
   const weekGroups = groupByWeek(displayWorkouts);
 
-  // Derive the displayed week label: use scroll-synced label if set, otherwise first group
-  const displayedWeekLabel = activeWeekLabel || (weekGroups.length > 0 ? weekGroups[0].label : '');
-
-  // Smooth scroll-sync: update calendar week AND the fixed week label
-  useEffect(() => {
-    if (selectedDate) return;
-
-    const handleScroll = () => {
-      if (!isUserScrolling.current) return;
-      if (rafRef.current) return;
-
-      rafRef.current = window.requestAnimationFrame(() => {
-        rafRef.current = null;
-
-        const refs = weekGroupRefs.current;
-        // Find the group whose container actually spans the area just below
-        // the sticky header. Use a high-enough threshold so the label only
-        // changes once the group has scrolled up to the header region.
-        const targetY = 240;
-        let activeKey = null;
-
-        // Walk groups: pick the one whose top is AT or ABOVE the target
-        // line AND whose bottom is still below it (i.e. it spans the line).
-        Object.entries(refs).forEach(([key, el]) => {
-          if (!el) return;
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= targetY && rect.bottom > targetY) {
-            activeKey = key;
-          }
-        });
-
-        // Fallback: if nothing spans the target line (e.g. first group
-        // is still below it), use the first visible group
-        if (!activeKey) {
-          let bestKey = null;
-          let bestTop = Infinity;
-          Object.entries(refs).forEach(([key, el]) => {
-            if (!el) return;
-            const rect = el.getBoundingClientRect();
-            if (rect.bottom > 0 && rect.top < bestTop) {
-              bestTop = rect.top;
-              bestKey = key;
-            }
-          });
-          activeKey = bestKey;
-        }
-
-        if (activeKey) {
-          const el = refs[activeKey];
-          const dateStr = el?.dataset?.weekDate;
-          const label = el?.dataset?.weekLabel;
-          if (dateStr) {
-            const offset = calcWeekOffset(dateStr);
-            if (offset !== lastSyncedOffset.current) {
-              lastSyncedOffset.current = offset;
-              setWeekOffset(offset);
-            }
-          }
-          if (label) {
-            setActiveWeekLabel(label);
-          }
-        }
-      });
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (rafRef.current) {
-        window.cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
-  }, [weekGroups, selectedDate]);
+  // Empty state message based on filter
+  const emptyMessage = useMemo(() => {
+    if (selectedDate) return 'No workouts on this day.';
+    if (workoutTypeFilter === 'runs') return 'No runs logged yet.';
+    if (workoutTypeFilter === 'strength') return 'No strength workouts logged yet.';
+    return 'No workouts yet. Start your first one!';
+  }, [selectedDate, workoutTypeFilter]);
 
   return (
     <div>
-      {/* Calendar strip + fixed week label — pinned below header */}
+      {/* Calendar + filter bar — pinned below header */}
       <div
         className="sticky z-20"
         style={{
@@ -218,13 +140,14 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
         }}
       >
         <CalendarStrip
-          workouts={allWorkouts}
+          workouts={calendarWorkouts}
           selectedDate={selectedDate}
           presets={presets}
           onSelectDate={onSelectDate}
-          weekOffset={weekOffset}
-          onWeekChange={handleWeekChange}
+          monthOffset={monthOffset}
+          onMonthChange={handleMonthChange}
         />
+
         {/* Compare mode bar */}
         {compareMode && (
           <div
@@ -251,41 +174,65 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
           </div>
         )}
 
-        {/* Fixed week label — always visible, updates on scroll */}
-        {!selectedDate && weekGroups.length > 0 && (
+        {/* Filter bar + Compare button */}
+        {!compareMode && (
           <div
             className="flex items-center justify-between"
             style={{
               backgroundColor: 'var(--color-bg)',
-              paddingLeft: '16px',
+              paddingLeft: '12px',
               paddingRight: '12px',
-              paddingTop: '6px',
+              paddingTop: '4px',
               paddingBottom: '6px',
               borderBottom: '1px solid var(--color-border)',
             }}
           >
-            <span
-              className="text-xs font-bold tracking-wider"
-              style={{ color: 'var(--color-text-dim)' }}
+            {/* Segmented filter control */}
+            <div
+              className="flex gap-0.5 p-0.5 rounded-lg"
+              style={{ backgroundColor: 'var(--color-surface)' }}
             >
-              {displayedWeekLabel}
-            </span>
-            {!compareMode && (
-              <button
-                onClick={handleToggleCompareMode}
-                className="flex items-center gap-1 px-2 py-1 rounded-lg"
-                style={{ color: 'var(--color-text-dim)' }}
-                aria-label="Compare workouts"
-              >
-                <GitCompareArrows size={14} />
-                <span className="text-[10px] font-medium">Compare</span>
-              </button>
-            )}
+              {[
+                { key: 'all', label: 'All' },
+                { key: 'runs', label: 'Runs' },
+                { key: 'strength', label: 'Strength' },
+              ].map(({ key, label }) => {
+                const isActive = workoutTypeFilter === key;
+                let activeColor = 'var(--color-accent)';
+                if (key === 'runs') activeColor = '#f59e0b';
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setWorkoutTypeFilter(key)}
+                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold"
+                    style={{
+                      backgroundColor: isActive ? activeColor : 'transparent',
+                      color: isActive ? '#ffffff' : 'var(--color-text-dim)',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Compare button */}
+            <button
+              onClick={handleToggleCompareMode}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg"
+              style={{
+                color: 'var(--color-text-dim)',
+                opacity: workoutTypeFilter === 'runs' ? 0.3 : 1,
+              }}
+              aria-label="Compare workouts"
+              disabled={workoutTypeFilter === 'runs'}
+            >
+              <GitCompareArrows size={14} />
+              <span className="text-[10px] font-medium">Compare</span>
+            </button>
           </div>
-        )}
-        {/* Divider line (only when no week label shown) */}
-        {(selectedDate || weekGroups.length === 0) && (
-          <div style={{ borderBottom: '1px solid var(--color-border)' }} />
         )}
       </div>
 
@@ -293,13 +240,10 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
       {displayWorkouts.length === 0 ? (
         <div className="pt-6">
           <EmptyState
-            icon={Dumbbell}
-            message={selectedDate
-              ? "No workouts on this day."
-              : "No workouts yet. Start your first one!"
-            }
-            actionLabel={!selectedDate ? "Start Workout" : undefined}
-            onAction={!selectedDate ? onStartWorkout : undefined}
+            icon={workoutTypeFilter === 'runs' ? Footprints : Dumbbell}
+            message={emptyMessage}
+            actionLabel={workoutTypeFilter === 'all' && !selectedDate ? "Start Workout" : undefined}
+            onAction={workoutTypeFilter === 'all' && !selectedDate ? onStartWorkout : undefined}
           />
         </div>
       ) : (
@@ -307,19 +251,15 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
           {weekGroups.map((group, groupIdx) => (
             <div
               key={group.weekKey}
-              ref={el => { weekGroupRefs.current[group.weekKey] = el; }}
-              data-week-date={group.firstDate}
-              data-week-label={group.label}
               style={{ marginTop: groupIdx > 0 ? '0' : '4px' }}
             >
-              {/* Inline week separator (non-sticky, between groups) — always rendered for layout stability, visually hidden when it matches the fixed label */}
-              {!selectedDate && groupIdx > 0 && (
+              {/* Inline week separator */}
+              {groupIdx > 0 && (
                 <div
                   style={{
                     paddingTop: '10px',
                     paddingBottom: '6px',
                     paddingLeft: '1px',
-                    visibility: group.label === displayedWeekLabel ? 'hidden' : 'visible',
                   }}
                 >
                   <span

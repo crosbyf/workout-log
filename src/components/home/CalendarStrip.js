@@ -4,7 +4,9 @@ import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PRESET_COLORS } from '@/hooks/usePresets';
 
-const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const DAYS_LETTER = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+const MONTHS_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const LOCATION_COLOR_MAP = {
   'Garage A': 'blue',
@@ -18,18 +20,6 @@ const LOCATION_COLOR_MAP = {
 };
 
 /**
- * Get the Monday of the week containing the given date
- */
-function getMonday(date) {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = (day === 0 ? -6 : 1) - day; // Monday = 1
-  d.setDate(d.getDate() + diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-/**
  * Format Date object to YYYY-MM-DD string
  */
 function toDateStr(date) {
@@ -40,33 +30,54 @@ function toDateStr(date) {
 }
 
 /**
- * Get array of 7 Date objects for Mon-Sun of the week containing the given date
+ * Get the grid of day objects for a month view (6 rows x 7 cols, Mon-Sun)
  */
-function getWeekDays(referenceDate) {
-  const monday = getMonday(referenceDate);
+function getMonthGrid(year, month) {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  // Day of week for the 1st (0=Sun, convert to Mon=0)
+  let startDow = firstDay.getDay() - 1;
+  if (startDow < 0) startDow = 6; // Sunday becomes 6
+
   const days = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    days.push(d);
+
+  // Previous month fill
+  for (let i = startDow - 1; i >= 0; i--) {
+    const d = new Date(year, month, -i);
+    days.push({ date: d, currentMonth: false });
   }
+
+  // Current month
+  for (let i = 1; i <= lastDay.getDate(); i++) {
+    days.push({ date: new Date(year, month, i), currentMonth: true });
+  }
+
+  // Next month fill (always pad to 42 = 6 rows, but trim if 5 rows suffice)
+  const rows = Math.ceil(days.length / 7);
+  const targetCells = rows * 7;
+  let nextDay = 1;
+  while (days.length < targetCells) {
+    days.push({ date: new Date(year, month + 1, nextDay++), currentMonth: false });
+  }
+
   return days;
 }
 
-const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-export default function CalendarStrip({ workouts = [], selectedDate, onSelectDate, weekOffset = 0, onWeekChange, presets = [] }) {
+export default function CalendarStrip({ workouts = [], selectedDate, onSelectDate, monthOffset = 0, onMonthChange, presets = [] }) {
   const today = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
     return d;
   }, []);
 
-  const weekDays = useMemo(() => {
-    const ref = new Date(today);
-    ref.setDate(ref.getDate() + weekOffset * 7);
-    return getWeekDays(ref);
-  }, [today, weekOffset]);
+  // Calculate target month/year from offset
+  const { year, month } = useMemo(() => {
+    const d = new Date(today.getFullYear(), today.getMonth() + monthOffset, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  }, [today, monthOffset]);
+
+  const monthGrid = useMemo(() => getMonthGrid(year, month), [year, month]);
 
   // Build a map of date string → workout colors for dot indicators
   const workoutDotMap = useMemo(() => {
@@ -78,7 +89,6 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
       } else if (w.isRun) {
         map[w.date].push('#f59e0b');
       } else {
-        // Check presets first, fall back to hardcoded map
         let colorKey = LOCATION_COLOR_MAP[w.location] || 'blue';
         if (presets && presets.length > 0) {
           const preset = presets.find(p => p.name === w.location);
@@ -92,109 +102,109 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
     return map;
   }, [workouts, presets]);
 
-  // Week label: "Feb 2026" or "Feb 24 – Mar 2"
-  const weekLabel = useMemo(() => {
-    const first = weekDays[0];
-    const last = weekDays[6];
-    if (first.getMonth() === last.getMonth()) {
-      return `${MONTHS_SHORT[first.getMonth()]} ${first.getFullYear()}`;
-    }
-    return `${MONTHS_SHORT[first.getMonth()]} ${first.getDate()} – ${MONTHS_SHORT[last.getMonth()]} ${last.getDate()}`;
-  }, [weekDays]);
+  const monthLabel = `${MONTHS_FULL[month]} ${year}`;
 
-  const handlePrevWeek = () => onWeekChange(weekOffset - 1);
-  const handleNextWeek = () => onWeekChange(weekOffset + 1);
+  const handlePrevMonth = () => onMonthChange(monthOffset - 1);
+  const handleNextMonth = () => onMonthChange(monthOffset + 1);
   const handleGoToday = () => {
-    onWeekChange(0);
-    onSelectDate(null); // Clear date filter to show all
+    onMonthChange(0);
+    onSelectDate(null);
   };
 
   const todayStr = toDateStr(today);
 
   return (
     <div
-      className="px-3 pt-2 pb-1"
+      className="px-3 pt-1.5 pb-1"
       style={{ backgroundColor: 'var(--color-bg)' }}
     >
-      {/* Week navigation row */}
-      <div className="flex items-center justify-between mb-2">
+      {/* Month navigation row */}
+      <div className="flex items-center justify-between mb-1">
         <button
-          onClick={handlePrevWeek}
+          onClick={handlePrevMonth}
           className="w-8 h-8 flex items-center justify-center rounded-lg"
           style={{ color: 'var(--color-text-muted)' }}
-          aria-label="Previous week"
+          aria-label="Previous month"
         >
           <ChevronLeft size={18} />
         </button>
 
         <button
           onClick={handleGoToday}
-          className="text-xs font-semibold tracking-wide px-3 py-1 rounded-full"
+          className="text-xs font-semibold tracking-wide px-3 py-0.5 rounded-full"
           style={{
-            color: weekOffset === 0 ? 'var(--color-accent)' : 'var(--color-text-muted)',
-            backgroundColor: weekOffset === 0 ? 'transparent' : 'var(--color-surface)',
+            color: monthOffset === 0 ? 'var(--color-accent)' : 'var(--color-text-muted)',
+            backgroundColor: monthOffset === 0 ? 'transparent' : 'var(--color-surface)',
           }}
         >
-          {weekLabel}
+          {monthLabel}
         </button>
 
         <button
-          onClick={handleNextWeek}
+          onClick={handleNextMonth}
           className="w-8 h-8 flex items-center justify-center rounded-lg"
           style={{
-            color: weekOffset >= 0 ? 'var(--color-text-dim)' : 'var(--color-text-muted)',
-            opacity: weekOffset >= 0 ? 0.4 : 1,
+            color: monthOffset >= 0 ? 'var(--color-text-dim)' : 'var(--color-text-muted)',
+            opacity: monthOffset >= 0 ? 0.4 : 1,
           }}
-          aria-label="Next week"
-          disabled={weekOffset >= 0}
+          aria-label="Next month"
+          disabled={monthOffset >= 0}
         >
           <ChevronRight size={18} />
         </button>
       </div>
 
-      {/* Day cells */}
-      <div className="grid grid-cols-7 gap-1">
-        {weekDays.map((day, idx) => {
-          const dateStr = toDateStr(day);
+      {/* Weekday headers */}
+      <div className="grid grid-cols-7 gap-0 mb-0.5">
+        {DAYS_LETTER.map((letter, idx) => (
+          <div
+            key={idx}
+            className="text-center"
+            style={{ fontSize: '8px', fontWeight: 600, color: 'var(--color-text-dim)', lineHeight: '12px' }}
+          >
+            {letter}
+          </div>
+        ))}
+      </div>
+
+      {/* Month grid */}
+      <div className="grid grid-cols-7 gap-0">
+        {monthGrid.map((dayObj, idx) => {
+          const dateStr = toDateStr(dayObj.date);
           const isToday = dateStr === todayStr;
           const isSelected = selectedDate === dateStr;
-          const isFuture = day > today;
+          const isFuture = dayObj.date > today;
+          const isCurrentMonth = dayObj.currentMonth;
           const dots = workoutDotMap[dateStr] || [];
 
           return (
             <button
               key={idx}
               onClick={() => {
-                if (isFuture) return;
-                // Toggle: tap selected day again to deselect
+                if (isFuture || !isCurrentMonth) return;
                 onSelectDate(isSelected ? null : dateStr);
               }}
-              className="flex flex-col items-center py-1.5 rounded-xl"
+              className="flex flex-col items-center justify-center rounded-lg"
               style={{
+                padding: '3px 0 2px',
+                minHeight: '30px',
                 backgroundColor: isSelected
                   ? 'var(--color-accent)'
                   : isToday
                     ? 'var(--color-surface)'
                     : 'transparent',
-                opacity: isFuture ? 0.3 : 1,
-                transition: 'background-color 0.15s ease, opacity 0.15s ease',
+                opacity: !isCurrentMonth ? 0.2 : isFuture ? 0.3 : 1,
+                transition: 'background-color 0.15s ease',
+                cursor: (isFuture || !isCurrentMonth) ? 'default' : 'pointer',
               }}
-              disabled={isFuture}
+              disabled={isFuture || !isCurrentMonth}
             >
-              {/* Day name */}
-              <span
-                className="text-[10px] font-medium mb-0.5"
-                style={{
-                  color: isSelected ? '#ffffff' : 'var(--color-text-dim)',
-                }}
-              >
-                {DAYS_SHORT[idx]}
-              </span>
-
               {/* Day number */}
               <span
-                className="text-sm font-bold leading-tight"
                 style={{
+                  fontSize: '11px',
+                  fontWeight: isToday ? 800 : 600,
+                  lineHeight: '14px',
                   color: isSelected
                     ? '#ffffff'
                     : isToday
@@ -202,18 +212,20 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
                       : 'var(--color-text)',
                 }}
               >
-                {day.getDate()}
+                {dayObj.date.getDate()}
               </span>
 
               {/* Workout dots */}
-              <div className="flex gap-0.5 mt-1 h-2">
+              <div className="flex gap-px mt-px" style={{ height: '4px' }}>
                 {dots.slice(0, 3).map((color, di) => (
                   <div
                     key={di}
-                    className="w-2 h-2 rounded-full"
                     style={{
+                      width: '3px',
+                      height: '3px',
+                      borderRadius: '50%',
                       backgroundColor: isSelected ? 'rgba(255,255,255,0.9)' : color,
-                      boxShadow: isSelected ? 'none' : `0 0 3px ${color}`,
+                      boxShadow: isSelected ? 'none' : `0 0 2px ${color}`,
                     }}
                   />
                 ))}
