@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Plus, Pencil } from 'lucide-react';
+import { X, Plus, Pencil, ChevronDown } from 'lucide-react';
 import { isDeadhang, formatRepValue } from '@/utils/exercise';
 
-export default function ExerciseCard({ exercise, onUpdate, onRemove, disabled = false }) {
+export default function ExerciseCard({ exercise, onUpdate, onRemove, onRename, disabled = false }) {
   const [showNote, setShowNote] = useState(!!exercise.notes);
 
   const sets = exercise.sets || [];
@@ -40,12 +40,23 @@ export default function ExerciseCard({ exercise, onUpdate, onRemove, disabled = 
     >
       {/* Header row: name + set labels + total + remove */}
       <div className="flex items-center justify-between">
-        <span
-          className="text-sm font-semibold truncate flex-1 min-w-0"
-          style={{ color: 'var(--color-text)' }}
-        >
-          {exercise.name}
-        </span>
+        {onRename ? (
+          <button
+            onClick={() => onRename(exercise.name)}
+            className="text-sm font-semibold truncate flex-1 min-w-0 text-left flex items-center gap-1"
+            style={{ color: 'var(--color-text)' }}
+          >
+            <span className="truncate">{exercise.name}</span>
+            <ChevronDown size={10} className="shrink-0" style={{ color: 'var(--color-text-dim)', opacity: 0.6 }} />
+          </button>
+        ) : (
+          <span
+            className="text-sm font-semibold truncate flex-1 min-w-0"
+            style={{ color: 'var(--color-text)' }}
+          >
+            {exercise.name}
+          </span>
+        )}
         <span
           className="text-sm font-bold min-w-[32px] text-right mr-1.5"
           style={{ color: totalReps > 0 ? 'var(--color-accent)' : 'var(--color-text-dim)' }}

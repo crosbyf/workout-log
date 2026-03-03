@@ -27,7 +27,7 @@ function createExerciseSets(name, numSets = 4) {
 /**
  * Renders ProgressExerciseCards with pairs grouping or circuit column highlighting.
  */
-function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpdate, onRemove, disabled }) {
+function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpdate, onRemove, onRename, disabled }) {
   const activeSetCol = structure === 'circuit' ? getActiveSetColumn(exercises) : -1;
   const [pairStart, pairEnd] = structure === 'pairs'
     ? getActivePairIndices(exercises.length, activeExerciseIndex)
@@ -64,6 +64,7 @@ function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpd
                 isActive={idx === activeExerciseIndex}
                 onUpdate={onUpdate}
                 onRemove={onRemove}
+                onRename={onRename}
                 disabled={disabled}
                 activeSetCol={-1}
               />
@@ -83,6 +84,7 @@ function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpd
       isActive={idx === activeExerciseIndex}
       onUpdate={onUpdate}
       onRemove={onRemove}
+      onRename={onRename}
       disabled={disabled}
       activeSetCol={activeSetCol}
     />
@@ -165,6 +167,27 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
   const handleExerciseRemove = useCallback((name) => {
     setWorkoutExercises(prev => prev.filter(ex => ex.name !== name));
   }, []);
+
+  // Rename picker state
+  const [renameTarget, setRenameTarget] = useState(null); // name of exercise being renamed
+  const [renameSearch, setRenameSearch] = useState('');
+
+  const handleRenameStart = useCallback((currentName) => {
+    setRenameTarget(currentName);
+    setRenameSearch('');
+  }, []);
+
+  const handleRenameConfirm = useCallback((newName) => {
+    if (!renameTarget || newName === renameTarget) {
+      setRenameTarget(null);
+      return;
+    }
+    setWorkoutExercises(prev =>
+      prev.map(ex => ex.name === renameTarget ? { ...ex, name: newName } : ex)
+    );
+    setRenameTarget(null);
+    setRenameSearch('');
+  }, [renameTarget]);
 
   const handleAddExercise = useCallback((name) => {
     setWorkoutExercises(prev => [...prev, createExerciseSets(name)]);
@@ -380,6 +403,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
           activeExerciseIndex={activeExerciseIndex}
           onUpdate={handleExerciseUpdate}
           onRemove={handleExerciseRemove}
+          onRename={handleRenameStart}
           disabled={!workoutStarted}
         />
 
@@ -568,6 +592,93 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
           </div>
         </div>
       )}
+
+      {/* Exercise rename picker modal */}
+      {renameTarget && (() => {
+        const currentNames = new Set(workoutExercises.map(e => e.name));
+        const renameOptions = (exerciseLibrary || [])
+          .filter(name => name !== renameTarget && !currentNames.has(name))
+          .filter(name => !renameSearch || name.toLowerCase().includes(renameSearch.toLowerCase()));
+
+        return (
+          <div
+            className="fixed inset-0 flex items-end justify-center"
+            style={{ backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 10003 }}
+            onClick={() => setRenameTarget(null)}
+          >
+            <div
+              className="w-full max-w-md rounded-t-xl overflow-hidden"
+              style={{ backgroundColor: 'var(--color-bg)', maxHeight: '70vh' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div
+                className="flex items-center justify-between px-4 py-3"
+                style={{ borderBottom: '1px solid var(--color-border)' }}
+              >
+                <div>
+                  <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
+                    Change Exercise
+                  </span>
+                  <span
+                    className="text-xs ml-2"
+                    style={{ color: 'var(--color-text-dim)' }}
+                  >
+                    {renameTarget}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setRenameTarget(null)}
+                  className="p-1"
+                >
+                  <X size={18} style={{ color: 'var(--color-text-muted)' }} />
+                </button>
+              </div>
+
+              {/* Search */}
+              <div className="px-4 py-2">
+                <input
+                  type="text"
+                  value={renameSearch}
+                  onChange={(e) => setRenameSearch(e.target.value)}
+                  placeholder="Search exercises..."
+                  className="w-full text-sm py-2 px-3 rounded-md border-0 outline-none"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    color: 'var(--color-text)',
+                  }}
+                  autoFocus
+                />
+              </div>
+
+              {/* Exercise list */}
+              <div
+                className="overflow-y-auto px-2 pb-4"
+                style={{
+                  maxHeight: 'calc(70vh - 120px)',
+                  paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
+                }}
+              >
+                {renameOptions.map(name => (
+                  <button
+                    key={name}
+                    onClick={() => handleRenameConfirm(name)}
+                    className="w-full text-left text-sm py-2.5 px-3 rounded-lg transition-colors"
+                    style={{ color: 'var(--color-text)' }}
+                  >
+                    {name}
+                  </button>
+                ))}
+                {renameOptions.length === 0 && (
+                  <p className="text-xs py-4 text-center" style={{ color: 'var(--color-text-dim)' }}>
+                    No matching exercises
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Historical workout viewer overlay */}
       {showHistory && (

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, Pencil, Plus, X, Minus } from 'lucide-react';
+import { Check, Pencil, Plus, X, Minus, ChevronDown } from 'lucide-react';
 import { isDeadhang } from '@/utils/exercise';
 
 /**
@@ -15,6 +15,7 @@ export default function ProgressExerciseCard({
   isActive,
   onUpdate,
   onRemove,
+  onRename,
   disabled = false,
   activeSetCol = -1,  // circuit mode: which set column is active
 }) {
@@ -93,12 +94,23 @@ export default function ProgressExerciseCard({
           {/* Exercise name + total */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
-              <span
-                className="text-xs font-semibold truncate"
-                style={{ color: 'var(--color-text)' }}
-              >
-                {exercise.name}
-              </span>
+              {onRename ? (
+                <button
+                  onClick={() => onRename(exercise.name)}
+                  className="text-xs font-semibold truncate text-left flex items-center gap-0.5"
+                  style={{ color: 'var(--color-text)' }}
+                >
+                  <span className="truncate">{exercise.name}</span>
+                  <ChevronDown size={8} className="shrink-0" style={{ color: 'var(--color-text-dim)', opacity: 0.6 }} />
+                </button>
+              ) : (
+                <span
+                  className="text-xs font-semibold truncate"
+                  style={{ color: 'var(--color-text)' }}
+                >
+                  {exercise.name}
+                </span>
+              )}
               {totalReps > 0 && (
                 <span className="text-[10px] font-bold shrink-0" style={{ color: 'var(--color-accent)' }}>
                   {deadhang ? `${totalReps}s` : totalReps}
