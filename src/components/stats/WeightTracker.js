@@ -12,7 +12,7 @@ function formatShortDate(dateStr) {
 }
 
 /**
- * Simple SVG line chart for weight over time
+ * SVG line chart for weight over time — with Y-axis weight labels and date axis.
  */
 function WeightChart({ entries }) {
   // Show up to last 30 entries, oldest first
@@ -20,20 +20,25 @@ function WeightChart({ entries }) {
   if (data.length < 2) return null;
 
   const weights = data.map(e => e.weight);
-  const minW = Math.min(...weights);
-  const maxW = Math.max(...weights);
+  const rawMin = Math.min(...weights);
+  const rawMax = Math.max(...weights);
+  // Round min/max to whole numbers for clean axis labels, with padding
+  const minW = Math.floor(rawMin - 0.5);
+  const maxW = Math.ceil(rawMax + 0.5);
   const range = maxW - minW || 1;
 
-  const chartW = 300;
-  const chartH = 100;
-  const padX = 10;
-  const padY = 10;
-  const innerW = chartW - padX * 2;
-  const innerH = chartH - padY * 2;
+  const chartW = 320;
+  const chartH = 140;
+  const padLeft = 36;  // space for Y-axis labels
+  const padRight = 10;
+  const padTop = 12;
+  const padBottom = 22; // space for X-axis date labels
+  const innerW = chartW - padLeft - padRight;
+  const innerH = chartH - padTop - padBottom;
 
   const points = data.map((entry, idx) => {
-    const x = padX + (idx / (data.length - 1)) * innerW;
-    const y = padY + innerH - ((entry.weight - minW) / range) * innerH;
+    const x = padLeft + (idx / (data.length - 1)) * innerW;
+    const y = padTop + innerH - ((entry.weight - minW) / range) * innerH;
     return { x, y, entry };
   });
 
@@ -42,22 +47,45 @@ function WeightChart({ entries }) {
     .join(' ');
 
   // Area fill
-  const areaD = `${pathD} L ${points[points.length - 1].x.toFixed(1)} ${chartH - padY} L ${points[0].x.toFixed(1)} ${chartH - padY} Z`;
+  const areaD = `${pathD} L ${points[points.length - 1].x.toFixed(1)} ${padTop + innerH} L ${points[0].x.toFixed(1)} ${padTop + innerH} Z`;
+
+  // Y-axis: 5 evenly spaced labels
+  const yTicks = [0, 0.25, 0.5, 0.75, 1];
+  const yLabels = yTicks.map(frac => {
+    const val = minW + frac * range;
+    return { frac, label: Math.round(val * 10) / 10, y: padTop + innerH - frac * innerH };
+  });
+
+  // X-axis: show first, middle, and last dates
+  const xDates = [];
+  if (data.length >= 3) {
+    const midIdx = Math.floor(data.length / 2);
+    xDates.push({ idx: 0, label: formatShortDate(data[0].date) });
+    xDates.push({ idx: midIdx, label: formatShortDate(data[midIdx].date) });
+    xDates.push({ idx: data.length - 1, label: formatShortDate(data[data.length - 1].date) });
+  } else {
+    xDates.push({ idx: 0, label: formatShortDate(data[0].date) });
+    xDates.push({ idx: data.length - 1, label: formatShortDate(data[data.length - 1].date) });
+  }
 
   return (
     <div className="px-4 pb-3">
-      <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ height: '100px' }}>
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map(frac => {
-          const y = padY + innerH - frac * innerH;
-          return (
+      <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ height: '140px' }}>
+        {/* Grid lines + Y-axis labels */}
+        {yLabels.map(({ frac, label, y }) => (
+          <g key={frac}>
             <line
-              key={frac}
-              x1={padX} y1={y} x2={chartW - padX} y2={y}
+              x1={padLeft} y1={y} x2={chartW - padRight} y2={y}
               stroke="var(--color-border)" strokeWidth="0.5" strokeDasharray="2,2"
             />
-          );
-        })}
+            <text
+              x={padLeft - 4} y={y + 3}
+              textAnchor="end" fontSize="8" fill="var(--color-text-dim)"
+            >
+              {label}
+            </text>
+          </g>
+        ))}
 
         {/* Area fill */}
         <path d={areaD} fill="var(--color-accent)" opacity="0.1" />
@@ -74,21 +102,37 @@ function WeightChart({ entries }) {
           />
         ))}
 
-        {/* Min/Max labels */}
-        <text x={chartW - padX} y={padY - 2} textAnchor="end" fontSize="8" fill="var(--color-text-dim)">
-          {maxW}
-        </text>
-        <text x={chartW - padX} y={chartH - padY + 10} textAnchor="end" fontSize="8" fill="var(--color-text-dim)">
-          {minW}
-        </text>
+        {/* Highlight latest point */}
+        {points.length > 0 && (
+          <>
+            <circle
+              cx={points[points.length - 1].x} cy={points[points.length - 1].y} r="4"
+              fill="var(--color-accent)" opacity="0.3"
+            />
+            <text
+              x={points[points.length - 1].x}
+              y={points[points.length - 1].y - 7}
+              textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-accent)"
+            >
+              {data[data.length - 1].weight}
+            </text>
+          </>
+        )}
 
-        {/* Date labels for first and last */}
-        <text x={padX} y={chartH - 1} textAnchor="start" fontSize="7" fill="var(--color-text-dim)">
-          {formatShortDate(data[0].date)}
-        </text>
-        <text x={chartW - padX} y={chartH - 1} textAnchor="end" fontSize="7" fill="var(--color-text-dim)">
-          {formatShortDate(data[data.length - 1].date)}
-        </text>
+        {/* X-axis date labels */}
+        {xDates.map(({ idx, label }) => {
+          const x = padLeft + (idx / (data.length - 1)) * innerW;
+          const anchor = idx === 0 ? 'start' : idx === data.length - 1 ? 'end' : 'middle';
+          return (
+            <text
+              key={idx}
+              x={x} y={chartH - 4}
+              textAnchor={anchor} fontSize="8" fill="var(--color-text-dim)"
+            >
+              {label}
+            </text>
+          );
+        })}
       </svg>
     </div>
   );
@@ -180,7 +224,7 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
           </div>
           {latest && (
             <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>
-              {formatShortDate(latest.date)} \u00b7 {entries.length} entries
+              Last weighed {formatShortDate(latest.date)} \u00b7 {entries.length} total
             </span>
           )}
         </div>

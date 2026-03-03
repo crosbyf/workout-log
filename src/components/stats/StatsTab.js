@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { BarChart3, ChevronRight, X, Drumstick, Scale, Dumbbell, Footprints, Plus, Check } from 'lucide-react';
 import EmptyState from '@/components/shared/EmptyState';
 import VolumeChart from './VolumeChart';
@@ -146,11 +146,41 @@ function ProteinQuickAdd({ onAdd, onClose }) {
 }
 
 /**
- * Full-screen detail overlay
+ * Full-screen detail overlay — sits above content but leaves BottomNav visible.
+ * Supports swipe right-to-left to go back to Stats tab.
  */
 function DetailScreen({ title, onClose, children }) {
+  const touchStartRef = useRef(null);
+
+  const handleTouchStart = useCallback((e) => {
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (!touchStartRef.current) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+    touchStartRef.current = null;
+    // Swipe right: at least 80px horizontal, more horizontal than vertical
+    if (dx > 80 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      onClose();
+    }
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 flex flex-col" style={{ backgroundColor: 'var(--color-bg)', zIndex: 10000 }}>
+    <div
+      className="fixed left-0 right-0 flex flex-col"
+      style={{
+        top: 0,
+        bottom: 'calc(4rem + env(safe-area-inset-bottom))',
+        backgroundColor: 'var(--color-bg)',
+        zIndex: 9980,
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <div
         className="flex items-center justify-between px-4 py-3 shrink-0"
         style={{
