@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { Check, Pencil, Plus, X, Minus, ChevronDown } from 'lucide-react';
+import { Check, Plus, X, Minus, ChevronDown } from 'lucide-react';
 import { isDeadhang } from '@/utils/exercise';
 
 /**
- * Progress Bars variant of ExerciseCard.
- * Shows a compact row with status indicator, exercise name, and pill-style rep inputs.
- * Supports add/remove sets, delete exercise, pairs/circuit highlighting, and deadhang.
+ * Two-row exercise card for the workout entry screen.
+ * Row 1: Status indicator + exercise name (full, no truncation) + total reps + delete
+ * Row 2: Set input pills + add/remove set buttons
+ * Row 3: Always-visible notes field
  */
 export default function ProgressExerciseCard({
   exercise,
@@ -19,8 +19,6 @@ export default function ProgressExerciseCard({
   disabled = false,
   activeSetCol = -1,  // circuit mode: which set column is active
 }) {
-  const [showNote, setShowNote] = useState(!!exercise.notes);
-
   const sets = exercise.sets || [];
   const deadhang = isDeadhang(exercise.name);
   const filledCount = sets.filter(s => s.reps !== '' && s.reps !== 0 && s.reps !== null).length;
@@ -70,16 +68,16 @@ export default function ProgressExerciseCard({
 
   return (
     <div
-      className="rounded-lg mb-1 overflow-hidden"
+      className="rounded-lg mb-1.5 overflow-hidden"
       style={{
         backgroundColor: 'var(--color-surface)',
         border: isActive ? '1px solid var(--color-accent)' : '1px solid var(--color-border)',
         opacity: cardOpacity,
       }}
     >
-      {/* Completed exercises get a green left border */}
       <div style={{ borderLeft: allFilled ? '3px solid var(--color-green)' : '3px solid transparent' }}>
-        <div className="flex items-center gap-2 px-2 py-1.5">
+        {/* Row 1: Status + Name + Total + Delete */}
+        <div className="flex items-center gap-2 px-2.5 pt-2 pb-0.5">
           {/* Status indicator */}
           <div
             className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
@@ -91,90 +89,34 @@ export default function ProgressExerciseCard({
             {statusContent}
           </div>
 
-          {/* Exercise name + total */}
+          {/* Exercise name — full width, no truncation fight with pills */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1">
-              {onRename ? (
-                <button
-                  onClick={() => onRename(exercise.name)}
-                  className="text-xs font-semibold truncate text-left flex items-center gap-0.5"
-                  style={{ color: 'var(--color-text)' }}
-                >
-                  <span className="truncate">{exercise.name}</span>
-                  <ChevronDown size={8} className="shrink-0" style={{ color: 'var(--color-text-dim)', opacity: 0.6 }} />
-                </button>
-              ) : (
-                <span
-                  className="text-xs font-semibold truncate"
-                  style={{ color: 'var(--color-text)' }}
-                >
-                  {exercise.name}
-                </span>
-              )}
-              {totalReps > 0 && (
-                <span className="text-[10px] font-bold shrink-0" style={{ color: 'var(--color-accent)' }}>
-                  {deadhang ? `${totalReps}s` : totalReps}
-                </span>
-              )}
-            </div>
-            {exercise.notes && !showNote && (
-              <span className="text-[10px] italic truncate block" style={{ color: 'var(--color-text-dim)' }}>
-                {exercise.notes}
+            {onRename ? (
+              <button
+                onClick={() => onRename(exercise.name)}
+                className="text-sm font-semibold text-left flex items-center gap-1 max-w-full"
+                style={{ color: 'var(--color-text)' }}
+              >
+                <span className="truncate">{exercise.name}</span>
+                <ChevronDown size={10} className="shrink-0" style={{ color: 'var(--color-text-dim)', opacity: 0.6 }} />
+              </button>
+            ) : (
+              <span
+                className="text-sm font-semibold truncate block"
+                style={{ color: 'var(--color-text)' }}
+              >
+                {exercise.name}
               </span>
             )}
           </div>
 
-          {/* Rep pills */}
-          <div className="flex gap-1 shrink-0 items-center">
-            {sets.map((set, i) => {
-              const filled = set.reps !== '' && set.reps !== 0 && set.reps !== null;
-              const isActiveCol = activeSetCol === i;
-              return (
-                <input
-                  key={i}
-                  type="number"
-                  inputMode="numeric"
-                  value={set.reps === '' || set.reps === null ? '' : set.reps}
-                  onChange={(e) => handleSetChange(i, e.target.value)}
-                  disabled={disabled}
-                  className="w-9 h-7 text-center text-xs font-semibold rounded-md border-0 outline-none"
-                  style={{
-                    backgroundColor: filled ? 'var(--color-green-soft)' : 'var(--color-surface-hover)',
-                    color: filled ? '#ffffff' : 'var(--color-text)',
-                    border: isActiveCol && !filled
-                      ? '2px solid var(--color-accent)'
-                      : isActive && !filled
-                        ? '1px solid var(--color-accent)'
-                        : 'none',
-                    opacity: disabled ? 0.4 : 1,
-                  }}
-                  placeholder={deadhang ? 's' : ''}
-                />
-              );
-            })}
-
-            {/* Add set */}
-            <button
-              onClick={handleAddSet}
-              className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-              style={{ backgroundColor: 'var(--color-surface-hover)' }}
-              aria-label="Add set"
-            >
-              <Plus size={10} style={{ color: 'var(--color-text-muted)' }} />
-            </button>
-
-            {/* Remove last set */}
-            {sets.length > 1 && (
-              <button
-                onClick={handleRemoveLastSet}
-                className="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
-                style={{ backgroundColor: 'var(--color-surface-hover)' }}
-                aria-label="Remove last set"
-              >
-                <Minus size={10} style={{ color: 'var(--color-text-dim)' }} />
-              </button>
-            )}
-          </div>
+          {/* Total reps */}
+          <span
+            className="text-xs font-bold shrink-0"
+            style={{ color: totalReps > 0 ? 'var(--color-accent)' : 'var(--color-text-dim)' }}
+          >
+            {deadhang ? `${totalReps}s` : totalReps}
+          </span>
 
           {/* Delete exercise */}
           {onRemove && (
@@ -183,36 +125,80 @@ export default function ProgressExerciseCard({
               className="p-0.5 shrink-0"
               aria-label={`Remove ${exercise.name}`}
             >
-              <X size={11} style={{ color: 'var(--color-text-dim)' }} />
-            </button>
-          )}
-
-          {/* Note toggle */}
-          {!showNote && !exercise.notes && (
-            <button
-              onClick={() => setShowNote(true)}
-              className="p-0.5 shrink-0"
-            >
-              <Pencil size={9} style={{ color: 'var(--color-text-dim)', opacity: 0.5 }} />
+              <X size={12} style={{ color: 'var(--color-text-dim)' }} />
             </button>
           )}
         </div>
 
-        {/* Inline note field */}
-        {showNote && (
+        {/* Row 2: Set pills + Add/Remove */}
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 pl-10 flex-wrap">
+          {sets.map((set, i) => {
+            const filled = set.reps !== '' && set.reps !== 0 && set.reps !== null;
+            const isActiveCol = activeSetCol === i;
+            return (
+              <input
+                key={i}
+                type="number"
+                inputMode="numeric"
+                value={set.reps === '' || set.reps === null ? '' : set.reps}
+                onChange={(e) => handleSetChange(i, e.target.value)}
+                disabled={disabled}
+                className="w-11 h-8 text-center text-sm font-semibold rounded-md border-0 outline-none"
+                style={{
+                  backgroundColor: filled ? 'var(--color-green-soft)' : 'var(--color-surface-hover)',
+                  color: filled ? '#ffffff' : 'var(--color-text)',
+                  border: isActiveCol && !filled
+                    ? '2px solid var(--color-accent)'
+                    : isActive && !filled
+                      ? '1px solid var(--color-accent)'
+                      : 'none',
+                  opacity: disabled ? 0.4 : 1,
+                }}
+                placeholder={deadhang ? 's' : ''}
+              />
+            );
+          })}
+
+          {/* Add set */}
+          <button
+            onClick={handleAddSet}
+            className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
+            style={{ backgroundColor: 'var(--color-surface-hover)' }}
+            aria-label="Add set"
+          >
+            <Plus size={11} style={{ color: 'var(--color-text-muted)' }} />
+          </button>
+
+          {/* Remove last set */}
+          {sets.length > 1 && (
+            <button
+              onClick={handleRemoveLastSet}
+              className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
+              style={{ backgroundColor: 'var(--color-surface-hover)' }}
+              aria-label="Remove last set"
+            >
+              <Minus size={11} style={{ color: 'var(--color-text-dim)' }} />
+            </button>
+          )}
+        </div>
+
+        {/* Row 3: Always-visible notes field */}
+        <div className="px-2.5 pb-2 pl-10">
           <input
             type="text"
             value={exercise.notes || ''}
             onChange={(e) => handleNoteChange(e.target.value)}
             placeholder="Note..."
-            className="w-full text-[10px] py-1 px-3 border-0 outline-none"
+            className="w-full text-xs py-1 px-0 border-0 outline-none"
             style={{
-              backgroundColor: 'var(--color-surface-hover)',
-              color: 'var(--color-text-muted)',
-              borderTop: '1px solid var(--color-border)',
+              backgroundColor: 'transparent',
+              color: exercise.notes ? 'var(--color-text-muted)' : 'var(--color-text-dim)',
+              borderBottom: exercise.notes ? '1px solid var(--color-border)' : '1px solid transparent',
+              fontStyle: exercise.notes ? 'normal' : 'italic',
+              opacity: exercise.notes ? 1 : 0.5,
             }}
           />
-        )}
+        </div>
       </div>
     </div>
   );

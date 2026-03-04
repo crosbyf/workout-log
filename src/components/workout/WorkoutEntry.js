@@ -116,6 +116,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // exercise name pending delete confirmation
 
   const presetColor = PRESET_COLORS[preset.color] || 'var(--color-accent)';
 
@@ -164,9 +165,15 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
     );
   }, []);
 
-  const handleExerciseRemove = useCallback((name) => {
-    setWorkoutExercises(prev => prev.filter(ex => ex.name !== name));
+  const handleExerciseRemoveRequest = useCallback((name) => {
+    setDeleteTarget(name);
   }, []);
+
+  const handleExerciseRemoveConfirm = useCallback(() => {
+    if (!deleteTarget) return;
+    setWorkoutExercises(prev => prev.filter(ex => ex.name !== deleteTarget));
+    setDeleteTarget(null);
+  }, [deleteTarget]);
 
   // Rename picker state
   const [renameTarget, setRenameTarget] = useState(null); // name of exercise being renamed
@@ -256,7 +263,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
     <div
       className="fixed flex flex-col"
       style={{
-        top: 'calc(3.5rem + env(safe-area-inset-top))',
+        top: 'env(safe-area-inset-top)',
         bottom: 0,
         left: 0,
         right: 0,
@@ -402,7 +409,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
           structure={structure}
           activeExerciseIndex={activeExerciseIndex}
           onUpdate={handleExerciseUpdate}
-          onRemove={handleExerciseRemove}
+          onRemove={handleExerciseRemoveRequest}
           onRename={handleRenameStart}
           disabled={!workoutStarted}
         />
@@ -587,6 +594,41 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
                 style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)' }}
               >
                 Keep Going
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete exercise confirmation modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 flex items-center justify-center px-6"
+          style={{ backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 10003 }}
+        >
+          <div
+            className="w-full max-w-sm rounded-xl p-5"
+            style={{ backgroundColor: 'var(--color-surface)' }}
+          >
+            <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--color-yellow)' }}>
+              Remove Exercise?
+            </h3>
+            <p className="text-sm mb-5" style={{ color: 'var(--color-text-muted)' }}>
+              Remove &ldquo;{deleteTarget}&rdquo; and its set data from this workout?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleExerciseRemoveConfirm}
+                className="flex-1 py-2.5 rounded-lg text-sm font-bold"
+                style={{ backgroundColor: 'var(--color-red)', color: '#ffffff' }}
+              >
+                Remove
+              </button>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 rounded-lg text-sm font-medium"
+                style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)' }}
+              >
+                Cancel
               </button>
             </div>
           </div>

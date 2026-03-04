@@ -13,6 +13,7 @@ export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpd
   const [editingId, setEditingId] = useState(null);
   const [editGrams, setEditGrams] = useState('');
   const [editFood, setEditFood] = useState('');
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const handleSubmit = () => {
     const g = parseInt(grams, 10);
@@ -178,9 +179,28 @@ export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpd
                       <button onClick={() => handleStartEdit(entry)} className="p-1 opacity-50">
                         <Pencil size={10} style={{ color: 'var(--color-accent)' }} />
                       </button>
-                      <button onClick={() => onDelete(entry.id)} className="p-1 opacity-50">
-                        <Trash2 size={10} style={{ color: 'var(--color-red)' }} />
-                      </button>
+                      {deleteConfirmId === entry.id ? (
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => { onDelete(entry.id); setDeleteConfirmId(null); }}
+                            className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                            style={{ backgroundColor: 'var(--color-red)', color: '#ffffff' }}
+                          >
+                            Delete
+                          </button>
+                          <button
+                            onClick={() => setDeleteConfirmId(null)}
+                            className="text-[9px] px-1.5 py-0.5 rounded"
+                            style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text-muted)' }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setDeleteConfirmId(entry.id)} className="p-1 opacity-50">
+                          <Trash2 size={10} style={{ color: 'var(--color-red)' }} />
+                        </button>
+                      )}
                     </div>
                   </>
                 )}

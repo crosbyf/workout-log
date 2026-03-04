@@ -143,6 +143,7 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
   const [weight, setWeight] = useState('');
   const [entryDate, setEntryDate] = useState(getTodayStr());
   const [showHistory, setShowHistory] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editWeight, setEditWeight] = useState('');
   const [editDate, setEditDate] = useState('');
@@ -356,12 +357,31 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
                         >
                           <Pencil size={10} style={{ color: 'var(--color-accent)' }} />
                         </button>
-                        <button
-                          onClick={() => onDelete(entry.id)}
-                          className="p-1 opacity-50"
-                        >
-                          <Trash2 size={10} style={{ color: 'var(--color-red)' }} />
-                        </button>
+                        {deleteConfirmId === entry.id ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => { onDelete(entry.id); setDeleteConfirmId(null); }}
+                              className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: 'var(--color-red)', color: '#ffffff' }}
+                            >
+                              Delete
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirmId(null)}
+                              className="text-[9px] px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text-muted)' }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setDeleteConfirmId(entry.id)}
+                            className="p-1 opacity-50"
+                          >
+                            <Trash2 size={10} style={{ color: 'var(--color-red)' }} />
+                          </button>
+                        )}
                       </div>
                     </>
                   )}
