@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { X, Plus, Play, Pause, History, Clock, ChevronDown } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { X, Plus, Play, Pause, ChevronDown } from 'lucide-react';
 import { useTimer } from '@/hooks/useTimer';
-import { getTodayStr, formatDate, formatDuration } from '@/utils/format';
+import { getTodayStr, formatDuration } from '@/utils/format';
 import { PRESET_COLORS } from '@/hooks/usePresets';
 import ProgressExerciseCard from './ProgressExerciseCard';
 import { getActivePairIndices, getActiveSetColumn } from '@/utils/workout-structure';
-import { isDeadhang, calculateTotalReps } from '@/utils/exercise';
 
 const STRUCTURES = [
   { id: 'pairs', label: 'Pairs' },
@@ -91,7 +90,7 @@ function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpd
   ));
 }
 
-export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSave, onCancel, existingWorkout, workouts = [] }) {
+export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSave, onCancel, existingWorkout, minimized = false, onMinimize }) {
   const isEditing = !!existingWorkout;
 
   const [workoutStarted, setWorkoutStarted] = useState(isEditing);
@@ -115,17 +114,27 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
   const [addExerciseSearch, setAddExerciseSearch] = useState('');
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null); // exercise name pending delete confirmation
 
   const presetColor = PRESET_COLORS[preset.color] || 'var(--color-accent)';
 
-  // Lock body scroll and block background touch when workout overlay is mounted
-  // Lock body in place — position:fixed prevents ALL background scrolling on iOS
+  // Lock body scroll when workout overlay is visible (not minimized)
+  const savedScrollRef = useRef(0);
   useEffect(() => {
-    const scrollY = window.scrollY;
+    if (minimized) {
+      // Restore body when minimized
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, savedScrollRef.current);
+      return;
+    }
+    // Lock body in place
+    savedScrollRef.current = window.scrollY;
     document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
+    document.body.style.top = `-${savedScrollRef.current}px`;
     document.body.style.left = '0';
     document.body.style.right = '0';
     document.body.style.overflow = 'hidden';
@@ -136,10 +145,9 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
       document.body.style.left = '';
       document.body.style.right = '';
       document.body.style.overflow = '';
-      // Restore scroll position
-      window.scrollTo(0, scrollY);
+      window.scrollTo(0, savedScrollRef.current);
     };
-  }, []);
+  }, [minimized]);
 
   // Detect virtual keyboard open via visualViewport API
   const [keyboardOpen, setKeyboardOpen] = useState(false);
@@ -249,8 +257,24 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
     !ex.sets.every(s => s.reps !== '' && s.reps !== 0 && s.reps !== null)
   );
 
-  // Past workouts for the history viewer (non-day-off, most recent first)
-  const pastWorkouts = workouts.filter(w => !w.isDayOff).slice(0, 20);
+  // Swipe-down gesture for minimizing
+  const touchStartRef = useRef(null);
+  const handleSwipeStart = useCallback((e) => {
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, []);
+  const handleSwipeEnd = useCallback((e) => {
+    if (!touchStartRef.current || !onMinimize) return;
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    touchStartRef.current = null;
+    // Swipe down: dy > 80px and mostly vertical
+    if (dy > 80 && Math.abs(dy) > Math.abs(dx) * 1.5) {
+      onMinimize();
+    }
+  }, [onMinimize]);
+
+  // When minimized, render nothing — component stays mounted so timer & state persist
+  if (minimized) return null;
 
   return (
     <>
@@ -273,14 +297,19 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
         zIndex: 10001,
       }}
     >
-      {/* Drag handle */}
-      <div className="flex justify-center pt-2 pb-1 shrink-0">
+      {/* Drag handle + Header — swipeable area for minimizing */}
+      <div
+        className="shrink-0"
+        onTouchStart={handleSwipeStart}
+        onTouchEnd={handleSwipeEnd}
+      >
+      <div className="flex justify-center pt-2 pb-1">
         <div className="w-10 h-1 rounded-full" style={{ backgroundColor: 'var(--color-border)' }} />
       </div>
 
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 shrink-0"
+        className="flex items-center justify-between px-4 py-3"
         style={{ borderBottom: '1px solid var(--color-border)' }}
       >
         <div className="flex items-center gap-2">
@@ -325,22 +354,12 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
               Editing
             </span>
           )}
-          {/* History button — available before and during workout */}
-          {!isEditing && (
-            <button
-              onClick={() => setShowHistory(true)}
-              className="w-8 h-8 rounded-md flex items-center justify-center"
-              style={{ backgroundColor: 'var(--color-surface-hover)' }}
-              aria-label="View past workouts"
-            >
-              <History size={15} style={{ color: 'var(--color-text-muted)' }} />
-            </button>
-          )}
           <button onClick={handleClose} className="p-1" aria-label="Close workout">
             <X size={20} style={{ color: 'var(--color-text-muted)' }} />
           </button>
         </div>
       </div>
+      </div>{/* end swipeable area */}
 
       {/* Structure bar */}
       <div
@@ -722,161 +741,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
         );
       })()}
 
-      {/* Historical workout viewer overlay */}
-      {showHistory && (
-        <div
-          className="fixed inset-0 flex flex-col"
-          style={{ backgroundColor: 'var(--color-bg)', zIndex: 10003 }}
-        >
-          {/* History header — with safe area top padding */}
-          <div
-            className="flex items-center justify-between px-4 py-3 shrink-0"
-            style={{
-              borderBottom: '1px solid var(--color-border)',
-              paddingTop: 'calc(12px + env(safe-area-inset-top))',
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <History size={16} style={{ color: 'var(--color-accent)' }} />
-              <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-                Past Workouts
-              </span>
-            </div>
-            <button onClick={() => setShowHistory(false)} className="p-1">
-              <X size={20} style={{ color: 'var(--color-text-muted)' }} />
-            </button>
-          </div>
-
-          {/* Scrollable workout list */}
-          <div className="flex-1 overflow-y-auto px-3 py-2">
-            {pastWorkouts.length === 0 ? (
-              <p className="text-sm text-center py-8" style={{ color: 'var(--color-text-dim)' }}>
-                No past workouts yet.
-              </p>
-            ) : (
-              pastWorkouts.map(workout => (
-                <HistoryCard key={workout.id} workout={workout} />
-              ))
-            )}
-          </div>
-        </div>
-      )}
     </div>
     </>
-  );
-}
-
-/**
- * Expanded workout card for the history viewer (read-only)
- */
-const HISTORY_COLOR_MAP = {
-  'Garage A': 'blue',
-  'Garage B': 'purple',
-  'BW-only': 'green',
-  'GtG': 'yellow',
-  'Manual': 'red',
-  'Garage 10': 'pink',
-  'Garage 12': 'orange',
-  'Garage BW': 'cyan',
-};
-
-function HistoryCard({ workout }) {
-  const [expanded, setExpanded] = useState(true);
-
-  const totalReps = calculateTotalReps(workout.exercises);
-
-  const colorKey = HISTORY_COLOR_MAP[workout.location] || 'blue';
-  const sidebarColor = PRESET_COLORS[colorKey] || 'var(--color-accent)';
-
-  return (
-    <div
-      className="rounded-xl overflow-hidden mb-2 flex"
-      style={{ backgroundColor: 'var(--color-surface)' }}
-    >
-      {/* Color sidebar */}
-      <div
-        className="w-2 shrink-0"
-        style={{ backgroundColor: sidebarColor }}
-      />
-
-      <div className="flex-1 min-w-0">
-      {/* Header — tap to collapse/expand */}
-      <button
-        onClick={() => setExpanded(e => !e)}
-        className="w-full text-left px-4 py-3"
-      >
-        <div className="flex items-center justify-between mb-0.5">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
-              {formatDate(workout.date)}
-            </span>
-            <span
-              className="text-xs font-medium px-1.5 py-0.5 rounded"
-              style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text-muted)' }}
-            >
-              {workout.location}
-            </span>
-          </div>
-          <ChevronDown
-            size={14}
-            style={{
-              color: 'var(--color-text-dim)',
-              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease',
-            }}
-          />
-        </div>
-        <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--color-text-dim)' }}>
-          <span>{workout.exercises.length} exercises</span>
-          {workout.elapsedTime > 0 && (
-            <span className="flex items-center gap-0.5">
-              <Clock size={10} />
-              {formatDuration(workout.elapsedTime)}
-            </span>
-          )}
-          {totalReps > 0 && <span>{totalReps} reps</span>}
-        </div>
-      </button>
-
-      {/* Expanded exercise detail */}
-      {expanded && (
-        <div className="px-4 pb-3" style={{ borderTop: '1px solid var(--color-border)' }}>
-          <div className="mt-2 space-y-1.5">
-            {workout.exercises.map((ex, idx) => {
-              const dh = isDeadhang(ex.name);
-              const exTotal = ex.sets.reduce((sum, s) => sum + (s.reps || 0), 0);
-              const repsStr = ex.sets.map(s => dh ? `${s.reps}s` : s.reps).join(' \u00b7 ');
-              return (
-                <div key={idx}>
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm" style={{ color: 'var(--color-text)' }}>{ex.name}</span>
-                    <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>{dh ? `${exTotal}s` : exTotal}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>{repsStr}</span>
-                    {ex.notes && (
-                      <span className="text-xs italic ml-2" style={{ color: 'var(--color-text-dim)' }}>{ex.notes}</span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {workout.notes && (
-            <div
-              className="mt-2 px-3 py-2 rounded-lg text-xs"
-              style={{
-                backgroundColor: 'var(--color-surface-hover)',
-                color: 'var(--color-text-muted)',
-                borderLeft: '3px solid #7c8fa0',
-              }}
-            >
-              {workout.notes}
-            </div>
-          )}
-        </div>
-      )}
-      </div>
-    </div>
   );
 }

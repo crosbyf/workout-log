@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { ChevronUp } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import SplashScreen from '@/components/shared/SplashScreen';
-import { usePresets } from '@/hooks/usePresets';
+import { usePresets, PRESET_COLORS } from '@/hooks/usePresets';
 import { useWorkouts } from '@/hooks/useWorkouts';
 import { useProtein } from '@/hooks/useProtein';
 import { useWeight } from '@/hooks/useWeight';
@@ -35,6 +36,7 @@ export default function App() {
   const [workoutView, setWorkoutView] = useState(null);
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [editingWorkout, setEditingWorkout] = useState(null);
+  const [isWorkoutMinimized, setIsWorkoutMinimized] = useState(false);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,6 +111,7 @@ export default function App() {
     }
     setWorkoutView(null);
     setSelectedPreset(null);
+    setIsWorkoutMinimized(false);
     setActiveTab('log');
   };
 
@@ -116,6 +119,7 @@ export default function App() {
     setWorkoutView(null);
     setSelectedPreset(null);
     setEditingWorkout(null);
+    setIsWorkoutMinimized(false);
   };
 
   const handleEditWorkout = (workout) => {
@@ -231,6 +235,41 @@ export default function App() {
         )}
       </main>
 
+      {/* Floating resume pill — visible when workout is minimized */}
+      {isWorkoutMinimized && workoutView === 'entry' && selectedPreset && (
+        <button
+          onClick={() => setIsWorkoutMinimized(false)}
+          className="fixed left-4 right-4 flex items-center justify-between px-4 py-3 rounded-xl"
+          style={{
+            bottom: 'calc(4.5rem + env(safe-area-inset-bottom))',
+            backgroundColor: 'var(--color-surface)',
+            border: `2px solid ${PRESET_COLORS[selectedPreset.color] || 'var(--color-accent)'}`,
+            zIndex: 9989,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: PRESET_COLORS[selectedPreset.color] || 'var(--color-accent)' }}
+              />
+              <div
+                className="absolute inset-0 w-3 h-3 rounded-full animate-ping"
+                style={{ backgroundColor: PRESET_COLORS[selectedPreset.color] || 'var(--color-accent)', opacity: 0.4 }}
+              />
+            </div>
+            <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+              {selectedPreset.name}
+            </span>
+            <span className="text-xs font-medium px-1.5 py-0.5 rounded" style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text-muted)' }}>
+              In Progress
+            </span>
+          </div>
+          <ChevronUp size={18} style={{ color: 'var(--color-text-muted)' }} />
+        </button>
+      )}
+
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Workout flow overlays */}
@@ -246,10 +285,11 @@ export default function App() {
         <WorkoutEntry
           preset={selectedPreset}
           exercises={exercises}
-          workouts={workouts}
           onSave={handleSaveWorkout}
           onCancel={handleCancelWorkout}
           existingWorkout={editingWorkout}
+          minimized={isWorkoutMinimized}
+          onMinimize={() => setIsWorkoutMinimized(true)}
         />
       )}
 
