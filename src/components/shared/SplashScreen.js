@@ -9,20 +9,45 @@ const LETTERS = [
   { char: 'S', bg: '#22c55e' },
 ];
 
+// 2x2 grid positions (relative offsets from center)
+const GRID_POSITIONS = [
+  { x: -1, y: -1 }, // G top-left
+  { x: 1, y: -1 },  // O top-right
+  { x: -1, y: 1 },  // R bottom-left
+  { x: 1, y: 1 },   // S bottom-right
+];
+
+// Final row positions (relative offsets from center, evenly spaced)
+const ROW_POSITIONS = [
+  { x: -3, y: 0 },  // G
+  { x: -1, y: 0 },  // O
+  { x: 1, y: 0 },   // R
+  { x: 3, y: 0 },   // S
+];
+
 export default function SplashScreen({ onComplete }) {
-  const [phase, setPhase] = useState('enter'); // 'enter' | 'hold' | 'exit'
+  const [phase, setPhase] = useState('drop');
+  // Phases: 'drop' (2x2 falls from top) -> 'bounce' (hits center, squash) -> 'spread' (expands to row) -> 'hold' -> 'exit'
 
   useEffect(() => {
-    const holdTimer = window.setTimeout(() => setPhase('hold'), 1200);
-    const exitTimer = window.setTimeout(() => setPhase('exit'), 1800);
-    const doneTimer = window.setTimeout(() => onComplete(), 2200);
-
-    return () => {
-      window.clearTimeout(holdTimer);
-      window.clearTimeout(exitTimer);
-      window.clearTimeout(doneTimer);
-    };
+    const timers = [
+      setTimeout(() => setPhase('bounce'), 600),   // land at center
+      setTimeout(() => setPhase('spread'), 1000),   // bounce done, spread to row
+      setTimeout(() => setPhase('hold'), 1500),      // row settled
+      setTimeout(() => setPhase('exit'), 2200),       // begin fade
+      setTimeout(() => onComplete(), 2600),           // done
+    ];
+    return () => timers.forEach(clearTimeout);
   }, [onComplete]);
+
+  // Block dimensions
+  const blockSize = 58;
+  const gridGap = 4;  // tight gap in 2x2
+  const rowGap = 10;  // wider gap in row
+
+  // Half-unit used to position blocks from center
+  const gridUnit = (blockSize + gridGap) / 2;
+  const rowUnit = (blockSize + rowGap) / 2;
 
   return (
     <div
@@ -39,44 +64,108 @@ export default function SplashScreen({ onComplete }) {
         transition: 'opacity 0.4s ease-out',
       }}
     >
-      {/* Animated boxed letters */}
+      {/* Block container */}
       <div
         style={{
-          display: 'flex',
-          gap: '10px',
-          marginBottom: '28px',
+          position: 'relative',
+          width: `${blockSize * 4 + rowGap * 3 + 20}px`,
+          height: `${blockSize * 2 + gridGap + 40}px`,
+          marginBottom: '24px',
         }}
       >
-        {LETTERS.map((letter, i) => (
-          <div
-            key={letter.char}
-            style={{
-              width: '68px',
-              height: '68px',
-              borderRadius: '14px',
-              backgroundColor: letter.bg,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              animation: `splash-drop-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) ${i * 0.12}s both`,
-            }}
-          >
-            <span
+        {LETTERS.map((letter, i) => {
+          const grid = GRID_POSITIONS[i];
+          const row = ROW_POSITIONS[i];
+
+          // Center of the container
+          const cx = (blockSize * 4 + rowGap * 3 + 20) / 2 - blockSize / 2;
+          const cy = (blockSize * 2 + gridGap + 40) / 2 - blockSize / 2;
+
+          let x, y, scale, rotate, opacity;
+
+          if (phase === 'drop') {
+            // Start in 2x2 formation, high above
+            x = cx + grid.x * gridUnit;
+            y = -120; // above viewport of container
+            scale = 0.8;
+            rotate = -8 + i * 4;
+            opacity = 0;
+          } else if (phase === 'bounce') {
+            // Landed at center in 2x2, slight squash
+            x = cx + grid.x * gridUnit;
+            y = cy + grid.y * gridUnit;
+            scale = 1.08;
+            rotate = 0;
+            opacity = 1;
+          } else {
+            // 'spread', 'hold', 'exit' — in row formation
+            x = cx + row.x * rowUnit;
+            y = cy;
+            scale = 1;
+            rotate = 0;
+            opacity = 1;
+          }
+
+          // Animation timing per block for stagger effect during drop
+          const dropDelay = i * 0.04;
+
+          return (
+            <div
+              key={letter.char}
               style={{
-                fontSize: '40px',
-                fontWeight: '900',
-                color: '#ffffff',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-                lineHeight: 1,
+                position: 'absolute',
+                width: `${blockSize}px`,
+                height: `${blockSize}px`,
+                borderRadius: '14px',
+                backgroundColor: letter.bg,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: `scale(${scale}) rotate(${rotate}deg)`,
+                opacity,
+                transition: phase === 'drop'
+                  ? `all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) ${dropDelay}s`
+                  : phase === 'bounce'
+                    ? 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    : 'all 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                boxShadow: phase === 'bounce'
+                  ? `0 8px 32px ${letter.bg}66`
+                  : `0 4px 16px ${letter.bg}33`,
               }}
             >
-              {letter.char}
-            </span>
-          </div>
-        ))}
+              {/* Top highlight for toy block feel */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '15%',
+                  borderRadius: '14px 14px 0 0',
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%)',
+                }}
+              />
+              <span
+                style={{
+                  fontSize: '34px',
+                  fontWeight: '900',
+                  color: '#ffffff',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                  lineHeight: 1,
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+              >
+                {letter.char}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Subtitle — fades in after blocks land */}
+      {/* Tagline — fades in after blocks form the row */}
       <p
         style={{
           fontSize: '13px',
@@ -84,44 +173,14 @@ export default function SplashScreen({ onComplete }) {
           letterSpacing: '4px',
           color: '#ffffff',
           textTransform: 'uppercase',
-          animation: 'splash-fade-up 0.5s ease-out 0.7s both',
+          opacity: phase === 'hold' || phase === 'exit' ? 1 : 0,
+          transform: phase === 'hold' || phase === 'exit' ? 'translateY(0)' : 'translateY(12px)',
+          transition: 'all 0.5s ease-out',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         }}
       >
         Be About It
       </p>
-
-      <style>{`
-        @keyframes splash-drop-bounce {
-          0% {
-            transform: translateY(-120px) scale(0.6) rotate(-12deg);
-            opacity: 0;
-          }
-          50% {
-            opacity: 1;
-          }
-          70% {
-            transform: translateY(8px) scale(1.05) rotate(2deg);
-          }
-          85% {
-            transform: translateY(-4px) scale(0.98) rotate(-1deg);
-          }
-          100% {
-            transform: translateY(0) scale(1) rotate(0deg);
-            opacity: 1;
-          }
-        }
-        @keyframes splash-fade-up {
-          from {
-            transform: translateY(12px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
 }
