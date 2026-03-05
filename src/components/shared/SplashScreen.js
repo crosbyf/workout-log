@@ -135,18 +135,6 @@ export default function SplashScreen({ onComplete }) {
                   : `0 4px 16px ${letter.bg}33`,
               }}
             >
-              {/* Top highlight for toy block feel */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: '15%',
-                  borderRadius: '14px 14px 0 0',
-                  background: 'linear-gradient(180deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0) 100%)',
-                }}
-              />
               <span
                 style={{
                   fontSize: '34px',
