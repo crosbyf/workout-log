@@ -12,6 +12,7 @@ import {
 } from '@/lib/sync';
 
 const WORKOUTS_KEY = 'workouts';
+const DELETED_IDS_KEY = 'workouts_deleted_ids';
 
 /**
  * Create a fingerprint for a workout to detect content-level duplicates
@@ -46,6 +47,30 @@ function deduplicateWorkouts(list) {
   });
 }
 
+/**
+ * Track IDs of workouts that were deleted locally.
+ * Prevents Supabase from resurrecting them if the remote delete failed.
+ */
+function getDeletedIds() {
+  return new Set(getItem(DELETED_IDS_KEY, []));
+}
+
+function addDeletedId(id) {
+  const ids = getDeletedIds();
+  ids.add(id);
+  setItem(DELETED_IDS_KEY, [...ids]);
+}
+
+function removeDeletedId(id) {
+  const ids = getDeletedIds();
+  ids.delete(id);
+  setItem(DELETED_IDS_KEY, [...ids]);
+}
+
+function clearDeletedIds() {
+  setItem(DELETED_IDS_KEY, []);
+}
+
 function loadWorkouts() {
   const saved = getItem(WORKOUTS_KEY, []);
   const unique = deduplicateWorkouts(saved);
@@ -64,11 +89,20 @@ export function useWorkouts() {
     let cancelled = false;
     fetchWorkouts().then(remote => {
       if (cancelled || !remote) return;
+      // Filter out any workouts that were deleted locally but may still exist in Supabase
+      const deletedIds = getDeletedIds();
+      const filteredRemote = remote.filter(w => !deletedIds.has(w.id));
+      // Retry deleting those IDs from Supabase in the background
+      for (const id of deletedIds) {
+        deleteWorkoutRemote(id).then(ok => {
+          if (ok) removeDeletedId(id);
+        });
+      }
       // Deduplicate remote data
-      const uniqueRemote = deduplicateWorkouts(remote);
+      const uniqueRemote = deduplicateWorkouts(filteredRemote);
       // Merge: Supabase is source of truth, but keep any local-only items
       const remoteIds = new Set(uniqueRemote.map(w => w.id));
-      const localOnly = workouts.filter(w => !remoteIds.has(w.id));
+      const localOnly = workouts.filter(w => !remoteIds.has(w.id) && !deletedIds.has(w.id));
       // For remote items missing run fields, check if local version has them
       const mergedRemote = uniqueRemote.map(rw => {
         const local = workouts.find(lw => lw.id === rw.id);
@@ -142,8 +176,12 @@ export function useWorkouts() {
   const deleteWorkout = useCallback((id) => {
     const updated = workouts.filter(w => w.id !== id);
     saveToStorage(updated);
-    // Sync to Supabase
-    deleteWorkoutRemote(id);
+    // Track this deletion so Supabase can't resurrect it
+    addDeletedId(id);
+    // Sync to Supabase — on success, clear the tracking
+    deleteWorkoutRemote(id).then(ok => {
+      if (ok) removeDeletedId(id);
+    });
   }, [workouts, saveToStorage]);
 
   const getWorkoutById = useCallback((id) => {
@@ -162,9 +200,13 @@ export function useWorkouts() {
 
   // Delete all workouts
   const deleteAllWorkouts = useCallback(() => {
+    // Track all current IDs as deleted in case remote delete fails
+    workouts.forEach(w => addDeletedId(w.id));
     saveToStorage([]);
-    deleteAllWorkoutsRemote();
-  }, [saveToStorage]);
+    deleteAllWorkoutsRemote().then(ok => {
+      if (ok) clearDeletedIds();
+    });
+  }, [workouts, saveToStorage]);
 
   return {
     workouts,
