@@ -1,0 +1,1506 @@
+[
+  {
+    "date": "2025-02-01",
+    "distance": 6.77,
+    "time": 3162,
+    "pace": "7:47",
+    "name": "Lake stroll ft. Bri/Jim/Sam",
+    "strava_id": "13512115868"
+  },
+  {
+    "date": "2025-02-07",
+    "distance": 6.06,
+    "time": 2598,
+    "pace": "7:09",
+    "name": "Morning Run",
+    "strava_id": "13565555698"
+  },
+  {
+    "date": "2025-02-08",
+    "distance": 8.06,
+    "time": 3778,
+    "pace": "7:49",
+    "name": "Stroller Saturday",
+    "strava_id": "13575250599"
+  },
+  {
+    "date": "2025-02-09",
+    "distance": 6.16,
+    "time": 2663,
+    "pace": "7:12",
+    "name": "Morning Run",
+    "strava_id": "13584431271"
+  },
+  {
+    "date": "2025-02-14",
+    "distance": 7.1,
+    "time": 3054,
+    "pace": "7:10",
+    "name": "Morning Run",
+    "strava_id": "13626559835"
+  },
+  {
+    "date": "2025-02-15",
+    "distance": 8.07,
+    "time": 3552,
+    "pace": "7:20",
+    "name": "Stroller Saturday",
+    "strava_id": "13635843154"
+  },
+  {
+    "date": "2025-02-16",
+    "distance": 6.04,
+    "time": 2629,
+    "pace": "7:15",
+    "name": "Morning Run",
+    "strava_id": "13644891523"
+  },
+  {
+    "date": "2025-02-19",
+    "distance": 7.09,
+    "time": 2939,
+    "pace": "6:55",
+    "name": "Morning Run",
+    "strava_id": "13670717708"
+  },
+  {
+    "date": "2025-02-21",
+    "distance": 7.1,
+    "time": 2999,
+    "pace": "7:02",
+    "name": "Morning Run",
+    "strava_id": "13688611842"
+  },
+  {
+    "date": "2025-02-22",
+    "distance": 8.02,
+    "time": 3556,
+    "pace": "7:23",
+    "name": "Stroller Saturday",
+    "strava_id": "13698028336"
+  },
+  {
+    "date": "2025-02-23",
+    "distance": 6.05,
+    "time": 2569,
+    "pace": "7:05",
+    "name": "Morning Run",
+    "strava_id": "13707231972"
+  },
+  {
+    "date": "2025-02-25",
+    "distance": 7.19,
+    "time": 2908,
+    "pace": "6:44",
+    "name": "Fog jog",
+    "strava_id": "13724301386"
+  },
+  {
+    "date": "2025-02-26",
+    "distance": 6.03,
+    "time": 2521,
+    "pace": "6:58",
+    "name": "Morning Run",
+    "strava_id": "13733939580"
+  },
+  {
+    "date": "2025-02-28",
+    "distance": 7.08,
+    "time": 2977,
+    "pace": "7:00",
+    "name": "Morning Run",
+    "strava_id": "13752165519"
+  },
+  {
+    "date": "2025-03-01",
+    "distance": 8.1,
+    "time": 3606,
+    "pace": "7:25",
+    "name": "Stroller Saturday",
+    "strava_id": "13761732845"
+  },
+  {
+    "date": "2025-03-04",
+    "distance": 6.11,
+    "time": 2441,
+    "pace": "6:40",
+    "name": "Morning Run",
+    "strava_id": "13787844549"
+  },
+  {
+    "date": "2025-03-05",
+    "distance": 7.08,
+    "time": 2893,
+    "pace": "6:49",
+    "name": "Morning Run",
+    "strava_id": "13797337474"
+  },
+  {
+    "date": "2025-03-07",
+    "distance": 6.18,
+    "time": 2579,
+    "pace": "6:57",
+    "name": "Morning Run",
+    "strava_id": "13816149024"
+  },
+  {
+    "date": "2025-03-08",
+    "distance": 8.0,
+    "time": 3473,
+    "pace": "7:14",
+    "name": "Stroller Saturday",
+    "strava_id": "13826103370"
+  },
+  {
+    "date": "2025-03-09",
+    "distance": 6.04,
+    "time": 2667,
+    "pace": "7:22",
+    "name": "Morning Run",
+    "strava_id": "13835279170"
+  },
+  {
+    "date": "2025-03-11",
+    "distance": 7.09,
+    "time": 2875,
+    "pace": "6:46",
+    "name": "Morning Run",
+    "strava_id": "13852971200"
+  },
+  {
+    "date": "2025-03-12",
+    "distance": 7.08,
+    "time": 2909,
+    "pace": "6:51",
+    "name": "Morning Run",
+    "strava_id": "13862591289"
+  },
+  {
+    "date": "2025-03-14",
+    "distance": 7.08,
+    "time": 2999,
+    "pace": "7:04",
+    "name": "Morning Run",
+    "strava_id": "13881554724"
+  },
+  {
+    "date": "2025-03-15",
+    "distance": 8.04,
+    "time": 3652,
+    "pace": "7:34",
+    "name": "Stroller Saturday",
+    "strava_id": "13891102447"
+  },
+  {
+    "date": "2025-03-18",
+    "distance": 7.09,
+    "time": 2903,
+    "pace": "6:49",
+    "name": "Morning Run",
+    "strava_id": "13921548163"
+  },
+  {
+    "date": "2025-03-19",
+    "distance": 6.05,
+    "time": 2529,
+    "pace": "6:58",
+    "name": "Morning Run",
+    "strava_id": "13927662624"
+  },
+  {
+    "date": "2025-03-21",
+    "distance": 6.6,
+    "time": 2885,
+    "pace": "7:17",
+    "name": "Morning Run",
+    "strava_id": "13946580000"
+  },
+  {
+    "date": "2025-03-22",
+    "distance": 8.02,
+    "time": 3488,
+    "pace": "7:15",
+    "name": "Stroller Saturday",
+    "strava_id": "13956381207"
+  },
+  {
+    "date": "2025-03-23",
+    "distance": 5.84,
+    "time": 2793,
+    "pace": "7:58",
+    "name": "Higgins & Rhizor",
+    "strava_id": "13965688436"
+  },
+  {
+    "date": "2025-03-25",
+    "distance": 7.14,
+    "time": 2912,
+    "pace": "6:48",
+    "name": "Morning Run",
+    "strava_id": "13983299767"
+  },
+  {
+    "date": "2025-03-26",
+    "distance": 5.14,
+    "time": 2100,
+    "pace": "6:49",
+    "name": "Morning Run",
+    "strava_id": "13993325573"
+  },
+  {
+    "date": "2025-03-29",
+    "distance": 8.04,
+    "time": 3528,
+    "pace": "7:19",
+    "name": "Stroller Saturday",
+    "strava_id": "14022213105"
+  },
+  {
+    "date": "2025-04-01",
+    "distance": 7.12,
+    "time": 2880,
+    "pace": "6:44",
+    "name": "Rain run",
+    "strava_id": "14049184119"
+  },
+  {
+    "date": "2025-04-02",
+    "distance": 7.07,
+    "time": 2898,
+    "pace": "6:50",
+    "name": "Morning Run",
+    "strava_id": "14059420775"
+  },
+  {
+    "date": "2025-04-04",
+    "distance": 6.06,
+    "time": 2637,
+    "pace": "7:15",
+    "name": "Morning Run",
+    "strava_id": "14079294544"
+  },
+  {
+    "date": "2025-04-05",
+    "distance": 8.02,
+    "time": 3552,
+    "pace": "7:23",
+    "name": "Stroller Saturday",
+    "strava_id": "14089592586"
+  },
+  {
+    "date": "2025-04-08",
+    "distance": 7.07,
+    "time": 2828,
+    "pace": "6:40",
+    "name": "Morning Run",
+    "strava_id": "14117459943"
+  },
+  {
+    "date": "2025-04-09",
+    "distance": 7.05,
+    "time": 2865,
+    "pace": "6:46",
+    "name": "Morning Run",
+    "strava_id": "14127756515"
+  },
+  {
+    "date": "2025-04-12",
+    "distance": 8.04,
+    "time": 3518,
+    "pace": "7:18",
+    "name": "Stroller Saturday",
+    "strava_id": "14157557091"
+  },
+  {
+    "date": "2025-04-15",
+    "distance": 6.05,
+    "time": 2482,
+    "pace": "6:50",
+    "name": "Morning Run",
+    "strava_id": "14185287979"
+  },
+  {
+    "date": "2025-04-16",
+    "distance": 7.07,
+    "time": 2897,
+    "pace": "6:50",
+    "name": "Morning Run",
+    "strava_id": "14195101630"
+  },
+  {
+    "date": "2025-04-19",
+    "distance": 8.02,
+    "time": 3550,
+    "pace": "7:23",
+    "name": "Stroller Saturday",
+    "strava_id": "14225381583"
+  },
+  {
+    "date": "2025-04-22",
+    "distance": 7.07,
+    "time": 2867,
+    "pace": "6:46",
+    "name": "Big coyote",
+    "strava_id": "14253459137"
+  },
+  {
+    "date": "2025-04-23",
+    "distance": 6.11,
+    "time": 2442,
+    "pace": "6:40",
+    "name": "Morning Run",
+    "strava_id": "14263558819"
+  },
+  {
+    "date": "2025-04-26",
+    "distance": 8.0,
+    "time": 3496,
+    "pace": "7:17",
+    "name": "Stroller Saturday",
+    "strava_id": "14293758716"
+  },
+  {
+    "date": "2025-04-28",
+    "distance": 7.08,
+    "time": 2852,
+    "pace": "6:43",
+    "name": "Morning Run",
+    "strava_id": "14312539415"
+  },
+  {
+    "date": "2025-04-29",
+    "distance": 5.52,
+    "time": 2234,
+    "pace": "6:45",
+    "name": "Morning Run",
+    "strava_id": "14323155050"
+  },
+  {
+    "date": "2025-05-03",
+    "distance": 8.0,
+    "time": 3547,
+    "pace": "7:23",
+    "name": "Stroller Saturday",
+    "strava_id": "14367118007"
+  },
+  {
+    "date": "2025-05-06",
+    "distance": 4.19,
+    "time": 1744,
+    "pace": "6:56",
+    "name": "Morning Run",
+    "strava_id": "14395515669"
+  },
+  {
+    "date": "2025-05-10",
+    "distance": 8.06,
+    "time": 3501,
+    "pace": "7:14",
+    "name": "Stroller Saturday",
+    "strava_id": "14438080638"
+  },
+  {
+    "date": "2025-05-17",
+    "distance": 8.03,
+    "time": 3670,
+    "pace": "7:37",
+    "name": "Stroller Saturday",
+    "strava_id": "14510663775"
+  },
+  {
+    "date": "2025-05-24",
+    "distance": 8.03,
+    "time": 3581,
+    "pace": "7:26",
+    "name": "Stroller Saturday",
+    "strava_id": "14582250299"
+  },
+  {
+    "date": "2025-05-28",
+    "distance": 1.67,
+    "time": 725,
+    "pace": "7:14",
+    "name": "Back",
+    "strava_id": "14622351301"
+  },
+  {
+    "date": "2025-05-28",
+    "distance": 1.66,
+    "time": 718,
+    "pace": "7:13",
+    "name": "Out",
+    "strava_id": "14622351320"
+  },
+  {
+    "date": "2025-05-31",
+    "distance": 8.03,
+    "time": 3567,
+    "pace": "7:24",
+    "name": "Stroller Saturday",
+    "strava_id": "14654164274"
+  },
+  {
+    "date": "2025-06-04",
+    "distance": 1.65,
+    "time": 699,
+    "pace": "7:04",
+    "name": "Out",
+    "strava_id": "14695042016"
+  },
+  {
+    "date": "2025-06-04",
+    "distance": 1.67,
+    "time": 733,
+    "pace": "7:19",
+    "name": "Back",
+    "strava_id": "14695042241"
+  },
+  {
+    "date": "2025-06-24",
+    "distance": 3.01,
+    "time": 1286,
+    "pace": "7:07",
+    "name": "Achilles test",
+    "strava_id": "14902082055"
+  },
+  {
+    "date": "2025-06-26",
+    "distance": 3.07,
+    "time": 1283,
+    "pace": "6:58",
+    "name": "Morning Run",
+    "strava_id": "14923838065"
+  },
+  {
+    "date": "2025-06-27",
+    "distance": 1.67,
+    "time": 717,
+    "pace": "7:09",
+    "name": "Back",
+    "strava_id": "14933562343"
+  },
+  {
+    "date": "2025-06-27",
+    "distance": 1.65,
+    "time": 713,
+    "pace": "7:12",
+    "name": "Out",
+    "strava_id": "14933562402"
+  },
+  {
+    "date": "2025-07-01",
+    "distance": 3.04,
+    "time": 1287,
+    "pace": "7:03",
+    "name": "Morning Run",
+    "strava_id": "14974618030"
+  },
+  {
+    "date": "2025-07-03",
+    "distance": 4.05,
+    "time": 1668,
+    "pace": "6:52",
+    "name": "Morning Run",
+    "strava_id": "14995848802"
+  },
+  {
+    "date": "2025-07-08",
+    "distance": 3.05,
+    "time": 1282,
+    "pace": "7:00",
+    "name": "Morning Run",
+    "strava_id": "15047299051"
+  },
+  {
+    "date": "2025-07-09",
+    "distance": 1.65,
+    "time": 711,
+    "pace": "7:11",
+    "name": "Out",
+    "strava_id": "15058474969"
+  },
+  {
+    "date": "2025-07-09",
+    "distance": 1.69,
+    "time": 722,
+    "pace": "7:07",
+    "name": "Back",
+    "strava_id": "15058475115"
+  },
+  {
+    "date": "2025-07-10",
+    "distance": 4.07,
+    "time": 1659,
+    "pace": "6:48",
+    "name": "Morning Run",
+    "strava_id": "15069985141"
+  },
+  {
+    "date": "2025-07-13",
+    "distance": 4.08,
+    "time": 1656,
+    "pace": "6:46",
+    "name": "Morning Run",
+    "strava_id": "15102835741"
+  },
+  {
+    "date": "2025-07-15",
+    "distance": 5.04,
+    "time": 2102,
+    "pace": "6:57",
+    "name": "Morning Run",
+    "strava_id": "15122835608"
+  },
+  {
+    "date": "2025-07-16",
+    "distance": 1.62,
+    "time": 714,
+    "pace": "7:21",
+    "name": "Out",
+    "strava_id": "15134597551"
+  },
+  {
+    "date": "2025-07-16",
+    "distance": 1.67,
+    "time": 724,
+    "pace": "7:14",
+    "name": "Back",
+    "strava_id": "15134597846"
+  },
+  {
+    "date": "2025-07-17",
+    "distance": 3.04,
+    "time": 1347,
+    "pace": "7:23",
+    "name": "Morning Run",
+    "strava_id": "15145952250"
+  },
+  {
+    "date": "2025-07-19",
+    "distance": 7.32,
+    "time": 3291,
+    "pace": "7:30",
+    "name": "Stroller Saturday",
+    "strava_id": "15167922351"
+  },
+  {
+    "date": "2025-07-22",
+    "distance": 4.04,
+    "time": 1623,
+    "pace": "6:42",
+    "name": "Morning Run",
+    "strava_id": "15199467402"
+  },
+  {
+    "date": "2025-07-23",
+    "distance": 1.65,
+    "time": 720,
+    "pace": "7:16",
+    "name": "Out",
+    "strava_id": "15211115829"
+  },
+  {
+    "date": "2025-07-23",
+    "distance": 1.67,
+    "time": 722,
+    "pace": "7:12",
+    "name": "Back",
+    "strava_id": "15211115966"
+  },
+  {
+    "date": "2025-07-24",
+    "distance": 3.04,
+    "time": 1260,
+    "pace": "6:54",
+    "name": "Morning Run",
+    "strava_id": "15222514505"
+  },
+  {
+    "date": "2025-07-26",
+    "distance": 7.19,
+    "time": 3212,
+    "pace": "7:27",
+    "name": "Stroller Saturday",
+    "strava_id": "15244407358"
+  },
+  {
+    "date": "2025-07-29",
+    "distance": 5.04,
+    "time": 2088,
+    "pace": "6:54",
+    "name": "Morning Run",
+    "strava_id": "15275894116"
+  },
+  {
+    "date": "2025-07-30",
+    "distance": 1.63,
+    "time": 726,
+    "pace": "7:25",
+    "name": "Out",
+    "strava_id": "15287874009"
+  },
+  {
+    "date": "2025-07-30",
+    "distance": 1.67,
+    "time": 726,
+    "pace": "7:15",
+    "name": "Back",
+    "strava_id": "15287874095"
+  },
+  {
+    "date": "2025-07-31",
+    "distance": 4.03,
+    "time": 1662,
+    "pace": "6:52",
+    "name": "Morning Run",
+    "strava_id": "15299456155"
+  },
+  {
+    "date": "2025-08-02",
+    "distance": 8.02,
+    "time": 3476,
+    "pace": "7:13",
+    "name": "Stroller Saturday",
+    "strava_id": "15321568801"
+  },
+  {
+    "date": "2025-08-05",
+    "distance": 3.02,
+    "time": 1264,
+    "pace": "6:59",
+    "name": "Morning Run",
+    "strava_id": "15354105696"
+  },
+  {
+    "date": "2025-08-06",
+    "distance": 1.63,
+    "time": 719,
+    "pace": "7:21",
+    "name": "Out",
+    "strava_id": "15366195845"
+  },
+  {
+    "date": "2025-08-06",
+    "distance": 1.62,
+    "time": 709,
+    "pace": "7:18",
+    "name": "Back",
+    "strava_id": "15366195973"
+  },
+  {
+    "date": "2025-08-07",
+    "distance": 6.31,
+    "time": 2651,
+    "pace": "7:00",
+    "name": "Surprise Jack",
+    "strava_id": "15378599241"
+  },
+  {
+    "date": "2025-08-09",
+    "distance": 4.52,
+    "time": 2277,
+    "pace": "8:24",
+    "name": "Milestone",
+    "strava_id": "15401931513"
+  },
+  {
+    "date": "2025-08-10",
+    "distance": 3.14,
+    "time": 1568,
+    "pace": "8:19",
+    "name": "The whole crew",
+    "strava_id": "15412262680"
+  },
+  {
+    "date": "2025-08-12",
+    "distance": 6.06,
+    "time": 2524,
+    "pace": "6:57",
+    "name": "Morning Run",
+    "strava_id": "15434154083"
+  },
+  {
+    "date": "2025-08-16",
+    "distance": 7.17,
+    "time": 3364,
+    "pace": "7:49",
+    "name": "No-Stroller Saturday",
+    "strava_id": "15481021291"
+  },
+  {
+    "date": "2025-08-17",
+    "distance": 3.15,
+    "time": 1498,
+    "pace": "7:56",
+    "name": "Fam run, bike, & stroll",
+    "strava_id": "15491796005"
+  },
+  {
+    "date": "2025-08-19",
+    "distance": 6.06,
+    "time": 2504,
+    "pace": "6:53",
+    "name": "Morning Run",
+    "strava_id": "15513937572"
+  },
+  {
+    "date": "2025-08-20",
+    "distance": 1.64,
+    "time": 732,
+    "pace": "7:26",
+    "name": "Out",
+    "strava_id": "15526082222"
+  },
+  {
+    "date": "2025-08-20",
+    "distance": 1.67,
+    "time": 719,
+    "pace": "7:11",
+    "name": "Back",
+    "strava_id": "15526082475"
+  },
+  {
+    "date": "2025-08-21",
+    "distance": 4.13,
+    "time": 1757,
+    "pace": "7:05",
+    "name": "Morning Run",
+    "strava_id": "15537807694"
+  },
+  {
+    "date": "2025-08-23",
+    "distance": 7.18,
+    "time": 3338,
+    "pace": "7:45",
+    "name": "No-Stroller Saturday",
+    "strava_id": "15560716105"
+  },
+  {
+    "date": "2025-09-03",
+    "distance": 1.65,
+    "time": 724,
+    "pace": "7:19",
+    "name": "Back",
+    "strava_id": "15684335910"
+  },
+  {
+    "date": "2025-09-03",
+    "distance": 1.62,
+    "time": 726,
+    "pace": "7:28",
+    "name": "Out",
+    "strava_id": "15684336111"
+  },
+  {
+    "date": "2025-09-04",
+    "distance": 3.01,
+    "time": 1344,
+    "pace": "7:27",
+    "name": "Woof",
+    "strava_id": "15696261820"
+  },
+  {
+    "date": "2025-09-10",
+    "distance": 1.64,
+    "time": 733,
+    "pace": "7:27",
+    "name": "Out",
+    "strava_id": "15765314027"
+  },
+  {
+    "date": "2025-09-10",
+    "distance": 1.64,
+    "time": 710,
+    "pace": "7:13",
+    "name": "Back",
+    "strava_id": "15765314176"
+  },
+  {
+    "date": "2025-09-13",
+    "distance": 3.07,
+    "time": 1341,
+    "pace": "7:17",
+    "name": "Morning Run",
+    "strava_id": "15799796070"
+  },
+  {
+    "date": "2025-09-14",
+    "distance": 6.06,
+    "time": 2896,
+    "pace": "7:58",
+    "name": "Double stroll",
+    "strava_id": "15811350746"
+  },
+  {
+    "date": "2025-09-21",
+    "distance": 3.07,
+    "time": 1475,
+    "pace": "8:00",
+    "name": "Fam run bike stroll",
+    "strava_id": "15890721825"
+  },
+  {
+    "date": "2025-09-23",
+    "distance": 6.03,
+    "time": 2558,
+    "pace": "7:04",
+    "name": "Morning Run",
+    "strava_id": "15910788303"
+  },
+  {
+    "date": "2025-09-24",
+    "distance": 1.62,
+    "time": 728,
+    "pace": "7:29",
+    "name": "Back",
+    "strava_id": "15922506161"
+  },
+  {
+    "date": "2025-09-24",
+    "distance": 1.66,
+    "time": 721,
+    "pace": "7:14",
+    "name": "Out",
+    "strava_id": "15922506250"
+  },
+  {
+    "date": "2025-09-25",
+    "distance": 3.4,
+    "time": 1656,
+    "pace": "8:07",
+    "name": "Fam run bike stroll",
+    "strava_id": "15932997751"
+  },
+  {
+    "date": "2025-09-27",
+    "distance": 8.04,
+    "time": 3600,
+    "pace": "7:28",
+    "name": "Stroller Saturday",
+    "strava_id": "15955853722"
+  },
+  {
+    "date": "2025-09-30",
+    "distance": 6.1,
+    "time": 2562,
+    "pace": "7:00",
+    "name": "Morning Run",
+    "strava_id": "15987804208"
+  },
+  {
+    "date": "2025-10-01",
+    "distance": 1.64,
+    "time": 736,
+    "pace": "7:29",
+    "name": "Back",
+    "strava_id": "15999548645"
+  },
+  {
+    "date": "2025-10-01",
+    "distance": 1.68,
+    "time": 744,
+    "pace": "7:23",
+    "name": "Out",
+    "strava_id": "15999548795"
+  },
+  {
+    "date": "2025-10-04",
+    "distance": 7.01,
+    "time": 3146,
+    "pace": "7:29",
+    "name": "No Stroller Saturday",
+    "strava_id": "16032810511"
+  },
+  {
+    "date": "2025-10-07",
+    "distance": 6.09,
+    "time": 2537,
+    "pace": "6:57",
+    "name": "Morning Run",
+    "strava_id": "16064071434"
+  },
+  {
+    "date": "2025-10-08",
+    "distance": 1.64,
+    "time": 724,
+    "pace": "7:21",
+    "name": "Out",
+    "strava_id": "16075830473"
+  },
+  {
+    "date": "2025-10-08",
+    "distance": 1.65,
+    "time": 725,
+    "pace": "7:19",
+    "name": "Back",
+    "strava_id": "16075830687"
+  },
+  {
+    "date": "2025-10-11",
+    "distance": 8.06,
+    "time": 3663,
+    "pace": "7:34",
+    "name": "Stroller Saturday",
+    "strava_id": "16108488255"
+  },
+  {
+    "date": "2025-10-13",
+    "distance": 1.66,
+    "time": 740,
+    "pace": "7:26",
+    "name": "Out",
+    "strava_id": "16127937726"
+  },
+  {
+    "date": "2025-10-13",
+    "distance": 1.65,
+    "time": 743,
+    "pace": "7:30",
+    "name": "Back",
+    "strava_id": "16127938070"
+  },
+  {
+    "date": "2025-10-14",
+    "distance": 6.06,
+    "time": 2576,
+    "pace": "7:05",
+    "name": "Morning Run",
+    "strava_id": "16138743541"
+  },
+  {
+    "date": "2025-10-18",
+    "distance": 3.19,
+    "time": 1625,
+    "pace": "8:29",
+    "name": "Full fam lap",
+    "strava_id": "16182281062"
+  },
+  {
+    "date": "2025-10-22",
+    "distance": 7.01,
+    "time": 3436,
+    "pace": "8:10",
+    "name": "Team TRI",
+    "strava_id": "16222723596"
+  },
+  {
+    "date": "2025-10-25",
+    "distance": 8.04,
+    "time": 3561,
+    "pace": "7:23",
+    "name": "Wet Stroller Saturday",
+    "strava_id": "16253874760"
+  },
+  {
+    "date": "2025-10-28",
+    "distance": 6.08,
+    "time": 2628,
+    "pace": "7:12",
+    "name": "Morning Run",
+    "strava_id": "16282685622"
+  },
+  {
+    "date": "2025-10-29",
+    "distance": 1.63,
+    "time": 742,
+    "pace": "7:35",
+    "name": "Out",
+    "strava_id": "16293335349"
+  },
+  {
+    "date": "2025-10-29",
+    "distance": 1.63,
+    "time": 728,
+    "pace": "7:27",
+    "name": "Back",
+    "strava_id": "16293335640"
+  },
+  {
+    "date": "2025-11-01",
+    "distance": 8.05,
+    "time": 3655,
+    "pace": "7:34",
+    "name": "Stroller Saturday",
+    "strava_id": "16323662351"
+  },
+  {
+    "date": "2025-11-04",
+    "distance": 6.06,
+    "time": 2619,
+    "pace": "7:12",
+    "name": "Morning Run",
+    "strava_id": "16353761130"
+  },
+  {
+    "date": "2025-11-05",
+    "distance": 1.61,
+    "time": 729,
+    "pace": "7:33",
+    "name": "Back",
+    "strava_id": "16365139226"
+  },
+  {
+    "date": "2025-11-05",
+    "distance": 1.63,
+    "time": 739,
+    "pace": "7:33",
+    "name": "Out",
+    "strava_id": "16365139454"
+  },
+  {
+    "date": "2025-11-06",
+    "distance": 2.78,
+    "time": 1208,
+    "pace": "7:15",
+    "name": "Car service",
+    "strava_id": "16375854303"
+  },
+  {
+    "date": "2025-11-08",
+    "distance": 6.96,
+    "time": 3162,
+    "pace": "7:34",
+    "name": "Stroller Saturday",
+    "strava_id": "16396550135"
+  },
+  {
+    "date": "2025-11-11",
+    "distance": 6.04,
+    "time": 2619,
+    "pace": "7:14",
+    "name": "Morning Run",
+    "strava_id": "16426204227"
+  },
+  {
+    "date": "2025-11-15",
+    "distance": 8.02,
+    "time": 3627,
+    "pace": "7:32",
+    "name": "Stroller Saturday",
+    "strava_id": "16467818562"
+  },
+  {
+    "date": "2025-11-16",
+    "distance": 3.2,
+    "time": 1549,
+    "pace": "8:04",
+    "name": "Fam lake lap",
+    "strava_id": "16477846272"
+  },
+  {
+    "date": "2025-11-19",
+    "distance": 1.67,
+    "time": 743,
+    "pace": "7:25",
+    "name": "Out",
+    "strava_id": "16506562876"
+  },
+  {
+    "date": "2025-11-19",
+    "distance": 1.63,
+    "time": 719,
+    "pace": "7:21",
+    "name": "Back",
+    "strava_id": "16506563246"
+  },
+  {
+    "date": "2025-11-20",
+    "distance": 6.01,
+    "time": 2682,
+    "pace": "7:26",
+    "name": "Morning Run",
+    "strava_id": "16516831154"
+  },
+  {
+    "date": "2025-11-22",
+    "distance": 6.93,
+    "time": 3145,
+    "pace": "7:34",
+    "name": "Port",
+    "strava_id": "16536144585"
+  },
+  {
+    "date": "2025-11-25",
+    "distance": 6.02,
+    "time": 2543,
+    "pace": "7:02",
+    "name": "Morning Run",
+    "strava_id": "16565329596"
+  },
+  {
+    "date": "2025-11-27",
+    "distance": 1.44,
+    "time": 865,
+    "pace": "10:01",
+    "name": "Up",
+    "strava_id": "16585213001"
+  },
+  {
+    "date": "2025-11-27",
+    "distance": 3.26,
+    "time": 1450,
+    "pace": "7:25",
+    "name": "Double stroller turkey trot",
+    "strava_id": "16585213273"
+  },
+  {
+    "date": "2025-11-27",
+    "distance": 0.65,
+    "time": 363,
+    "pace": "9:18",
+    "name": "Down",
+    "strava_id": "16585213401"
+  },
+  {
+    "date": "2025-11-29",
+    "distance": 6.15,
+    "time": 2769,
+    "pace": "7:30",
+    "name": "Port",
+    "strava_id": "16602707401"
+  },
+  {
+    "date": "2025-12-02",
+    "distance": 6.03,
+    "time": 2548,
+    "pace": "7:03",
+    "name": "Morning Run",
+    "strava_id": "16629900940"
+  },
+  {
+    "date": "2025-12-03",
+    "distance": 1.63,
+    "time": 712,
+    "pace": "7:17",
+    "name": "Out",
+    "strava_id": "16640159737"
+  },
+  {
+    "date": "2025-12-03",
+    "distance": 1.63,
+    "time": 709,
+    "pace": "7:15",
+    "name": "Back",
+    "strava_id": "16640159897"
+  },
+  {
+    "date": "2025-12-06",
+    "distance": 8.04,
+    "time": 3680,
+    "pace": "7:38",
+    "name": "Stroller Saturday",
+    "strava_id": "16668443840"
+  },
+  {
+    "date": "2025-12-08",
+    "distance": 1.64,
+    "time": 734,
+    "pace": "7:28",
+    "name": "Out",
+    "strava_id": "16686608685"
+  },
+  {
+    "date": "2025-12-08",
+    "distance": 1.65,
+    "time": 722,
+    "pace": "7:18",
+    "name": "Back",
+    "strava_id": "16686608741"
+  },
+  {
+    "date": "2025-12-09",
+    "distance": 6.08,
+    "time": 2589,
+    "pace": "7:06",
+    "name": "Morning Run",
+    "strava_id": "16695836871"
+  },
+  {
+    "date": "2025-12-11",
+    "distance": 6.01,
+    "time": 2511,
+    "pace": "6:58",
+    "name": "Lunch Run",
+    "strava_id": "16716199644"
+  },
+  {
+    "date": "2025-12-13",
+    "distance": 8.08,
+    "time": 3741,
+    "pace": "7:43",
+    "name": "Stroller Saturday",
+    "strava_id": "16733452632"
+  },
+  {
+    "date": "2025-12-18",
+    "distance": 6.16,
+    "time": 2646,
+    "pace": "7:10",
+    "name": "Morning Run",
+    "strava_id": "16779017072"
+  },
+  {
+    "date": "2025-12-24",
+    "distance": 3.22,
+    "time": 1581,
+    "pace": "8:11",
+    "name": "Double stroll w/ PHS crew",
+    "strava_id": "16831667335"
+  },
+  {
+    "date": "2025-12-27",
+    "distance": 4.38,
+    "time": 2141,
+    "pace": "8:09",
+    "name": "Fam trip to GGP",
+    "strava_id": "16857055524"
+  },
+  {
+    "date": "2026-01-06",
+    "distance": 6.02,
+    "time": 2593,
+    "pace": "7:11",
+    "name": "Morning Run",
+    "strava_id": "16958159385"
+  },
+  {
+    "date": "2026-01-07",
+    "distance": 1.66,
+    "time": 755,
+    "pace": "7:35",
+    "name": "Out",
+    "strava_id": "16969614846"
+  },
+  {
+    "date": "2026-01-07",
+    "distance": 1.64,
+    "time": 740,
+    "pace": "7:31",
+    "name": "Back",
+    "strava_id": "16969614952"
+  },
+  {
+    "date": "2026-01-10",
+    "distance": 8.02,
+    "time": 3783,
+    "pace": "7:52",
+    "name": "Stroller Saturday",
+    "strava_id": "17003673846"
+  },
+  {
+    "date": "2026-01-13",
+    "distance": 6.01,
+    "time": 2599,
+    "pace": "7:12",
+    "name": "Morning Run",
+    "strava_id": "17041996128"
+  },
+  {
+    "date": "2026-01-14",
+    "distance": 1.67,
+    "time": 748,
+    "pace": "7:28",
+    "name": "Morning Run",
+    "strava_id": "17048687530"
+  },
+  {
+    "date": "2026-01-14",
+    "distance": 1.64,
+    "time": 721,
+    "pace": "7:20",
+    "name": "Morning Run",
+    "strava_id": "17048688019"
+  },
+  {
+    "date": "2026-01-17",
+    "distance": 6.1,
+    "time": 3129,
+    "pace": "8:33",
+    "name": "Lake",
+    "strava_id": "17084921666"
+  },
+  {
+    "date": "2026-01-19",
+    "distance": 3.51,
+    "time": 1669,
+    "pace": "7:55",
+    "name": "More lake",
+    "strava_id": "17106760085"
+  },
+  {
+    "date": "2026-01-20",
+    "distance": 6.04,
+    "time": 2597,
+    "pace": "7:10",
+    "name": "Morning Run",
+    "strava_id": "17117071456"
+  },
+  {
+    "date": "2026-01-21",
+    "distance": 1.66,
+    "time": 763,
+    "pace": "7:40",
+    "name": "Morning Run",
+    "strava_id": "17129161368"
+  },
+  {
+    "date": "2026-01-21",
+    "distance": 1.63,
+    "time": 741,
+    "pace": "7:35",
+    "name": "Morning Run",
+    "strava_id": "17129161477"
+  },
+  {
+    "date": "2026-01-25",
+    "distance": 6.22,
+    "time": 3131,
+    "pace": "8:23",
+    "name": "Spence on the bike",
+    "strava_id": "17175966626"
+  },
+  {
+    "date": "2026-01-27",
+    "distance": 6.06,
+    "time": 2607,
+    "pace": "7:10",
+    "name": "Morning Run",
+    "strava_id": "17195272851"
+  },
+  {
+    "date": "2026-01-28",
+    "distance": 1.65,
+    "time": 751,
+    "pace": "7:35",
+    "name": "Morning Run",
+    "strava_id": "17207244698"
+  },
+  {
+    "date": "2026-01-28",
+    "distance": 1.62,
+    "time": 724,
+    "pace": "7:27",
+    "name": "Morning Run",
+    "strava_id": "17207244776"
+  },
+  {
+    "date": "2026-01-31",
+    "distance": 7.86,
+    "time": 3495,
+    "pace": "7:25",
+    "name": "Port",
+    "strava_id": "17241225426"
+  },
+  {
+    "date": "2026-02-03",
+    "distance": 6.42,
+    "time": 3007,
+    "pace": "7:48",
+    "name": "Spence to school then lake",
+    "strava_id": "17273696156"
+  },
+  {
+    "date": "2026-02-04",
+    "distance": 1.66,
+    "time": 768,
+    "pace": "7:43",
+    "name": "Morning Run",
+    "strava_id": "17285708022"
+  },
+  {
+    "date": "2026-02-04",
+    "distance": 1.65,
+    "time": 756,
+    "pace": "7:38",
+    "name": "Morning Run",
+    "strava_id": "17285713562"
+  },
+  {
+    "date": "2026-02-07",
+    "distance": 6.06,
+    "time": 2940,
+    "pace": "8:05",
+    "name": "Lake",
+    "strava_id": "17320021861"
+  },
+  {
+    "date": "2026-02-10",
+    "distance": 6.01,
+    "time": 2638,
+    "pace": "7:19",
+    "name": "Morning Run",
+    "strava_id": "17352428301"
+  },
+  {
+    "date": "2026-02-11",
+    "distance": 1.63,
+    "time": 742,
+    "pace": "7:35",
+    "name": "Morning Run",
+    "strava_id": "17364217366"
+  },
+  {
+    "date": "2026-02-11",
+    "distance": 1.66,
+    "time": 777,
+    "pace": "7:48",
+    "name": "Morning Run",
+    "strava_id": "17364217370"
+  },
+  {
+    "date": "2026-02-14",
+    "distance": 7.93,
+    "time": 3565,
+    "pace": "7:30",
+    "name": "Port",
+    "strava_id": "17397705206"
+  },
+  {
+    "date": "2026-02-17",
+    "distance": 6.01,
+    "time": 2651,
+    "pace": "7:21",
+    "name": "Morning Run",
+    "strava_id": "17429257510"
+  },
+  {
+    "date": "2026-02-18",
+    "distance": 1.68,
+    "time": 775,
+    "pace": "7:41",
+    "name": "Morning Run",
+    "strava_id": "17441097918"
+  },
+  {
+    "date": "2026-02-18",
+    "distance": 1.66,
+    "time": 759,
+    "pace": "7:37",
+    "name": "Morning Run",
+    "strava_id": "17441098237"
+  },
+  {
+    "date": "2026-02-21",
+    "distance": 7.11,
+    "time": 3353,
+    "pace": "7:52",
+    "name": "Port",
+    "strava_id": "17475390943"
+  },
+  {
+    "date": "2026-02-24",
+    "distance": 6.04,
+    "time": 2566,
+    "pace": "7:05",
+    "name": "Morning Run",
+    "strava_id": "17507826719"
+  },
+  {
+    "date": "2026-02-28",
+    "distance": 8.04,
+    "time": 3597,
+    "pace": "7:27",
+    "name": "Port",
+    "strava_id": "17555988634"
+  }
+]
