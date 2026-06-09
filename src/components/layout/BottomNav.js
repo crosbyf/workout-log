@@ -27,20 +27,30 @@ export default function BottomNav({ activeTab, onTabChange }) {
           <button
             key={id}
             onClick={() => onTabChange(id)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 py-2 transition-colors"
+            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors"
             aria-label={label}
             aria-current={isActive ? 'page' : undefined}
           >
-            <Icon
-              size={22}
-              style={{
-                color: isActive ? 'var(--color-accent)' : 'var(--color-text-dim)',
-              }}
-            />
             <span
-              className="text-[10px] font-medium"
+              className="flex items-center justify-center rounded-full transition-colors"
+              style={{
+                backgroundColor: isActive ? 'var(--color-accent)' : 'transparent',
+                padding: '4px 14px',
+              }}
+            >
+              <Icon
+                size={20}
+                style={{
+                  color: isActive ? '#ffffff' : 'var(--color-text-dim)',
+                }}
+              />
+            </span>
+            <span
+              className="text-[10px] uppercase"
               style={{
                 color: isActive ? 'var(--color-accent)' : 'var(--color-text-dim)',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
               }}
             >
               {label}

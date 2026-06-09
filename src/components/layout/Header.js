@@ -53,7 +53,7 @@ export default function Header({ activeTab, onStartWorkout, searchQuery, onSearc
             <button
               onClick={onStartWorkout}
               className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
-              style={{ backgroundColor: '#3a3a44' }}
+              style={{ backgroundColor: 'var(--color-surface-hover)' }}
               aria-label="Start new workout"
             >
               <Plus size={20} color="#ffffff" strokeWidth={2.5} />
@@ -61,29 +61,18 @@ export default function Header({ activeTab, onStartWorkout, searchQuery, onSearc
           )}
         </div>
 
-        {/* Center: Branding — GORS toy blocks */}
-        <h1 className="flex items-center gap-1 select-none">
+        {/* Center: Branding — GORS bold letters */}
+        <h1
+          className="flex items-center select-none"
+          style={{ fontSize: '17px', fontWeight: 900, letterSpacing: '0.2em', lineHeight: 1 }}
+        >
           {[
-            { char: 'G', bg: '#4a9eff' },
-            { char: 'O', bg: '#f59e0b' },
-            { char: 'R', bg: '#a855f7' },
-            { char: 'S', bg: '#22c55e' },
-          ].map(({ char, bg }) => (
-            <span
-              key={char}
-              className="inline-flex items-center justify-center rounded-[5px]"
-              style={{
-                width: '26px',
-                height: '26px',
-                backgroundColor: bg,
-                fontSize: '15px',
-                fontWeight: 900,
-                color: '#ffffff',
-                lineHeight: 1,
-              }}
-            >
-              {char}
-            </span>
+            { char: 'G', color: '#4a9eff' },
+            { char: 'O', color: '#f59e0b' },
+            { char: 'R', color: '#a855f7' },
+            { char: 'S', color: '#22c55e' },
+          ].map(({ char, color }) => (
+            <span key={char} style={{ color }}>{char}</span>
           ))}
         </h1>
 

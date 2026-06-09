@@ -263,10 +263,9 @@ export default function WeeklyPulseHome({
       className="px-3 pt-0.5 flex flex-col"
       style={{ minHeight: 'calc(100dvh - 3.5rem - 4rem - env(safe-area-inset-top) - env(safe-area-inset-bottom))' }}
     >
-      {/* ── Scoreboard ── */}
+      {/* ── Scoreboard — Athletic bold: flush on black, 2x2 grid ── */}
       <div
-        className="rounded-xl px-3 pt-2 pb-1.5 mt-1 mb-2"
-        style={{ backgroundColor: 'var(--color-surface)' }}
+        className="px-1 pt-2 pb-1 mt-1 mb-2"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -294,25 +293,19 @@ export default function WeeklyPulseHome({
           </button>
         </div>
 
-        {/* Big numbers row: reps, miles, time, avg protein — GORS colors */}
-        <div className="flex items-start justify-between mb-0.5">
-          <div className="text-center flex-1">
-            <div
-              className="text-2xl font-bold leading-none"
-              style={{ color: '#4a9eff' }}
-            >
+        {/* Big numbers — 2x2 grid, white numbers, thick GORS color underlines */}
+        <div className="grid grid-cols-2 gap-x-5 gap-y-3 mb-1.5 px-1">
+          <div style={{ borderBottom: '3px solid #4a9eff', paddingBottom: '6px' }}>
+            <div className="text-[26px] leading-none" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {currentStats.totalReps}
             </div>
-            <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
-              reps
+            <div className="text-[10px] mt-1 tracking-[0.15em]" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
+              REPS
             </div>
           </div>
 
-          <div className="text-center flex-1">
-            <div
-              className="text-2xl font-bold leading-none"
-              style={{ color: '#f59e0b' }}
-            >
+          <div style={{ borderBottom: '3px solid #f59e0b', paddingBottom: '6px' }}>
+            <div className="text-[26px] leading-none" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {currentStats.totalMiles > 0
                 ? (currentStats.totalMiles % 1 === 0
                   ? currentStats.totalMiles
@@ -320,35 +313,29 @@ export default function WeeklyPulseHome({
                 : '—'
               }
             </div>
-            <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
-              miles
+            <div className="text-[10px] mt-1 tracking-[0.15em]" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
+              MILES
             </div>
           </div>
 
-          <div className="text-center flex-1">
-            <div
-              className="text-2xl font-bold leading-none"
-              style={{ color: '#a855f7' }}
-            >
+          <div style={{ borderBottom: '3px solid #a855f7', paddingBottom: '6px' }}>
+            <div className="text-[26px] leading-none" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {currentStats.totalTime > 0
                 ? `${Math.floor(currentStats.totalTime / 60)}m`
                 : '—'
               }
             </div>
-            <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
-              time
+            <div className="text-[10px] mt-1 tracking-[0.15em]" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
+              TIME
             </div>
           </div>
 
-          <div className="text-center flex-1">
-            <div
-              className="text-2xl font-bold leading-none"
-              style={{ color: '#22c55e' }}
-            >
+          <div style={{ borderBottom: '3px solid #22c55e', paddingBottom: '6px' }}>
+            <div className="text-[26px] leading-none" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {currentStats.proteinAvg > 0 ? currentStats.proteinAvg : '—'}
             </div>
-            <div className="text-[9px] mt-0.5 font-medium" style={{ color: 'var(--color-text-dim)' }}>
-              avg protein
+            <div className="text-[10px] mt-1 tracking-[0.15em]" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
+              PROTEIN
             </div>
           </div>
         </div>

@@ -117,10 +117,15 @@ export default function InlineExpandedWorkout({ workout, onToggle, onEdit, onDel
           className="w-full text-left flex items-center px-3 py-2.5"
           style={{ outline: 'none' }}
         >
-          <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+          <span
+            className="text-[13px] uppercase"
+            style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}
+          >
+            Run
+          </span>
+          <span className="text-xs ml-2" style={{ color: 'var(--color-text-dim)' }}>
             {formatDate(workout.date)}
           </span>
-          <span className="text-sm font-semibold ml-1.5" style={{ color: 'var(--color-text)' }}>· Run</span>
           <ChevronUp size={14} style={{ color: 'var(--color-text-dim)' }} className="ml-auto" />
         </button>
 
@@ -222,22 +227,20 @@ export default function InlineExpandedWorkout({ workout, onToggle, onEdit, onDel
         className="w-full text-left flex items-center"
         style={{ outline: 'none' }}
       >
-        <div className="w-1 self-stretch shrink-0" style={{ backgroundColor: color }} />
+        <div className="w-1.5 self-stretch shrink-0" style={{ backgroundColor: color }} />
         <div className="flex-1 px-3 py-2.5 min-w-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>
-                {formatDate(workout.date)}
-              </span>
-              <span className="text-xs font-semibold" style={{ color: 'var(--color-text)' }}>
-                · {workout.location}
-              </span>
-            </div>
+            <span
+              className="text-[13px] uppercase truncate"
+              style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}
+            >
+              {workout.location || 'Workout'}
+            </span>
             <ChevronUp size={14} style={{ color: 'var(--color-text-dim)' }} />
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>
-              {workout.exercises.length} exercises
+              {formatDate(workout.date)} · {workout.exercises.length} exercises
             </span>
             {totalReps > 0 && <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>· {totalReps} reps</span>}
             {workout.elapsedTime > 0 && (

@@ -45,20 +45,18 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
           ...fillStyle,
         }}
       >
-        <div className="w-1 self-stretch shrink-0" style={{ backgroundColor: '#f59e0b' }} />
+        <div className="w-1.5 self-stretch shrink-0" style={{ backgroundColor: '#f59e0b' }} />
         <div className="flex-1 flex items-center px-3 py-2.5 min-w-0 gap-3">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-                {formatDate(workout.date)}
-              </span>
-              <span className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-text)' }}>
-                · Run
-              </span>
+            <div
+              className="text-[13px] uppercase truncate"
+              style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}
+            >
+              Run
             </div>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-                {workout.runDistance} mi
+                {formatDate(workout.date)}
               </span>
               {workout.runTime > 0 && (
                 <span className="text-xs flex items-center gap-0.5" style={{ color: 'var(--color-text-dim)' }}>
@@ -78,7 +76,7 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
             </div>
           </div>
           <div className="shrink-0 text-right">
-            <span className="text-xl font-bold" style={{ color: '#f59e0b' }}>
+            <span className="text-xl" style={{ color: '#f59e0b', fontWeight: 800 }}>
               {workout.runDistance}
             </span>
             <span className="text-[10px] block -mt-1" style={{ color: 'var(--color-text-dim)' }}>
@@ -108,7 +106,12 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
         <span className="text-sm font-medium" style={{ color: 'var(--color-text-muted)' }}>
           {formatDate(workout.date)}
         </span>
-        <span className="text-xs flex-1" style={{ color: 'var(--color-text-dim)' }}>Day Off</span>
+        <span
+          className="text-xs flex-1 uppercase"
+          style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.06em' }}
+        >
+          Day Off
+        </span>
         {workout.notes && (
           <span className="text-[10px] truncate max-w-[100px]" style={{ color: 'var(--color-text-dim)' }}>
             {workout.notes}
@@ -130,24 +133,22 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
       }}
     >
       {/* Color bar */}
-      <div className="w-1 self-stretch shrink-0" style={{ backgroundColor: color }} />
+      <div className="w-1.5 self-stretch shrink-0" style={{ backgroundColor: color }} />
 
       {/* Content */}
       <div className="flex-1 flex items-center px-3 py-2.5 min-w-0 gap-3">
-        {/* Date + Location */}
+        {/* Location title + date/stats */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm font-semibold truncate" style={{ color: 'var(--color-text)' }}>
-              {formatDate(workout.date)}
-            </span>
-            <span className="text-sm font-semibold shrink-0" style={{ color: 'var(--color-text)' }}>
-              · {workout.location}
-            </span>
+          <div
+            className="text-[13px] uppercase truncate"
+            style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}
+          >
+            {workout.location || 'Workout'}
           </div>
           {/* Stats row */}
           <div className="flex items-center gap-2 mt-0.5">
             <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-              {workout.exercises.length} exercises
+              {formatDate(workout.date)} · {workout.exercises.length} exercises
             </span>
             {workout.elapsedTime > 0 && (
               <span className="text-xs flex items-center gap-0.5" style={{ color: 'var(--color-text-dim)' }}>
@@ -167,11 +168,11 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
           </div>
         </div>
 
-        {/* Big rep number */}
+        {/* Big rep number — matches preset color */}
         <div className="shrink-0 text-right">
           <span
-            className="text-xl font-bold"
-            style={{ color: totalReps > 0 ? 'var(--color-accent)' : 'var(--color-text-dim)' }}
+            className="text-xl"
+            style={{ color: totalReps > 0 ? color : 'var(--color-text-dim)', fontWeight: 800 }}
           >
             {totalReps}
           </span>
