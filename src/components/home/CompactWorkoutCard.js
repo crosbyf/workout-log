@@ -1,6 +1,6 @@
 'use client';
 
-import { Coffee, Clock } from 'lucide-react';
+import { Coffee } from 'lucide-react';
 import { formatDate, formatDuration } from '@/utils/format';
 import { PRESET_COLORS } from '@/hooks/usePresets';
 import { calculateTotalReps } from '@/utils/exercise';
@@ -54,25 +54,14 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
             >
               Run
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-                {formatDate(workout.date)}
-              </span>
-              {workout.runTime > 0 && (
-                <span className="text-xs flex items-center gap-0.5" style={{ color: 'var(--color-text-dim)' }}>
-                  · <Clock size={10} /> {formatDuration(workout.runTime)}
-                </span>
-              )}
-              {workout.runPace && (
-                <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-                  · {workout.runPace}/mi
-                </span>
-              )}
-              {proteinGrams > 0 && (
-                <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-                  · {proteinGrams}g
-                </span>
-              )}
+            {/* Stats row — single line, truncates instead of wrapping */}
+            <div className="text-xs truncate mt-0.5" style={{ color: 'var(--color-text-dim)' }}>
+              {[
+                formatDate(workout.date),
+                workout.runTime > 0 ? formatDuration(workout.runTime) : null,
+                workout.runPace ? `${workout.runPace}/mi` : null,
+                proteinGrams > 0 ? `${proteinGrams}g` : null,
+              ].filter(Boolean).join(' · ')}
             </div>
           </div>
           <div className="shrink-0 text-right">
@@ -145,26 +134,15 @@ export default function CompactWorkoutCard({ workout, isExpanded, onToggle, pres
           >
             {workout.location || 'Workout'}
           </div>
-          {/* Stats row */}
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-              {formatDate(workout.date)} · {workout.exercises.length} exercises
-            </span>
-            {workout.elapsedTime > 0 && (
-              <span className="text-xs flex items-center gap-0.5" style={{ color: 'var(--color-text-dim)' }}>
-                · <Clock size={10} /> {formatDuration(workout.elapsedTime)}
-              </span>
-            )}
-            {structureLabel && (
-              <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-                · {structureLabel}
-              </span>
-            )}
-            {proteinGrams > 0 && (
-              <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
-                · {proteinGrams}g
-              </span>
-            )}
+          {/* Stats row — single line, truncates instead of wrapping */}
+          <div className="text-xs truncate mt-0.5" style={{ color: 'var(--color-text-dim)' }}>
+            {[
+              formatDate(workout.date),
+              `${workout.exercises.length} exercises`,
+              workout.elapsedTime > 0 ? formatDuration(workout.elapsedTime) : null,
+              structureLabel,
+              proteinGrams > 0 ? `${proteinGrams}g` : null,
+            ].filter(Boolean).join(' · ')}
           </div>
         </div>
 

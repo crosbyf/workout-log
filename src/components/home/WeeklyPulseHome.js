@@ -238,7 +238,9 @@ export default function WeeklyPulseHome({
   }, [proteinEntries, todayStr]);
 
   const recentWorkouts = useMemo(() => {
-    return workouts.slice(0, 5);
+    // 4 cards (was 5): the taller 2x2 scoreboard needs the vertical room,
+    // otherwise the protein card gets pushed behind the bottom nav
+    return workouts.slice(0, 4);
   }, [workouts]);
 
   const proteinByDate = useMemo(() => {
