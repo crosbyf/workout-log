@@ -43,7 +43,7 @@ function PresetForm({ preset, exercises, onSave, onCancel }) {
     <div className="space-y-4">
       {/* Name */}
       <div>
-        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--color-text-dim)' }}>
+        <label className="text-[10px] uppercase tracking-wider mb-1 block" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
           Preset Name
         </label>
         <input
@@ -58,7 +58,7 @@ function PresetForm({ preset, exercises, onSave, onCancel }) {
 
       {/* Color picker */}
       <div>
-        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--color-text-dim)' }}>
+        <label className="text-[10px] uppercase tracking-wider mb-1 block" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
           Color
         </label>
         <div className="flex gap-2">
@@ -79,7 +79,7 @@ function PresetForm({ preset, exercises, onSave, onCancel }) {
 
       {/* Selected exercises */}
       <div>
-        <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--color-text-dim)' }}>
+        <label className="text-[10px] uppercase tracking-wider mb-1 block" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
           Exercises ({selectedExercises.length})
         </label>
         {selectedExercises.length > 0 && (
@@ -286,8 +286,8 @@ export default function PresetEditor({ presets, exercises, onAdd, onUpdate, onDe
       {/* Add new preset button */}
       <button
         onClick={() => setShowCreate(true)}
-        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium"
-        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-accent)' }}
+        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm"
+        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-accent)', fontWeight: 700 }}
       >
         <Plus size={14} /> New Preset
       </button>

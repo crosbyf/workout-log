@@ -94,16 +94,16 @@ export default function ProgressExerciseCard({
             {onRename ? (
               <button
                 onClick={() => onRename(exercise.name)}
-                className="text-sm font-semibold text-left flex items-center gap-1 max-w-full"
-                style={{ color: 'var(--color-text)' }}
+                className="text-[13px] uppercase text-left flex items-center gap-1 max-w-full"
+                style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}
               >
                 <span className="truncate">{exercise.name}</span>
                 <ChevronDown size={10} className="shrink-0" style={{ color: 'var(--color-text-dim)', opacity: 0.6 }} />
               </button>
             ) : (
               <span
-                className="text-sm font-semibold truncate block"
-                style={{ color: 'var(--color-text)' }}
+                className="text-[13px] uppercase truncate block"
+                style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}
               >
                 {exercise.name}
               </span>
@@ -112,8 +112,8 @@ export default function ProgressExerciseCard({
 
           {/* Total reps */}
           <span
-            className="text-xs font-bold shrink-0"
-            style={{ color: totalReps > 0 ? 'var(--color-accent)' : 'var(--color-text-dim)' }}
+            className="text-xs shrink-0"
+            style={{ color: totalReps > 0 ? 'var(--color-accent)' : 'var(--color-text-dim)', fontWeight: 800 }}
           >
             {deadhang ? `${totalReps}s` : totalReps}
           </span>

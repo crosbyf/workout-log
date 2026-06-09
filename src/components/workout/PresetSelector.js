@@ -90,7 +90,7 @@ export default function PresetSelector({ presets, onSelect, onClose }) {
                   style={{ backgroundColor: color || 'var(--color-accent)' }}
                 />
                 <div>
-                  <span className="text-sm font-semibold block" style={{ color: 'var(--color-text)' }}>
+                  <span className="text-[13px] uppercase block" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
                     {preset.name}
                   </span>
                   <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>
@@ -112,7 +112,7 @@ export default function PresetSelector({ presets, onSelect, onClose }) {
           >
             <Footprints size={16} style={{ color: '#f59e0b' }} />
             <div>
-              <span className="text-sm font-semibold block" style={{ color: 'var(--color-text)' }}>
+              <span className="text-[13px] uppercase block" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
                 Run
               </span>
               <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>
@@ -132,7 +132,7 @@ export default function PresetSelector({ presets, onSelect, onClose }) {
             >
               <Coffee size={16} style={{ color: 'var(--color-text-muted)' }} />
               <div>
-                <span className="text-sm font-semibold block" style={{ color: 'var(--color-text)' }}>
+                <span className="text-[13px] uppercase block" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
                   Day Off
                 </span>
                 <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>

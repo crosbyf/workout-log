@@ -35,7 +35,7 @@ export default function DayOffEntry({ onSave, onCancel }) {
       >
         <div className="flex items-center gap-2">
           <Coffee size={18} style={{ color: 'var(--color-text-muted)' }} />
-          <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+          <span className="text-[13px] uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
             Day Off
           </span>
         </div>
@@ -51,8 +51,8 @@ export default function DayOffEntry({ onSave, onCancel }) {
         </p>
 
         <label
-          className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="text-[10px] uppercase mb-1.5 block"
+          style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}
         >
           Notes (optional)
         </label>
@@ -80,20 +80,24 @@ export default function DayOffEntry({ onSave, onCancel }) {
       >
         <button
           onClick={onCancel}
-          className="flex-1 py-3 rounded-lg text-sm font-medium"
+          className="flex-1 py-3 rounded-lg text-sm uppercase"
           style={{
             backgroundColor: 'var(--color-surface)',
-            color: 'var(--color-text-muted)',
+            color: 'var(--color-text-dim)',
+            fontWeight: 700,
+            letterSpacing: '0.04em',
           }}
         >
           Cancel
         </button>
         <button
           onClick={handleSave}
-          className="flex-1 py-3 rounded-lg text-sm font-bold"
+          className="flex-1 py-3 rounded-lg text-sm uppercase"
           style={{
             backgroundColor: 'var(--color-accent)',
             color: '#ffffff',
+            fontWeight: 800,
+            letterSpacing: '0.04em',
           }}
         >
           Save Day Off

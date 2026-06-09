@@ -101,25 +101,25 @@ export default function RunningStats({ workouts = [] }) {
           </span>
         </div>
         <div className="flex items-start justify-around">
-          <div className="text-center">
-            <div className="text-3xl font-bold" style={{ color: RUN_COLOR }}>
+          <div className="text-center" style={{ borderBottom: `3px solid ${RUN_COLOR}`, paddingBottom: '6px' }}>
+            <div className="text-3xl" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {thisWeek.miles > 0
                 ? (thisWeek.miles % 1 === 0 ? thisWeek.miles : thisWeek.miles.toFixed(1))
                 : '0'}
             </div>
-            <div className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-dim)' }}>miles</div>
+            <div className="text-[10px] mt-0.5 uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>miles</div>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold" style={{ color: 'var(--color-text-muted)' }}>
+          <div className="text-center" style={{ borderBottom: '3px solid #a855f7', paddingBottom: '6px' }}>
+            <div className="text-3xl" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {formatDuration(thisWeek.time)}
             </div>
-            <div className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-dim)' }}>time</div>
+            <div className="text-[10px] mt-0.5 uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>time</div>
           </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold" style={{ color: 'var(--color-text-muted)' }}>
+          <div className="text-center" style={{ borderBottom: `3px solid ${RUN_COLOR}`, paddingBottom: '6px' }}>
+            <div className="text-3xl" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {thisWeek.count}
             </div>
-            <div className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-dim)' }}>runs</div>
+            <div className="text-[10px] mt-0.5 uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>runs</div>
           </div>
         </div>
       </div>
@@ -136,7 +136,7 @@ export default function RunningStats({ workouts = [] }) {
               WEEKLY MILEAGE
             </span>
           </div>
-          <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>
+          <span className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.06em' }}>
             12 weeks
           </span>
         </div>
@@ -167,13 +167,13 @@ export default function RunningStats({ workouts = [] }) {
 
         {/* Week labels (first, middle, last) */}
         <div className="flex justify-between mt-1">
-          <span className="text-[9px]" style={{ color: 'var(--color-text-dim)' }}>
+          <span className="text-[9px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
             {weeklyData[11]?.label || ''}
           </span>
-          <span className="text-[9px]" style={{ color: 'var(--color-text-dim)' }}>
+          <span className="text-[9px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
             {weeklyData[5]?.label || ''}
           </span>
-          <span className="text-[9px] font-medium" style={{ color: RUN_COLOR }}>
+          <span className="text-[9px] uppercase" style={{ color: RUN_COLOR, fontWeight: 700 }}>
             Now
           </span>
         </div>
@@ -189,22 +189,22 @@ export default function RunningStats({ workouts = [] }) {
         </span>
         <div className="flex items-center justify-around">
           <div className="text-center">
-            <div className="text-lg font-bold" style={{ color: RUN_COLOR }}>
+            <div className="text-lg" style={{ color: RUN_COLOR, fontWeight: 800 }}>
               {totalMiles % 1 === 0 ? totalMiles : totalMiles.toFixed(1)}
             </div>
-            <div className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>miles</div>
+            <div className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>miles</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold" style={{ color: 'var(--color-text-muted)' }}>
+            <div className="text-lg" style={{ color: '#a855f7', fontWeight: 800 }}>
               {formatDuration(totalTime)}
             </div>
-            <div className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>time</div>
+            <div className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>time</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold" style={{ color: 'var(--color-text-muted)' }}>
+            <div className="text-lg" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {totalRuns}
             </div>
-            <div className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>runs</div>
+            <div className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>runs</div>
           </div>
         </div>
       </div>

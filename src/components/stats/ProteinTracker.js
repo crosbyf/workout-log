@@ -61,10 +61,19 @@ export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpd
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         <div>
-          <div className="text-xs font-medium mb-0.5" style={{ color: 'var(--color-text-dim)' }}>
+          <div className="text-[10px] uppercase mb-0.5" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>
             Protein Today
           </div>
-          <div className="text-2xl font-bold" style={{ color: 'var(--color-green)' }}>
+          <div
+            className="text-2xl"
+            style={{
+              color: 'var(--color-text)',
+              fontWeight: 800,
+              display: 'inline-block',
+              borderBottom: '3px solid var(--color-green)',
+              paddingBottom: '6px',
+            }}
+          >
             {todayTotal}g
           </div>
         </div>
@@ -129,7 +138,7 @@ export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpd
         <div style={{ borderTop: '1px solid var(--color-border)' }}>
           <div className="px-4 py-2.5">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold" style={{ color: 'var(--color-text-muted)' }}>
+              <span className="text-xs uppercase" style={{ color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.06em' }}>
                 Today
               </span>
               <span className="text-xs font-bold" style={{ color: 'var(--color-green)' }}>

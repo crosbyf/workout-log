@@ -73,7 +73,7 @@ export default function VolumeChart({ workouts = [] }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <BarChart3 size={16} style={{ color: 'var(--color-accent)' }} />
-          <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
+          <span className="text-[13px] uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
             Weekly Volume
           </span>
         </div>
@@ -82,10 +82,11 @@ export default function VolumeChart({ workouts = [] }) {
             <button
               key={n}
               onClick={() => setNumWeeks(n)}
-              className="text-xs px-2 py-1 rounded-md font-medium"
+              className="text-xs px-2.5 py-1 rounded-full uppercase"
               style={{
                 backgroundColor: numWeeks === n ? 'var(--color-accent)' : 'var(--color-surface-hover)',
                 color: numWeeks === n ? '#ffffff' : 'var(--color-text-dim)',
+                fontWeight: 700,
               }}
             >
               {n}w
@@ -106,8 +107,8 @@ export default function VolumeChart({ workouts = [] }) {
               {/* Reps label on top of bar */}
               {week.total > 0 && (
                 <span
-                  className="text-[8px] font-medium mb-0.5"
-                  style={{ color: 'var(--color-text-dim)' }}
+                  className="text-[8px] mb-0.5"
+                  style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}
                 >
                   {week.total}
                 </span>
@@ -132,8 +133,8 @@ export default function VolumeChart({ workouts = [] }) {
         {weeklyData.map((week, idx) => (
           <div key={idx} className="flex-1 text-center">
             <span
-              className="text-[7px]"
-              style={{ color: 'var(--color-text-dim)' }}
+              className="text-[7px] uppercase"
+              style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}
             >
               W{week.weekKey.split('-W')[1]}
             </span>

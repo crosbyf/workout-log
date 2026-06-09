@@ -307,7 +307,7 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
           >
             {/* Segmented filter control */}
             <div
-              className="flex gap-0.5 p-0.5 rounded-lg"
+              className="flex gap-0.5 p-0.5 rounded-full"
               style={{ backgroundColor: 'var(--color-surface)' }}
             >
               {[
@@ -323,10 +323,12 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
                   <button
                     key={key}
                     onClick={() => setWorkoutTypeFilter(key)}
-                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold"
+                    className="px-2.5 py-1 rounded-full text-[11px] uppercase"
                     style={{
                       backgroundColor: isActive ? activeColor : 'transparent',
                       color: isActive ? '#ffffff' : 'var(--color-text-dim)',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
                       transition: 'all 0.15s ease',
                     }}
                   >
@@ -348,7 +350,7 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
               disabled={workoutTypeFilter === 'runs'}
             >
               <GitCompareArrows size={14} />
-              <span className="text-[10px] font-medium">Compare</span>
+              <span className="text-[10px] uppercase" style={{ fontWeight: 700, letterSpacing: '0.06em' }}>Compare</span>
             </button>
           </div>
         )}
@@ -384,7 +386,7 @@ export default function LogTab({ workouts = [], allWorkouts = [], selectedDate, 
                   }}
                 >
                   <span
-                    className="text-xs font-bold tracking-wider"
+                    className="text-xs font-bold tracking-wider uppercase"
                     style={{ color: 'var(--color-text-dim)' }}
                   >
                     {group.label}

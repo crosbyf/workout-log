@@ -150,10 +150,12 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
         <div className="flex items-center gap-1">
           <button
             onClick={handleGoToday}
-            className="text-xs font-semibold tracking-wide px-3 py-0.5 rounded-full"
+            className="text-[11px] uppercase px-3 py-0.5 rounded-full"
             style={{
               color: monthOffset === 0 ? 'var(--color-accent)' : 'var(--color-text-muted)',
               backgroundColor: monthOffset === 0 ? 'transparent' : 'var(--color-surface)',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
             }}
           >
             {monthLabel}
@@ -193,7 +195,7 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
               <div
                 key={idx}
                 className="text-center"
-                style={{ fontSize: '8px', fontWeight: 600, color: 'var(--color-text-dim)', lineHeight: '12px' }}
+                style={{ fontSize: '8px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-dim)', lineHeight: '12px' }}
               >
                 {letter}
               </div>
@@ -223,9 +225,7 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
                     minHeight: '30px',
                     backgroundColor: isSelected
                       ? 'var(--color-accent)'
-                      : isToday
-                        ? 'var(--color-surface)'
-                        : 'transparent',
+                      : 'transparent',
                     opacity: !isCurrentMonth ? 0.2 : isFuture ? 0.3 : 1,
                     transition: 'background-color 0.15s ease',
                     cursor: (isFuture || !isCurrentMonth) ? 'default' : 'pointer',
@@ -236,11 +236,15 @@ export default function CalendarStrip({ workouts = [], selectedDate, onSelectDat
                     style={{
                       fontSize: '11px',
                       fontWeight: isToday ? 800 : 600,
-                      lineHeight: '14px',
+                      lineHeight: isToday && !isSelected ? '18px' : '14px',
+                      width: isToday && !isSelected ? '18px' : undefined,
+                      borderRadius: isToday && !isSelected ? '50%' : undefined,
+                      textAlign: 'center',
+                      backgroundColor: isToday && !isSelected ? 'var(--color-accent)' : 'transparent',
                       color: isSelected
                         ? '#ffffff'
                         : isToday
-                          ? 'var(--color-accent)'
+                          ? '#ffffff'
                           : 'var(--color-text)',
                     }}
                   >

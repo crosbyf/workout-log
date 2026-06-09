@@ -75,7 +75,7 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
           paddingTop: 'max(12px, env(safe-area-inset-top))',
         }}
       >
-        <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+        <span className="text-[13px] uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
           {isEditing ? 'Edit Run' : 'Log Run'}
         </span>
         <button onClick={onCancel} className="p-1" aria-label="Cancel">
@@ -87,8 +87,8 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
       <div className="flex-1 px-4 py-6 overflow-y-auto">
         {/* Date */}
         <label
-          className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="text-[10px] uppercase mb-1.5 block"
+          style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}
         >
           Date
         </label>
@@ -115,8 +115,8 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
 
         {/* Distance */}
         <label
-          className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="text-[10px] uppercase mb-1.5 block"
+          style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}
         >
           Distance (miles)
         </label>
@@ -127,18 +127,19 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
           placeholder="3.1"
           step="0.01"
           inputMode="decimal"
-          className="w-full text-2xl font-bold py-3 px-3 rounded-lg border-0 outline-none mb-5"
+          className="w-full text-2xl py-3 px-3 rounded-lg border-0 outline-none mb-5"
           style={{
             backgroundColor: 'var(--color-surface)',
-            color: 'var(--color-accent)',
+            color: '#f59e0b',
+            fontWeight: 800,
           }}
           autoFocus={!isEditing}
         />
 
         {/* Time */}
         <label
-          className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="text-[10px] uppercase mb-1.5 block"
+          style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}
         >
           Time
         </label>
@@ -150,10 +151,11 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
               onChange={(e) => setMinutes(e.target.value)}
               placeholder="0"
               inputMode="numeric"
-              className="w-full text-2xl font-bold py-3 px-3 rounded-lg border-0 outline-none text-center"
+              className="w-full text-2xl py-3 px-3 rounded-lg border-0 outline-none text-center"
               style={{
                 backgroundColor: 'var(--color-surface)',
-                color: 'var(--color-accent)',
+                color: '#f59e0b',
+                fontWeight: 800,
               }}
             />
             <span className="text-[10px] text-center block mt-1" style={{ color: 'var(--color-text-dim)' }}>
@@ -173,10 +175,11 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
               }}
               placeholder="00"
               inputMode="numeric"
-              className="w-full text-2xl font-bold py-3 px-3 rounded-lg border-0 outline-none text-center"
+              className="w-full text-2xl py-3 px-3 rounded-lg border-0 outline-none text-center"
               style={{
                 backgroundColor: 'var(--color-surface)',
-                color: 'var(--color-accent)',
+                color: '#f59e0b',
+                fontWeight: 800,
               }}
             />
             <span className="text-[10px] text-center block mt-1" style={{ color: 'var(--color-text-dim)' }}>
@@ -190,10 +193,10 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
           className="rounded-xl p-4 mb-5 text-center"
           style={{ backgroundColor: 'var(--color-surface)' }}
         >
-          <span className="text-[10px] uppercase tracking-wider font-medium block mb-1" style={{ color: 'var(--color-text-dim)' }}>
+          <span className="text-[10px] uppercase block mb-1" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>
             Pace
           </span>
-          <span className="text-3xl font-bold" style={{ color: canSave ? '#f59e0b' : 'var(--color-text-dim)' }}>
+          <span className="text-3xl" style={{ color: canSave ? '#f59e0b' : 'var(--color-text-dim)', fontWeight: 800 }}>
             {pace}
           </span>
           {canSave && (
@@ -205,8 +208,8 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
 
         {/* Notes */}
         <label
-          className="text-xs font-semibold uppercase tracking-wider mb-1.5 block"
-          style={{ color: 'var(--color-text-muted)' }}
+          className="text-[10px] uppercase mb-1.5 block"
+          style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}
         >
           Notes (optional)
         </label>
@@ -233,10 +236,12 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
       >
         <button
           onClick={onCancel}
-          className="flex-1 py-3 rounded-lg text-sm font-medium"
+          className="flex-1 py-3 rounded-lg text-sm uppercase"
           style={{
             backgroundColor: 'var(--color-surface)',
-            color: 'var(--color-text-muted)',
+            color: 'var(--color-text-dim)',
+            fontWeight: 700,
+            letterSpacing: '0.04em',
           }}
         >
           Cancel
@@ -244,10 +249,12 @@ export default function RunEntry({ onSave, onCancel, existingWorkout }) {
         <button
           onClick={handleSave}
           disabled={!canSave}
-          className="flex-1 py-3 rounded-lg text-sm font-bold"
+          className="flex-1 py-3 rounded-lg text-sm uppercase"
           style={{
             backgroundColor: canSave ? '#f59e0b' : 'var(--color-surface-hover)',
             color: canSave ? '#ffffff' : 'var(--color-text-dim)',
+            fontWeight: 800,
+            letterSpacing: '0.04em',
           }}
         >
           {isEditing ? 'Update Run' : 'Save Run'}

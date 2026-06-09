@@ -336,7 +336,7 @@ export default function DataManagement({
       <button
         onClick={handleExport}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"
-        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)' }}
+        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)', fontWeight: 600 }}
       >
         <Download size={16} style={{ color: 'var(--color-accent)' }} />
         Export All Data (JSON)
@@ -346,7 +346,7 @@ export default function DataManagement({
       <button
         onClick={() => fileInputRef.current?.click()}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"
-        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)' }}
+        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)', fontWeight: 600 }}
       >
         <Upload size={16} style={{ color: 'var(--color-accent)' }} />
         Import Data (JSON)
@@ -357,7 +357,7 @@ export default function DataManagement({
       <button
         onClick={() => csvWorkoutRef.current?.click()}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"
-        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)' }}
+        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)', fontWeight: 600 }}
       >
         <FileSpreadsheet size={16} style={{ color: 'var(--color-green)' }} />
         Import Workout History (CSV)
@@ -368,7 +368,7 @@ export default function DataManagement({
       <button
         onClick={() => csvPresetRef.current?.click()}
         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"
-        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)' }}
+        style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text)', fontWeight: 600 }}
       >
         <FileSpreadsheet size={16} style={{ color: 'var(--color-yellow)' }} />
         Import Presets (CSV)
@@ -399,7 +399,7 @@ export default function DataManagement({
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm"
-              style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-red)' }}
+              style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-red)', fontWeight: 600 }}
             >
               <Trash2 size={16} />
               Delete All Workouts

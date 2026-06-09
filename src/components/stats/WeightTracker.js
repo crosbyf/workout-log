@@ -80,7 +80,7 @@ function WeightChart({ entries }) {
             />
             <text
               x={padLeft - 4} y={y + 3}
-              textAnchor="end" fontSize="8" fill="var(--color-text-dim)"
+              textAnchor="end" fontSize="8" fontWeight="700" fill="var(--color-text-dim)"
             >
               {label}
             </text>
@@ -127,7 +127,8 @@ function WeightChart({ entries }) {
             <text
               key={idx}
               x={x} y={chartH - 4}
-              textAnchor={anchor} fontSize="8" fill="var(--color-text-dim)"
+              textAnchor={anchor} fontSize="8" fontWeight="700" fill="var(--color-text-dim)"
+              style={{ textTransform: 'uppercase' }}
             >
               {label}
             </text>
@@ -200,11 +201,14 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
       {/* Header */}
       <div className="p-4 flex items-center justify-between">
         <div>
-          <div className="text-xs font-medium mb-0.5" style={{ color: 'var(--color-text-dim)' }}>
+          <div className="text-[10px] uppercase mb-0.5" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>
             Body Weight
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
+          <div
+            className="flex items-baseline gap-2"
+            style={{ borderBottom: '3px solid var(--color-accent)', paddingBottom: '6px', width: 'fit-content' }}
+          >
+            <span className="text-2xl" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {latest ? `${latest.weight}` : '\u2014'}
             </span>
             {latest && (
@@ -224,7 +228,7 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
             )}
           </div>
           {latest && (
-            <span className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>
+            <span className="text-[10px] block mt-1 truncate" style={{ color: 'var(--color-text-dim)' }}>
               Last weighed {formatShortDate(latest.date)} {'\u00b7'} {entries.length} total
             </span>
           )}

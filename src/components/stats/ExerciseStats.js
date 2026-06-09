@@ -110,30 +110,30 @@ export default function ExerciseStats({ workouts = [] }) {
           style={{ borderBottom: '1px solid var(--color-border)' }}
         >
           <ArrowLeft size={16} style={{ color: 'var(--color-accent)' }} />
-          <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
+          <span className="text-[13px] uppercase truncate" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
             {ex.name}
           </span>
         </button>
 
         {/* Summary stats */}
         <div className="grid grid-cols-3 gap-2 p-4">
-          <div className="text-center">
-            <div className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{ex.sessions}</div>
-            <div className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>Sessions</div>
+          <div className="text-center" style={{ borderBottom: '3px solid #4a9eff', paddingBottom: '6px' }}>
+            <div className="text-lg" style={{ color: 'var(--color-text)', fontWeight: 800 }}>{ex.sessions}</div>
+            <div className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>Sessions</div>
           </div>
-          <div className="text-center">
-            <div className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>{ex.avgReps}</div>
-            <div className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>Avg Reps</div>
+          <div className="text-center" style={{ borderBottom: '3px solid #4a9eff', paddingBottom: '6px' }}>
+            <div className="text-lg" style={{ color: 'var(--color-text)', fontWeight: 800 }}>{ex.avgReps}</div>
+            <div className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>Avg Reps</div>
           </div>
-          <div className="text-center">
-            <div className="text-lg font-bold" style={{ color: 'var(--color-yellow)' }}>{pr}</div>
-            <div className="text-[10px]" style={{ color: 'var(--color-text-dim)' }}>PR</div>
+          <div className="text-center" style={{ borderBottom: '3px solid #f59e0b', paddingBottom: '6px' }}>
+            <div className="text-lg" style={{ color: 'var(--color-text)', fontWeight: 800 }}>{pr}</div>
+            <div className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>PR</div>
           </div>
         </div>
 
         {/* Mini weekly bar chart */}
         <div className="px-4 pb-4">
-          <div className="text-xs font-medium mb-2" style={{ color: 'var(--color-text-dim)' }}>
+          <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
             Weekly Volume (12 weeks)
           </div>
           <div className="flex items-end gap-0.5" style={{ height: '64px' }}>
@@ -145,7 +145,7 @@ export default function ExerciseStats({ workouts = [] }) {
                   className="flex-1 flex flex-col items-center justify-end h-full"
                 >
                   {week.reps > 0 && (
-                    <span className="text-[7px] mb-0.5" style={{ color: 'var(--color-text-dim)' }}>
+                    <span className="text-[7px] mb-0.5" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
                       {week.reps}
                     </span>
                   )}
@@ -166,7 +166,7 @@ export default function ExerciseStats({ workouts = [] }) {
 
         {/* Recent sessions */}
         <div className="px-4 pb-3" style={{ borderTop: '1px solid var(--color-border)' }}>
-          <div className="text-xs font-medium mt-3 mb-2" style={{ color: 'var(--color-text-dim)' }}>
+          <div className="text-[10px] uppercase tracking-wider mt-3 mb-2" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
             Last 10 Sessions
           </div>
           {ex.sortedSessions.slice(0, 10).map((session, idx) => (
@@ -198,7 +198,7 @@ export default function ExerciseStats({ workouts = [] }) {
       style={{ backgroundColor: 'var(--color-surface)' }}
     >
       <div className="p-4 pb-2">
-        <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
+        <span className="text-[13px] uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
           Exercise Stats
         </span>
       </div>
@@ -212,11 +212,11 @@ export default function ExerciseStats({ workouts = [] }) {
             borderTop: idx > 0 ? '1px solid var(--color-border)' : 'none',
           }}
         >
-          <div className="flex-1 text-left">
-            <div className="text-sm" style={{ color: 'var(--color-text)' }}>
+          <div className="flex-1 text-left min-w-0">
+            <div className="text-sm truncate" style={{ color: 'var(--color-text)', fontWeight: 600 }}>
               {ex.name}
             </div>
-            <div className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
+            <div className="text-xs truncate" style={{ color: 'var(--color-text-dim)' }}>
               {ex.sessions} sessions · {ex.avgReps} avg reps
             </div>
           </div>

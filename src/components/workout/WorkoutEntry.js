@@ -319,7 +319,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: presetColor }}
           />
-          <span className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+          <span className="text-[13px] uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
             {preset.name}
           </span>
         </div>
@@ -350,8 +350,8 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
           )}
           {isEditing && (
             <span
-              className="text-xs font-medium px-2 py-1 rounded"
-              style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text-muted)' }}
+              className="text-[10px] uppercase px-2 py-1 rounded-full"
+              style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.06em' }}
             >
               Editing
             </span>
@@ -373,10 +373,12 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
             <button
               key={s.id}
               onClick={() => setStructure(prev => prev === s.id ? 'standard' : s.id)}
-              className="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+              className="px-3 py-1.5 text-[11px] uppercase rounded-full transition-colors"
               style={{
                 backgroundColor: structure === s.id ? 'var(--color-accent)' : 'var(--color-surface)',
-                color: structure === s.id ? '#ffffff' : 'var(--color-text-muted)',
+                color: structure === s.id ? '#ffffff' : 'var(--color-text-dim)',
+                fontWeight: 700,
+                letterSpacing: '0.04em',
               }}
             >
               {s.label}
@@ -389,10 +391,11 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
               <button
                 key={min}
                 onClick={() => setStructureDuration(min)}
-                className="px-2 py-1.5 text-xs font-medium rounded-md transition-colors"
+                className="px-2.5 py-1.5 text-[11px] rounded-full transition-colors"
                 style={{
                   backgroundColor: structureDuration === min ? 'var(--color-accent)' : 'var(--color-surface)',
-                  color: structureDuration === min ? '#ffffff' : 'var(--color-text-muted)',
+                  color: structureDuration === min ? '#ffffff' : 'var(--color-text-dim)',
+                  fontWeight: 700,
                 }}
               >
                 {min}&apos;
@@ -408,7 +411,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
           className="flex items-center gap-2 px-4 py-2 shrink-0"
           style={{ borderBottom: '1px solid var(--color-border)' }}
         >
-          <span className="text-[10px] font-medium" style={{ color: 'var(--color-text-dim)' }}>
+          <span className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.1em' }}>
             {completedExercises}/{totalExercises} done
           </span>
           <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--color-surface-hover)' }}>
@@ -439,10 +442,12 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
         {!showAddExercise ? (
           <button
             onClick={() => setShowAddExercise(true)}
-            className="w-full py-3 mt-2 rounded-lg border-2 border-dashed flex items-center justify-center gap-2 text-sm font-medium transition-colors"
+            className="w-full py-3 mt-2 rounded-lg border-2 border-dashed flex items-center justify-center gap-2 text-xs uppercase transition-colors"
             style={{
               borderColor: 'var(--color-border)',
-              color: 'var(--color-text-muted)',
+              color: 'var(--color-text-dim)',
+              fontWeight: 700,
+              letterSpacing: '0.06em',
             }}
           >
             <Plus size={16} />
@@ -454,7 +459,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
             style={{ backgroundColor: 'var(--color-surface)' }}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+              <span className="text-[13px] uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
                 Add Exercise
               </span>
               <button
@@ -499,8 +504,8 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
         {/* Workout Notes */}
         <div className="mt-2 mb-1 px-1">
           <label
-            className="text-[10px] font-semibold uppercase tracking-wider mb-1 block"
-            style={{ color: 'var(--color-text-muted)' }}
+            className="text-[10px] uppercase mb-1 block"
+            style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}
           >
             Notes
           </label>
@@ -530,8 +535,8 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
           {!workoutStarted ? (
             <button
               onClick={() => setWorkoutStarted(true)}
-              className="flex-1 py-3 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
-              style={{ backgroundColor: 'var(--color-green)', color: '#ffffff' }}
+              className="flex-1 py-3 rounded-lg text-sm uppercase transition-colors flex items-center justify-center gap-2"
+              style={{ backgroundColor: 'var(--color-green)', color: '#ffffff', fontWeight: 800, letterSpacing: '0.04em' }}
             >
               <Play size={16} />
               Start Workout
@@ -539,8 +544,8 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
           ) : (
             <button
               onClick={() => setShowSaveConfirm(true)}
-              className="flex-1 py-3 rounded-lg text-sm font-bold transition-colors"
-              style={{ backgroundColor: 'var(--color-accent)', color: '#ffffff' }}
+              className="flex-1 py-3 rounded-lg text-sm uppercase transition-colors"
+              style={{ backgroundColor: 'var(--color-accent)', color: '#ffffff', fontWeight: 800, letterSpacing: '0.04em' }}
             >
               {isEditing ? 'Update Workout' : 'Save Workout'}
             </button>
@@ -566,8 +571,8 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
             <div className="flex gap-3">
               <button
                 onClick={onCancel}
-                className="flex-1 py-2.5 rounded-lg text-sm font-bold"
-                style={{ backgroundColor: 'var(--color-red)', color: '#ffffff' }}
+                className="flex-1 py-2.5 rounded-lg text-sm uppercase"
+                style={{ backgroundColor: 'var(--color-red)', color: '#ffffff', fontWeight: 800, letterSpacing: '0.04em' }}
               >
                 Discard
               </button>
@@ -604,8 +609,8 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowSaveConfirm(false); handleSave(); }}
-                className="flex-1 py-2.5 rounded-lg text-sm font-bold"
-                style={{ backgroundColor: 'var(--color-green)', color: '#ffffff' }}
+                className="flex-1 py-2.5 rounded-lg text-sm uppercase"
+                style={{ backgroundColor: 'var(--color-green)', color: '#ffffff', fontWeight: 800, letterSpacing: '0.04em' }}
               >
                 {isEditing ? 'Update' : 'Save'}
               </button>
@@ -639,8 +644,8 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
             <div className="flex gap-3">
               <button
                 onClick={handleExerciseRemoveConfirm}
-                className="flex-1 py-2.5 rounded-lg text-sm font-bold"
-                style={{ backgroundColor: 'var(--color-red)', color: '#ffffff' }}
+                className="flex-1 py-2.5 rounded-lg text-sm uppercase"
+                style={{ backgroundColor: 'var(--color-red)', color: '#ffffff', fontWeight: 800, letterSpacing: '0.04em' }}
               >
                 Remove
               </button>
@@ -680,7 +685,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
                 style={{ borderBottom: '1px solid var(--color-border)' }}
               >
                 <div>
-                  <span className="text-sm font-bold" style={{ color: 'var(--color-text)' }}>
+                  <span className="text-[13px] uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
                     Change Exercise
                   </span>
                   <span

@@ -30,7 +30,7 @@ function StatCard({ icon: Icon, label, value, valueColor, sublabel, onTap, quick
           <Icon size={18} style={{ color: valueColor || 'var(--color-accent)' }} />
         </div>
         <div className="text-left">
-          <div className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>
+          <div className="text-[13px] uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
             {label}
           </div>
           {sublabel && (
@@ -52,7 +52,7 @@ function StatCard({ icon: Icon, label, value, valueColor, sublabel, onTap, quick
           </button>
         )}
         <button onClick={onTap} className="flex items-center gap-2" style={{ outline: 'none' }}>
-          <span className="text-lg font-bold" style={{ color: valueColor || 'var(--color-accent)' }}>
+          <span className="text-lg" style={{ color: valueColor || 'var(--color-accent)', fontWeight: 800 }}>
             {value}
           </span>
           <ChevronRight size={16} style={{ color: 'var(--color-text-dim)' }} />
@@ -89,7 +89,7 @@ function ProteinQuickAdd({ onAdd, onClose }) {
       style={{ backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-green)' }}
     >
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-xs font-semibold" style={{ color: 'var(--color-green)' }}>
+        <span className="text-xs uppercase" style={{ color: 'var(--color-green)', fontWeight: 700, letterSpacing: '0.06em' }}>
           Quick Add Protein
         </span>
       </div>
@@ -188,7 +188,7 @@ function DetailScreen({ title, onClose, children }) {
           paddingTop: 'calc(12px + env(safe-area-inset-top))',
         }}
       >
-        <span className="text-base font-bold" style={{ color: 'var(--color-text)' }}>
+        <span className="text-base uppercase" style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}>
           {title}
         </span>
         <button onClick={onClose} className="p-1" aria-label="Close">

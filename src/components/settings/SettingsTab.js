@@ -20,8 +20,8 @@ function SettingsSection({ icon: Icon, title, children }) {
       >
         <Icon size={16} style={{ color: 'var(--color-text-muted)' }} />
         <h3
-          className="text-sm font-semibold flex-1 text-left"
-          style={{ color: 'var(--color-text)' }}
+          className="text-[13px] uppercase flex-1 text-left"
+          style={{ color: 'var(--color-text)', fontWeight: 800, letterSpacing: '0.04em' }}
         >
           {title}
         </h3>
@@ -142,16 +142,16 @@ function CloudSyncPanel({ workouts, proteinEntries, weightEntries, presets, exer
         <button
           onClick={handleTest}
           disabled={diagLoading}
-          className="flex-1 py-2.5 rounded-lg text-xs font-bold"
-          style={{ backgroundColor: 'var(--color-accent)', color: '#ffffff', opacity: diagLoading ? 0.6 : 1 }}
+          className="flex-1 py-2.5 rounded-lg text-xs uppercase"
+          style={{ backgroundColor: 'var(--color-accent)', color: '#ffffff', opacity: diagLoading ? 0.6 : 1, fontWeight: 700, letterSpacing: '0.04em' }}
         >
           {diagLoading ? 'Testing...' : 'Test Connection'}
         </button>
         <button
           onClick={handleForcePush}
           disabled={pushLoading}
-          className="flex-1 py-2.5 rounded-lg text-xs font-bold"
-          style={{ backgroundColor: 'var(--color-green, #22c55e)', color: '#ffffff', opacity: pushLoading ? 0.6 : 1 }}
+          className="flex-1 py-2.5 rounded-lg text-xs uppercase"
+          style={{ backgroundColor: 'var(--color-green, #22c55e)', color: '#ffffff', opacity: pushLoading ? 0.6 : 1, fontWeight: 700, letterSpacing: '0.04em' }}
         >
           {pushLoading ? 'Pushing...' : 'Push All Data'}
         </button>

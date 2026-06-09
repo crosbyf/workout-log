@@ -41,7 +41,7 @@ export default function ExerciseLibrary({ exercises, onAdd, onDelete }) {
       </div>
 
       {/* Count */}
-      <div className="text-xs mb-2 px-1" style={{ color: 'var(--color-text-dim)' }}>
+      <div className="text-[10px] uppercase tracking-wider mb-2 px-1" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
         {exercises.length} exercises
       </div>
 
