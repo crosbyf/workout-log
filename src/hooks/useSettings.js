@@ -10,6 +10,21 @@ const DEFAULTS = {
   progressUI: false,
 };
 
+/**
+ * The settings table also holds system rows (deleted-workout tombstones,
+ * diagnostic test rows). Keep those OUT of app-settings state so they are
+ * never re-pushed stale by "first sync" or force-push, which could
+ * clobber the authoritative tombstone list.
+ */
+function filterAppSettings(remote) {
+  const out = {};
+  for (const [key, value] of Object.entries(remote)) {
+    if (key === 'deleted_workout_ids' || key.startsWith('diag_')) continue;
+    out[key] = value;
+  }
+  return out;
+}
+
 export function useSettings() {
   const [settings, setSettingsState] = useState(() => {
     const saved = getItem(SETTINGS_KEY, {});
@@ -21,8 +36,9 @@ export function useSettings() {
     let cancelled = false;
     fetchSettings().then(remote => {
       if (cancelled || !remote) return;
-      if (Object.keys(remote).length > 0) {
-        const merged = { ...DEFAULTS, ...remote };
+      const appRemote = filterAppSettings(remote);
+      if (Object.keys(appRemote).length > 0) {
+        const merged = { ...DEFAULTS, ...appRemote };
         setSettingsState(merged);
         setItem(SETTINGS_KEY, merged);
       } else {

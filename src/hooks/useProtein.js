@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { getItem, setItem } from '@/utils/storage';
 import { generateId } from '@/utils/ids';
 import { getTodayStr } from '@/utils/format';
+import { getPendingIds, addPendingIds, removePendingIds } from '@/utils/pending';
 import {
   fetchProtein,
   upsertProteinEntry,
@@ -12,6 +13,7 @@ import {
 } from '@/lib/sync';
 
 const PROTEIN_KEY = 'protein';
+const PENDING_KEY = 'protein_pending';
 
 function loadProtein() {
   return getItem(PROTEIN_KEY, []);
@@ -19,12 +21,29 @@ function loadProtein() {
 
 export function useProtein() {
   const [entries, setEntriesState] = useState(() => loadProtein());
+  // Ref mirrors current state so the hydrate merge always sees the latest
+  // data, including entries added while the Supabase fetch was in flight.
+  const entriesRef = useRef(entries);
+
+  const saveToStorage = useCallback((updated) => {
+    const sorted = [...updated].sort((a, b) => {
+      if (b.date !== a.date) return b.date.localeCompare(a.date);
+      return (b.timestamp || 0) - (a.timestamp || 0);
+    });
+    entriesRef.current = sorted;
+    setEntriesState(sorted);
+    setItem(PROTEIN_KEY, sorted);
+    return sorted;
+  }, []);
 
   // Hydrate from Supabase on mount
   useEffect(() => {
     let cancelled = false;
     fetchProtein().then(remote => {
       if (cancelled || !remote) return;
+      // Use CURRENT local state (via ref), not a stale mount-time snapshot
+      const current = entriesRef.current;
+      const pendingIds = getPendingIds(PENDING_KEY);
       // Deduplicate remote by ID
       const seenIds = new Set();
       const uniqueRemote = remote.filter(e => {
@@ -33,28 +52,30 @@ export function useProtein() {
         return true;
       });
       const remoteIds = new Set(uniqueRemote.map(e => e.id));
-      const localOnly = entries.filter(e => !remoteIds.has(e.id));
-      const merged = [...uniqueRemote, ...localOnly].sort((a, b) => {
-        if (b.date !== a.date) return b.date.localeCompare(a.date);
-        return (b.timestamp || 0) - (a.timestamp || 0);
+      const localOnly = current.filter(e => !remoteIds.has(e.id));
+      // Local version wins while its latest change hasn't reached Supabase
+      const mergedRemote = uniqueRemote.map(re => {
+        if (pendingIds.has(re.id)) {
+          const local = current.find(le => le.id === re.id);
+          if (local) return local;
+        }
+        return re;
       });
-      setEntriesState(merged);
-      setItem(PROTEIN_KEY, merged);
-      if (localOnly.length > 0) upsertProteinEntries(localOnly);
+      const merged = [...mergedRemote, ...localOnly];
+      saveToStorage(merged);
+      // Push anything Supabase doesn't have yet or has stale
+      const toPush = merged.filter(e => pendingIds.has(e.id) || !remoteIds.has(e.id));
+      if (toPush.length > 0) {
+        upsertProteinEntries(toPush).then(ok => {
+          if (ok) removePendingIds(PENDING_KEY, toPush.map(e => e.id));
+        });
+      }
+      // Drop pending IDs that no longer exist anywhere
+      const mergedIds = new Set(merged.map(e => e.id));
+      removePendingIds(PENDING_KEY, [...pendingIds].filter(id => !mergedIds.has(id)));
     });
     return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const saveToStorage = useCallback((updated) => {
-    const sorted = updated.sort((a, b) => {
-      if (b.date !== a.date) return b.date.localeCompare(a.date);
-      return (b.timestamp || 0) - (a.timestamp || 0);
-    });
-    setEntriesState(sorted);
-    setItem(PROTEIN_KEY, sorted);
-    return sorted;
-  }, []);
+  }, [saveToStorage]);
 
   const addEntry = useCallback((data) => {
     const entry = {
@@ -64,15 +85,18 @@ export function useProtein() {
       food: data.food || '',
       timestamp: Date.now(),
     };
-    const updated = [...entries, entry];
+    const updated = [...entriesRef.current, entry];
     saveToStorage(updated);
-    upsertProteinEntry(entry);
+    addPendingIds(PENDING_KEY, [entry.id]);
+    upsertProteinEntry(entry).then(ok => {
+      if (ok) removePendingIds(PENDING_KEY, [entry.id]);
+    });
     return entry;
-  }, [entries, saveToStorage]);
+  }, [saveToStorage]);
 
   const updateEntry = useCallback((id, data) => {
     let updatedEntry = null;
-    const updated = entries.map(e => {
+    const updated = entriesRef.current.map(e => {
       if (e.id !== id) return e;
       updatedEntry = {
         ...e,
@@ -82,14 +106,20 @@ export function useProtein() {
       return updatedEntry;
     });
     saveToStorage(updated);
-    if (updatedEntry) upsertProteinEntry(updatedEntry);
-  }, [entries, saveToStorage]);
+    if (updatedEntry) {
+      addPendingIds(PENDING_KEY, [id]);
+      upsertProteinEntry(updatedEntry).then(ok => {
+        if (ok) removePendingIds(PENDING_KEY, [id]);
+      });
+    }
+  }, [saveToStorage]);
 
   const deleteEntry = useCallback((id) => {
-    const updated = entries.filter(e => e.id !== id);
+    const updated = entriesRef.current.filter(e => e.id !== id);
     saveToStorage(updated);
+    removePendingIds(PENDING_KEY, [id]);
     deleteProteinRemote(id);
-  }, [entries, saveToStorage]);
+  }, [saveToStorage]);
 
   // Today's total
   const todayTotal = useMemo(() => {
@@ -118,7 +148,10 @@ export function useProtein() {
   // Bulk replace for import
   const replaceAll = useCallback((newEntries) => {
     saveToStorage(newEntries);
-    upsertProteinEntries(newEntries);
+    addPendingIds(PENDING_KEY, newEntries.map(e => e.id));
+    upsertProteinEntries(newEntries).then(ok => {
+      if (ok) removePendingIds(PENDING_KEY, newEntries.map(e => e.id));
+    });
   }, [saveToStorage]);
 
   return {
