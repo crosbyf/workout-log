@@ -1,4 +1,6 @@
 import './globals.css';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
+import ServiceWorker from '@/components/shared/ServiceWorker';
 
 export const metadata = {
   title: 'GORS LOG',
@@ -27,10 +29,14 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="GORS LOG" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=7" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=7" />
       </head>
       <body className="antialiased">
-        {children}
+        <ErrorBoundary>
+          <ServiceWorker />
+          {children}
+        </ErrorBoundary>
       </body>
     </html>
   );

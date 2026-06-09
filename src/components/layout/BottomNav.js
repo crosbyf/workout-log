@@ -1,9 +1,10 @@
 'use client';
 
-import { Home, BarChart3, Settings } from 'lucide-react';
+import { Home, ClipboardList, BarChart3, Settings } from 'lucide-react';
 
 const tabs = [
   { id: 'home', label: 'Home', icon: Home },
+  { id: 'log', label: 'Log', icon: ClipboardList },
   { id: 'stats', label: 'Stats', icon: BarChart3 },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
@@ -11,11 +12,13 @@ const tabs = [
 export default function BottomNav({ activeTab, onTabChange }) {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around h-16"
+      className="fixed bottom-0 left-0 right-0 flex items-stretch justify-around"
       style={{
         backgroundColor: 'var(--color-nav-bg)',
         borderTop: '1px solid var(--color-border)',
         paddingBottom: 'env(safe-area-inset-bottom)',
+        minHeight: 'calc(4rem + env(safe-area-inset-bottom))',
+        zIndex: 9990,
       }}
     >
       {tabs.map(({ id, label, icon: Icon }) => {
@@ -24,7 +27,7 @@ export default function BottomNav({ activeTab, onTabChange }) {
           <button
             key={id}
             onClick={() => onTabChange(id)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors"
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 py-2 transition-colors"
             aria-label={label}
             aria-current={isActive ? 'page' : undefined}
           >
