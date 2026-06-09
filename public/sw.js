@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gorslog-v1';
+const CACHE_NAME = 'gorslog-v2';
 
 // App shell files to cache on install
 const APP_SHELL = [
@@ -46,7 +46,11 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(request) || caches.match('/'))
+        .catch(() =>
+          // caches.match returns a Promise (always truthy), so the fallback
+          // must be chained — `match(request) || match('/')` never falls back
+          caches.match(request).then((cached) => cached || caches.match('/'))
+        )
     );
     return;
   }

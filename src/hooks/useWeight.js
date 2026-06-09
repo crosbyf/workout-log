@@ -5,6 +5,7 @@ import { getItem, setItem } from '@/utils/storage';
 import { generateId } from '@/utils/ids';
 import { getTodayStr } from '@/utils/format';
 import { getPendingIds, addPendingIds, removePendingIds } from '@/utils/pending';
+import { createTombstoneStore } from '@/utils/tombstones';
 import {
   fetchWeight,
   upsertWeightEntry,
@@ -14,6 +15,10 @@ import {
 
 const WEIGHT_KEY = 'weight';
 const PENDING_KEY = 'weight_pending';
+
+// Tombstones so deleted weight entries can't be resurrected by stale
+// localStorage or a failed remote delete — see src/utils/tombstones.js
+const deletedStore = createTombstoneStore('weight_deleted_ids', 'deleted_weight_ids');
 
 function loadWeight() {
   return getItem(WEIGHT_KEY, []);
@@ -36,20 +41,24 @@ export function useWeight() {
   // Hydrate from Supabase on mount
   useEffect(() => {
     let cancelled = false;
-    fetchWeight().then(remote => {
+    Promise.all([fetchWeight(), deletedStore.fetchAndMerge()]).then(([remote, deletedIds]) => {
       if (cancelled || !remote) return;
       // Use CURRENT local state (via ref), not a stale mount-time snapshot
       const current = entriesRef.current;
       const pendingIds = getPendingIds(PENDING_KEY);
-      // Deduplicate remote by ID
+      // Retry deleting ONLY tombstoned IDs that actually still exist remotely
+      const allRemoteIds = new Set(remote.map(e => e.id));
+      [...deletedIds].filter(id => allRemoteIds.has(id)).forEach(id => deleteWeightRemote(id));
+      // Deduplicate remote by ID, excluding anything deleted locally
       const seenIds = new Set();
       const uniqueRemote = remote.filter(e => {
+        if (deletedIds.has(e.id)) return false;
         if (seenIds.has(e.id)) return false;
         seenIds.add(e.id);
         return true;
       });
       const remoteIds = new Set(uniqueRemote.map(e => e.id));
-      const localOnly = current.filter(e => !remoteIds.has(e.id));
+      const localOnly = current.filter(e => !remoteIds.has(e.id) && !deletedIds.has(e.id));
       // Local version wins while its latest change hasn't reached Supabase
       const mergedRemote = uniqueRemote.map(re => {
         if (pendingIds.has(re.id)) {
@@ -114,6 +123,8 @@ export function useWeight() {
     const updated = entriesRef.current.filter(e => e.id !== id);
     saveToStorage(updated);
     removePendingIds(PENDING_KEY, [id]);
+    // Track this deletion so it can't be resurrected
+    deletedStore.add([id]);
     deleteWeightRemote(id);
   }, [saveToStorage]);
 
@@ -124,6 +135,8 @@ export function useWeight() {
 
   // Bulk replace for import
   const replaceAll = useCallback((newEntries) => {
+    // Explicit restore: clear tombstones for imported IDs
+    deletedStore.remove(newEntries.map(e => e.id));
     saveToStorage(newEntries);
     addPendingIds(PENDING_KEY, newEntries.map(e => e.id));
     upsertWeightEntries(newEntries).then(ok => {

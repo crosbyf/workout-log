@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, ChevronDown, ChevronUp, ChevronRight, X, Trash2, Pencil, Check } from 'lucide-react';
-import { formatDate } from '@/utils/format';
+import { formatDate, getTodayStr } from '@/utils/format';
 
 export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpdate, onDelete }) {
   const [showForm, setShowForm] = useState(false);
@@ -46,7 +46,8 @@ export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpd
   };
 
   // Today's entries are always shown expanded; past days are in the history section
-  const todayStr = new Date().toISOString().slice(0, 10);
+  // Local date, NOT UTC — toISOString() is already "tomorrow" every evening in the US
+  const todayStr = getTodayStr();
   const todayDate = entriesByDate.length > 0 && entriesByDate[0].date === todayStr
     ? entriesByDate[0]
     : null;

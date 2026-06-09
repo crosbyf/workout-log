@@ -4,14 +4,13 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { getItem, setItem } from '@/utils/storage';
 import { generateId } from '@/utils/ids';
 import { getPendingIds, addPendingIds, removePendingIds } from '@/utils/pending';
+import { createTombstoneStore } from '@/utils/tombstones';
 import {
   fetchWorkouts,
   upsertWorkout,
   upsertWorkouts,
   deleteWorkoutRemote,
   deleteAllWorkoutsRemote,
-  upsertSetting,
-  fetchSettings,
 } from '@/lib/sync';
 
 const WORKOUTS_KEY = 'workouts';
@@ -20,13 +19,20 @@ const PENDING_KEY = 'workouts_pending';
 
 /**
  * Create a fingerprint for a workout to detect content-level duplicates
- * (same date + location + same exercises/distance even if IDs differ).
+ * (identical content even if IDs differ — e.g. from old sync resurrection bugs).
+ *
+ * Includes per-set reps and notes so two REAL same-day sessions with the
+ * same preset (e.g. multiple GtG sessions) are NOT treated as duplicates.
+ * Only truly identical records collide.
  */
 function workoutFingerprint(w) {
-  if (w.isDayOff) return `${w.date}|dayoff`;
-  if (w.isRun) return `${w.date}|run|${w.runDistance}|${w.runTime}`;
-  const exKey = (w.exercises || []).map(e => e.name).sort().join(',');
-  return `${w.date}|${w.location}|${exKey}|${w.elapsedTime || 0}`;
+  if (w.isDayOff) return `${w.date}|dayoff|${w.notes || ''}`;
+  if (w.isRun) return `${w.date}|run|${w.runDistance}|${w.runTime}|${w.notes || ''}`;
+  const exKey = (w.exercises || [])
+    .map(e => `${e.name}:${(e.sets || []).map(s => s.reps ?? '').join(',')}`)
+    .sort()
+    .join('|');
+  return `${w.date}|${w.location}|${exKey}|${w.elapsedTime || 0}|${w.notes || ''}`;
 }
 
 /**
@@ -52,86 +58,10 @@ function deduplicateWorkouts(list) {
 }
 
 /**
- * Track IDs of workouts that were deleted locally.
- * Stored in BOTH localStorage (fast) and Supabase settings (durable).
- * Prevents Supabase from resurrecting them if the remote delete failed
- * or if localStorage is cleared during redeploy/bookmark changes.
- *
- * Stored as { updatedAt, ids } so devices can agree on the newest list
- * (last-write-wins). This allows explicit restores (JSON import) to
- * remove tombstones without a stale device re-deleting the restored data.
- * Legacy plain-array format is still read and migrated transparently.
+ * Tombstones for deleted workout IDs — see src/utils/tombstones.js.
+ * Prevents Supabase or stale localStorage from resurrecting deleted workouts.
  */
-const DELETED_IDS_SETTING_KEY = 'deleted_workout_ids';
-
-function parseDeletedMeta(raw) {
-  if (Array.isArray(raw)) return { updatedAt: 0, ids: raw };
-  if (raw && Array.isArray(raw.ids)) return { updatedAt: raw.updatedAt || 0, ids: raw.ids };
-  return { updatedAt: 0, ids: [] };
-}
-
-function loadDeletedMeta() {
-  return parseDeletedMeta(getItem(DELETED_IDS_KEY, []));
-}
-
-function saveDeletedMeta(meta) {
-  setItem(DELETED_IDS_KEY, meta);
-  // Also persist to Supabase so it survives localStorage wipes
-  upsertSetting(DELETED_IDS_SETTING_KEY, JSON.stringify(meta));
-}
-
-/** Add one or more IDs to the tombstone list (single write + single push). */
-function addDeletedIds(idsToAdd) {
-  if (!idsToAdd.length) return;
-  const meta = loadDeletedMeta();
-  const set = new Set(meta.ids);
-  for (const id of idsToAdd) set.add(id);
-  saveDeletedMeta({ updatedAt: Date.now(), ids: [...set] });
-}
-
-/**
- * Remove IDs from the tombstone list. Used ONLY for explicit restores
- * (JSON import), where the user has clearly stated these workouts
- * should exist again.
- */
-function removeDeletedIds(idsToRemove) {
-  if (!idsToRemove.length) return;
-  const meta = loadDeletedMeta();
-  const remove = new Set(idsToRemove);
-  const ids = meta.ids.filter(id => !remove.has(id));
-  saveDeletedMeta({ updatedAt: Date.now(), ids });
-}
-
-/**
- * Fetch deleted IDs from Supabase settings (for when localStorage is cleared)
- * and reconcile with the local list. Newest list wins; two legacy lists
- * (no timestamp) are unioned to preserve old behavior.
- */
-async function fetchAndMergeDeletedIds() {
-  const local = loadDeletedMeta();
-  let remote = null;
-  try {
-    const settings = await fetchSettings();
-    if (settings && settings[DELETED_IDS_SETTING_KEY] !== undefined) {
-      let val = settings[DELETED_IDS_SETTING_KEY];
-      // Handle both jsonb (already parsed) and text (needs parsing)
-      if (typeof val === 'string') {
-        try { val = JSON.parse(val); } catch { val = null; }
-      }
-      if (val !== null && val !== undefined) remote = parseDeletedMeta(val);
-    }
-  } catch {}
-  let merged;
-  if (!remote) {
-    merged = local;
-  } else if (local.updatedAt === 0 && remote.updatedAt === 0) {
-    merged = { updatedAt: 0, ids: [...new Set([...local.ids, ...remote.ids])] };
-  } else {
-    merged = remote.updatedAt >= local.updatedAt ? remote : local;
-  }
-  setItem(DELETED_IDS_KEY, merged);
-  return new Set(merged.ids);
-}
+const deletedStore = createTombstoneStore(DELETED_IDS_KEY, 'deleted_workout_ids');
 
 function loadWorkouts() {
   const saved = getItem(WORKOUTS_KEY, []);
@@ -161,7 +91,7 @@ export function useWorkouts() {
   useEffect(() => {
     let cancelled = false;
     // Fetch deleted IDs from both localStorage AND Supabase before processing
-    Promise.all([fetchWorkouts(), fetchAndMergeDeletedIds()]).then(([remote, deletedIds]) => {
+    Promise.all([fetchWorkouts(), deletedStore.fetchAndMerge()]).then(([remote, deletedIds]) => {
       if (cancelled || !remote) return;
       // Use the CURRENT local state (via ref), not a stale mount-time snapshot,
       // so workouts logged during the fetch window are never lost.
@@ -261,7 +191,7 @@ export function useWorkouts() {
     saveToStorage(updated);
     removePendingIds(PENDING_KEY, [id]);
     // Track this deletion so stale localStorage can't re-push it
-    addDeletedIds([id]);
+    deletedStore.add([id]);
     // Also remove from Supabase (but keep tracking the ID regardless of success)
     deleteWorkoutRemote(id);
   }, [saveToStorage]);
@@ -274,7 +204,7 @@ export function useWorkouts() {
   const importWorkouts = useCallback((newWorkouts) => {
     // Explicit restore: clear tombstones for imported IDs so they aren't
     // re-deleted on the next launch (backup restore after a delete-all).
-    removeDeletedIds(newWorkouts.map(w => w.id));
+    deletedStore.remove(newWorkouts.map(w => w.id));
     const current = workoutsRef.current;
     const existingIds = new Set(current.map(w => w.id));
     const toAdd = newWorkouts.filter(w => !existingIds.has(w.id));
@@ -291,7 +221,7 @@ export function useWorkouts() {
   const deleteAllWorkouts = useCallback(() => {
     const current = workoutsRef.current;
     // Track all current IDs as deleted (single write + single push)
-    addDeletedIds(current.map(w => w.id));
+    deletedStore.add(current.map(w => w.id));
     removePendingIds(PENDING_KEY, current.map(w => w.id));
     saveToStorage([]);
     deleteAllWorkoutsRemote();

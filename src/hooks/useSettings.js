@@ -19,7 +19,7 @@ const DEFAULTS = {
 function filterAppSettings(remote) {
   const out = {};
   for (const [key, value] of Object.entries(remote)) {
-    if (key === 'deleted_workout_ids' || key.startsWith('diag_')) continue;
+    if (key.startsWith('deleted_') || key.startsWith('diag_')) continue;
     out[key] = value;
   }
   return out;
