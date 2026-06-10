@@ -119,6 +119,20 @@ export async function forcePushAll({ workouts, proteinEntries, weightEntries, pr
 
 // ─── Workouts ───
 
+/**
+ * Normalize numeric values from imported runs. The Apple Shortcuts importer
+ * sends measurements as text (e.g. "3.42 mi", "1,721"), so strip units and
+ * thousands separators and parse.
+ */
+function toNum(v) {
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string') {
+    const n = parseFloat(v.replace(/,/g, ''));
+    return isNaN(n) ? null : n;
+  }
+  return null;
+}
+
 /** Compute "m:ss" pace per mile when an imported run has distance+time but no pace. */
 function computePace(distance, timeSeconds) {
   if (!distance || !timeSeconds) return null;
@@ -150,9 +164,11 @@ export async function fetchWorkouts() {
       notes: row.notes || '',
       isDayOff: row.is_day_off || false,
       isRun: !!runMeta,
-      runDistance: runMeta ? runMeta.distance : null,
-      runTime: runMeta ? runMeta.time : null,
-      runPace: runMeta ? (runMeta.pace || computePace(runMeta.distance, runMeta.time)) : null,
+      runDistance: runMeta ? toNum(runMeta.distance) : null,
+      runTime: runMeta ? toNum(runMeta.time) : null,
+      runPace: runMeta
+        ? (runMeta.pace || computePace(toNum(runMeta.distance), toNum(runMeta.time)))
+        : null,
     };
   });
 }

@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { ChevronUp } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { getItem, removeItem } from '@/utils/storage';
+import { queueForSheet, flushSheetQueue } from '@/lib/sheetSync';
 import SplashScreen from '@/components/shared/SplashScreen';
 import { usePresets, PRESET_COLORS } from '@/hooks/usePresets';
 import { useWorkouts } from '@/hooks/useWorkouts';
@@ -65,6 +66,12 @@ export default function App() {
     setSelectedPreset(matchingPreset);
     setWorkoutView('entry');
     setIsWorkoutMinimized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Retry any sheet pushes that failed earlier (offline saves, errors)
+  useEffect(() => {
+    if (settings.sheetWebhookUrl) flushSheetQueue(settings.sheetWebhookUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -150,7 +157,13 @@ export default function App() {
       updateWorkout(editingWorkout.id, workoutData);
       setEditingWorkout(null);
     } else {
-      addWorkout(workoutData);
+      const saved = addWorkout(workoutData);
+      // Push strength workouts and day-offs to the Google Sheet (runs excluded).
+      // Queued locally first, so offline saves sync on a later launch.
+      if (saved && !saved.isRun && settings.sheetWebhookUrl) {
+        queueForSheet(saved);
+        flushSheetQueue(settings.sheetWebhookUrl);
+      }
     }
     setWorkoutView(null);
     setSelectedPreset(null);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTheme, THEMES } from '@/hooks/useTheme';
-import { Check, Palette, Database, Dumbbell, BookOpen, ChevronDown, ChevronRight, Cloud, Target } from 'lucide-react';
+import { Check, Palette, Database, Dumbbell, BookOpen, ChevronDown, ChevronRight, Cloud, Target, Link2 } from 'lucide-react';
 import PresetEditor from './PresetEditor';
 import ExerciseLibrary from './ExerciseLibrary';
 import DataManagement from './DataManagement';
@@ -107,6 +107,34 @@ function ProteinGoalEditor({ value, onCommit }) {
         />
         <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>g</span>
       </div>
+    </div>
+  );
+}
+
+function SheetWebhookEditor({ value, onCommit }) {
+  const [draft, setDraft] = useState(value || '');
+
+  return (
+    <div className="py-1">
+      <div className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+        Google Sheet sync
+      </div>
+      <div className="text-xs mt-0.5 mb-2" style={{ color: 'var(--color-text-dim)' }}>
+        Paste the web app URL (with its ?key=). Strength workouts and day-offs
+        push to your sheet on save. Leave empty to disable.
+      </div>
+      <input
+        type="url"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => onCommit(draft.trim())}
+        placeholder="https://script.google.com/macros/s/…/exec?key=…"
+        className="w-full text-xs px-2 py-2 rounded-lg bg-transparent border"
+        style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+      />
     </div>
   );
 }
@@ -282,6 +310,14 @@ export default function SettingsTab({
         <ProteinGoalEditor
           value={settings.proteinGoal || 0}
           onCommit={(g) => onUpdateSetting && onUpdateSetting('proteinGoal', g)}
+        />
+      </SettingsSection>
+
+      {/* Integrations */}
+      <SettingsSection icon={Link2} title="Integrations">
+        <SheetWebhookEditor
+          value={settings.sheetWebhookUrl || ''}
+          onCommit={(v) => onUpdateSetting && onUpdateSetting('sheetWebhookUrl', v)}
         />
       </SettingsSection>
 

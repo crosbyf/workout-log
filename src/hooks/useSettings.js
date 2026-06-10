@@ -9,6 +9,7 @@ const SETTINGS_KEY = 'app-settings';
 const DEFAULTS = {
   progressUI: false,
   proteinGoal: 0, // grams/day; 0 = no goal set
+  sheetWebhookUrl: '', // Apps Script web app URL (with ?key=); '' = disabled
   archivedPresetIds: [], // preset ids hidden from the workout picker
 };
 
