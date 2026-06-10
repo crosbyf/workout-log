@@ -101,6 +101,7 @@ export default function WeeklyPulseHome({
   proteinData,
   presets = [],
   onOpenProteinDetail,
+  proteinGoal = 0,
 }) {
   const [expandedId, setExpandedId] = useState(null);
   const [viewIndex, setViewIndex] = useState(0);
@@ -228,6 +229,17 @@ export default function WeeklyPulseHome({
       ? lastWeekStats
       : twelveWeekStats;
 
+  // Week-over-week deltas, shown on THIS WEEK view only
+  const deltas = viewIndex === 0 ? {
+    reps: thisWeekStats.totalReps - lastWeekStats.totalReps,
+    miles: Math.round((thisWeekStats.totalMiles - lastWeekStats.totalMiles) * 10) / 10,
+    count: thisWeekStats.count - lastWeekStats.count,
+    protein: thisWeekStats.proteinAvg - lastWeekStats.proteinAvg,
+  } : null;
+
+  const formatDelta = (d) => (d > 0 ? `+${d}` : `${d}`);
+  const deltaColor = (d) => (d > 0 ? 'var(--color-green)' : 'var(--color-text-dim)');
+
   const currentDates = viewIndex === 0 ? thisWeekDates : viewIndex === 1 ? lastWeekDates : null;
   const showDots = viewIndex < 2;
 
@@ -301,8 +313,11 @@ export default function WeeklyPulseHome({
             <div className="text-[26px] leading-none" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {currentStats.totalReps}
             </div>
-            <div className="text-[10px] mt-1 tracking-[0.15em]" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
-              REPS
+            <div className="flex items-baseline gap-1.5 text-[10px] mt-1" style={{ fontWeight: 700 }}>
+              <span className="tracking-[0.15em]" style={{ color: 'var(--color-text-dim)' }}>REPS</span>
+              {deltas && deltas.reps !== 0 && (
+                <span style={{ color: deltaColor(deltas.reps) }}>{formatDelta(deltas.reps)}</span>
+              )}
             </div>
           </div>
 
@@ -315,20 +330,23 @@ export default function WeeklyPulseHome({
                 : '—'
               }
             </div>
-            <div className="text-[10px] mt-1 tracking-[0.15em]" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
-              MILES
+            <div className="flex items-baseline gap-1.5 text-[10px] mt-1" style={{ fontWeight: 700 }}>
+              <span className="tracking-[0.15em]" style={{ color: 'var(--color-text-dim)' }}>MILES</span>
+              {deltas && deltas.miles !== 0 && (
+                <span style={{ color: deltaColor(deltas.miles) }}>{formatDelta(deltas.miles)}</span>
+              )}
             </div>
           </div>
 
           <div style={{ borderBottom: '3px solid #a855f7', paddingBottom: '6px' }}>
             <div className="text-[26px] leading-none" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
-              {currentStats.totalTime > 0
-                ? `${Math.floor(currentStats.totalTime / 60)}m`
-                : '—'
-              }
+              {currentStats.count > 0 ? currentStats.count : '—'}
             </div>
-            <div className="text-[10px] mt-1 tracking-[0.15em]" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
-              TIME
+            <div className="flex items-baseline gap-1.5 text-[10px] mt-1" style={{ fontWeight: 700 }}>
+              <span className="tracking-[0.15em]" style={{ color: 'var(--color-text-dim)' }}>WORKOUTS</span>
+              {deltas && deltas.count !== 0 && (
+                <span style={{ color: deltaColor(deltas.count) }}>{formatDelta(deltas.count)}</span>
+              )}
             </div>
           </div>
 
@@ -336,8 +354,11 @@ export default function WeeklyPulseHome({
             <div className="text-[26px] leading-none" style={{ color: 'var(--color-text)', fontWeight: 800 }}>
               {currentStats.proteinAvg > 0 ? currentStats.proteinAvg : '—'}
             </div>
-            <div className="text-[10px] mt-1 tracking-[0.15em]" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
-              PROTEIN
+            <div className="flex items-baseline gap-1.5 text-[10px] mt-1" style={{ fontWeight: 700 }}>
+              <span className="tracking-[0.15em]" style={{ color: 'var(--color-text-dim)' }}>PROTEIN</span>
+              {deltas && deltas.protein !== 0 && (
+                <span style={{ color: deltaColor(deltas.protein) }}>{formatDelta(deltas.protein)}</span>
+              )}
             </div>
           </div>
         </div>
@@ -489,7 +510,39 @@ export default function WeeklyPulseHome({
             </div>
             <div className="text-2xl font-bold" style={{ color: 'var(--color-green, #22c55e)' }}>
               {todayProteinTotal}g
+              {proteinGoal > 0 && (
+                <span className="text-sm ml-1" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
+                  / {proteinGoal}g
+                </span>
+              )}
             </div>
+            {proteinGoal > 0 && (
+              <div className="mt-1.5" style={{ maxWidth: '180px' }}>
+                <div
+                  className="rounded-full overflow-hidden"
+                  style={{ height: '3px', backgroundColor: 'var(--color-surface-hover)' }}
+                >
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.min(100, Math.round((todayProteinTotal / proteinGoal) * 100))}%`,
+                      backgroundColor: 'var(--color-green)',
+                      transition: 'width 0.3s ease',
+                    }}
+                  />
+                </div>
+                <div
+                  className="text-[10px] mt-1 uppercase"
+                  style={{
+                    color: todayProteinTotal >= proteinGoal ? 'var(--color-green)' : 'var(--color-text-dim)',
+                    fontWeight: 700,
+                    letterSpacing: '0.06em',
+                  }}
+                >
+                  {todayProteinTotal >= proteinGoal ? 'Goal hit' : `${proteinGoal - todayProteinTotal}g to go`}
+                </div>
+              </div>
+            )}
           </button>
           <button
             onClick={() => showProteinForm ? setShowProteinForm(false) : handleOpenProteinForm()}

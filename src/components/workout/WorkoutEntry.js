@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { X, Plus, Play, Pause } from 'lucide-react';
 import { useTimer } from '@/hooks/useTimer';
 import { getTodayStr, formatDuration } from '@/utils/format';
+import { setItem, removeItem } from '@/utils/storage';
 import { PRESET_COLORS } from '@/hooks/usePresets';
 import ProgressExerciseCard from './ProgressExerciseCard';
 import { getActivePairIndices, getActiveSetColumn } from '@/utils/workout-structure';
@@ -14,6 +15,9 @@ const STRUCTURES = [
 ];
 
 const INTERVALS = [3, 4, 5];
+
+// localStorage key (via storage.js wrapper) for the in-progress workout snapshot
+const SNAPSHOT_KEY = 'inprogress_workout';
 
 function createExerciseSets(name, numSets = 4) {
   return {
@@ -26,7 +30,7 @@ function createExerciseSets(name, numSets = 4) {
 /**
  * Renders ProgressExerciseCards with pairs grouping or circuit column highlighting.
  */
-function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpdate, onRemove, onRename, disabled }) {
+function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpdate, onRemove, onRename, disabled, lastSessionMap }) {
   const activeSetCol = structure === 'circuit' ? getActiveSetColumn(exercises) : -1;
   const [pairStart, pairEnd] = structure === 'pairs'
     ? getActivePairIndices(exercises.length, activeExerciseIndex)
@@ -66,6 +70,7 @@ function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpd
                 onRename={onRename}
                 disabled={disabled}
                 activeSetCol={-1}
+                lastSession={lastSessionMap?.[exercise.name] || null}
               />
             );
           })}
@@ -86,18 +91,28 @@ function ProgressExerciseList({ exercises, structure, activeExerciseIndex, onUpd
       onRename={onRename}
       disabled={disabled}
       activeSetCol={activeSetCol}
+      lastSession={lastSessionMap?.[exercise.name] || null}
     />
   ));
 }
 
-export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSave, onCancel, existingWorkout, minimized = false, onMinimize }) {
+export default function WorkoutEntry({ preset, exercises: exerciseLibrary, workouts, onSave, onCancel, existingWorkout, restoredSnapshot = null, minimized = false, onMinimize }) {
   const isEditing = !!existingWorkout;
 
-  const [workoutStarted, setWorkoutStarted] = useState(isEditing);
-  const [paused, setPaused] = useState(false);
-  const { elapsedSeconds } = useTimer(workoutStarted && !paused && !isEditing);
+  const [workoutStarted, setWorkoutStarted] = useState(() => (restoredSnapshot ? !!restoredSnapshot.workoutStarted : isEditing));
+  // When restoring a snapshot, resume the timer paused at its last persisted value —
+  // the user taps resume; dead time while the PWA was evicted is not counted.
+  const [paused, setPaused] = useState(() => (restoredSnapshot ? !!restoredSnapshot.workoutStarted && !isEditing : false));
+  const { elapsedSeconds } = useTimer(workoutStarted && !paused && !isEditing, restoredSnapshot?.timer?.elapsed || 0);
 
   const [workoutExercises, setWorkoutExercises] = useState(() => {
+    if (restoredSnapshot && restoredSnapshot.exercises && restoredSnapshot.exercises.length > 0) {
+      return restoredSnapshot.exercises.map(ex => ({
+        name: ex.name,
+        sets: (ex.sets || []).map(s => ({ reps: s.reps !== null && s.reps !== undefined ? s.reps : '', weight: s.weight || null })),
+        notes: ex.notes || '',
+      }));
+    }
     if (existingWorkout) {
       return existingWorkout.exercises.map(ex => ({
         name: ex.name,
@@ -107,9 +122,18 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
     }
     return preset.exercises.map(name => createExerciseSets(name));
   });
-  const [structure, setStructure] = useState(existingWorkout ? existingWorkout.structure || 'standard' : 'standard');
-  const [structureDuration, setStructureDuration] = useState(existingWorkout ? existingWorkout.structureDuration || 4 : 4);
-  const [workoutNotes, setWorkoutNotes] = useState(existingWorkout ? existingWorkout.notes || '' : '');
+  const [structure, setStructure] = useState(() => {
+    if (restoredSnapshot) return restoredSnapshot.structure || 'standard';
+    return existingWorkout ? existingWorkout.structure || 'standard' : 'standard';
+  });
+  const [structureDuration, setStructureDuration] = useState(() => {
+    if (restoredSnapshot) return restoredSnapshot.structureDuration || 4;
+    return existingWorkout ? existingWorkout.structureDuration || 4 : 4;
+  });
+  const [workoutNotes, setWorkoutNotes] = useState(() => {
+    if (restoredSnapshot) return restoredSnapshot.notes || '';
+    return existingWorkout ? existingWorkout.notes || '' : '';
+  });
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [addExerciseSearch, setAddExerciseSearch] = useState('');
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -167,6 +191,52 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
     };
   }, []);
 
+  // Last-session ghosts: for each exercise in the entry, find the most recent
+  // workout (not a run / day off, not the workout being edited) containing it.
+  const lastSessionMap = useMemo(() => {
+    const map = {};
+    if (!workouts || workouts.length === 0) return map;
+    for (const ex of workoutExercises) {
+      // workouts is sorted date-desc, so the first match is the most recent
+      const prevWorkout = workouts.find(w => {
+        if (w.isRun || w.isDayOff) return false;
+        if (existingWorkout) {
+          if (w.id === existingWorkout.id) return false;
+          if (w.date > existingWorkout.date) return false;
+        }
+        return (w.exercises || []).some(e => e.name === ex.name);
+      });
+      if (prevWorkout) {
+        const prevEx = prevWorkout.exercises.find(e => e.name === ex.name);
+        const reps = (prevEx.sets || []).map(s => Number(s.reps) || 0);
+        if (reps.length > 0) {
+          map[ex.name] = { reps, total: reps.reduce((sum, r) => sum + r, 0) };
+        }
+      }
+    }
+    return map;
+  }, [workouts, workoutExercises, existingWorkout]);
+
+  // Persist an in-progress snapshot so the session survives iOS PWA eviction.
+  // Don't write anything for an untouched fresh form.
+  const hasInteracted = workoutStarted
+    || workoutNotes.trim() !== ''
+    || workoutExercises.some(ex => ex.sets.some(s => s.reps !== '' && s.reps !== null));
+  useEffect(() => {
+    if (!hasInteracted) return;
+    setItem(SNAPSHOT_KEY, {
+      presetName: preset.name,
+      exercises: workoutExercises,
+      notes: workoutNotes,
+      structure,
+      structureDuration,
+      workoutStarted,
+      timer: { elapsed: elapsedSeconds, isPaused: paused },
+      editingWorkoutId: existingWorkout?.id || null,
+      savedAt: Date.now(),
+    });
+  }, [hasInteracted, preset.name, workoutExercises, workoutNotes, structure, structureDuration, workoutStarted, elapsedSeconds, paused, existingWorkout]);
+
   const handleExerciseUpdate = useCallback((updated) => {
     setWorkoutExercises(prev =>
       prev.map(ex => ex.name === updated.name ? updated : ex)
@@ -221,6 +291,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
       }))
       .filter(ex => ex.sets.length > 0);
 
+    removeItem(SNAPSHOT_KEY);
     onSave({
       date: isEditing ? existingWorkout.date : getTodayStr(),
       exercises: filledExercises,
@@ -237,9 +308,15 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
     if (workoutStarted) {
       setShowCancelConfirm(true);
     } else {
+      removeItem(SNAPSHOT_KEY);
       onCancel();
     }
   };
+
+  const handleDiscardConfirm = useCallback(() => {
+    removeItem(SNAPSHOT_KEY);
+    onCancel();
+  }, [onCancel]);
 
   // Available exercises to add (not already in workout)
   const currentNames = new Set(workoutExercises.map(e => e.name));
@@ -436,6 +513,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
           onRemove={handleExerciseRemoveRequest}
           onRename={handleRenameStart}
           disabled={!workoutStarted}
+          lastSessionMap={lastSessionMap}
         />
 
         {/* Add Exercise button */}
@@ -570,7 +648,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, onSav
             </p>
             <div className="flex gap-3">
               <button
-                onClick={onCancel}
+                onClick={handleDiscardConfirm}
                 className="flex-1 py-2.5 rounded-lg text-sm uppercase"
                 style={{ backgroundColor: 'var(--color-red)', color: '#ffffff', fontWeight: 800, letterSpacing: '0.04em' }}
               >

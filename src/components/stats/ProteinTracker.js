@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Plus, ChevronDown, ChevronUp, ChevronRight, X, Trash2, Pencil, Check } from 'lucide-react';
 import { formatDate, getTodayStr } from '@/utils/format';
 
-export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpdate, onDelete }) {
+export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpdate, onDelete, proteinGoal = 0 }) {
   const [showForm, setShowForm] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [expandedDay, setExpandedDay] = useState(null);
@@ -76,7 +76,24 @@ export default function ProteinTracker({ todayTotal, entriesByDate, onAdd, onUpd
             }}
           >
             {todayTotal}g
+            {proteinGoal > 0 && (
+              <span className="text-sm ml-1" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
+                / {proteinGoal}g
+              </span>
+            )}
           </div>
+          {proteinGoal > 0 && (
+            <div
+              className="text-[10px] mt-1.5 uppercase"
+              style={{
+                color: todayTotal >= proteinGoal ? 'var(--color-green)' : 'var(--color-text-dim)',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+              }}
+            >
+              {todayTotal >= proteinGoal ? 'Goal hit' : `${proteinGoal - todayTotal}g to go`}
+            </div>
+          )}
         </div>
         <button
           onClick={() => setShowForm(!showForm)}

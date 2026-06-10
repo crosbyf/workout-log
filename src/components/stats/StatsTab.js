@@ -208,6 +208,7 @@ export default function StatsTab({
   weightData = {},
   initialDetailView = null,
   onClearInitialView,
+  proteinGoal = 0,
 }) {
   const [detailView, setDetailView] = useState(initialDetailView); // null | 'running' | 'protein' | 'weight' | 'exercises'
   const [showProteinQuickAdd, setShowProteinQuickAdd] = useState(false);
@@ -305,6 +306,7 @@ export default function StatsTab({
           <ProteinTracker
             todayTotal={proteinData.todayTotal || 0}
             entriesByDate={proteinData.entriesByDate || []}
+            proteinGoal={proteinGoal}
             onAdd={proteinData.addEntry}
             onUpdate={proteinData.updateEntry}
             onDelete={proteinData.deleteEntry}

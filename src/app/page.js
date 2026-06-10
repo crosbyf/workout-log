@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { ChevronUp } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
+import { getItem, removeItem } from '@/utils/storage';
 import SplashScreen from '@/components/shared/SplashScreen';
 import { usePresets, PRESET_COLORS } from '@/hooks/usePresets';
 import { useWorkouts } from '@/hooks/useWorkouts';
@@ -38,6 +39,34 @@ export default function App() {
   const [selectedPreset, setSelectedPreset] = useState(null);
   const [editingWorkout, setEditingWorkout] = useState(null);
   const [isWorkoutMinimized, setIsWorkoutMinimized] = useState(false);
+  const [restoredSnapshot, setRestoredSnapshot] = useState(null);
+
+  // Restore a persisted in-progress workout (survives iOS PWA eviction).
+  // Reopens the entry sheet minimized so the familiar resume pill appears.
+  useEffect(() => {
+    const snap = getItem('inprogress_workout', null);
+    if (!snap || !snap.presetName) return;
+    if (!snap.savedAt || Date.now() - snap.savedAt > 24 * 60 * 60 * 1000) {
+      removeItem('inprogress_workout');
+      return;
+    }
+    if (snap.editingWorkoutId) {
+      const workout = workouts.find(w => w.id === snap.editingWorkoutId);
+      if (!workout) {
+        removeItem('inprogress_workout');
+        return;
+      }
+      setEditingWorkout(workout);
+    }
+    // Find the preset by name; synthesize a minimal one if it no longer exists
+    const matchingPreset = presets.find(p => p.name === snap.presetName)
+      || { name: snap.presetName, color: null, exercises: (snap.exercises || []).map(ex => ex.name) };
+    setRestoredSnapshot(snap);
+    setSelectedPreset(matchingPreset);
+    setWorkoutView('entry');
+    setIsWorkoutMinimized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -118,6 +147,7 @@ export default function App() {
     setWorkoutView(null);
     setSelectedPreset(null);
     setIsWorkoutMinimized(false);
+    setRestoredSnapshot(null);
     setActiveTab('log');
   };
 
@@ -126,6 +156,7 @@ export default function App() {
     setSelectedPreset(null);
     setEditingWorkout(null);
     setIsWorkoutMinimized(false);
+    setRestoredSnapshot(null);
   };
 
   const handleEditWorkout = (workout) => {
@@ -200,6 +231,7 @@ export default function App() {
             proteinData={proteinData}
             presets={presets}
             onOpenProteinDetail={handleOpenProteinDetail}
+            proteinGoal={settings.proteinGoal || 0}
           />
         )}
         {activeTab === 'log' && (
@@ -225,6 +257,7 @@ export default function App() {
             weightData={weightData}
             initialDetailView={statsInitialView}
             onClearInitialView={() => setStatsInitialView(null)}
+            proteinGoal={settings.proteinGoal || 0}
           />
         )}
         {activeTab === 'settings' && (
@@ -293,9 +326,11 @@ export default function App() {
         <WorkoutEntry
           preset={selectedPreset}
           exercises={exercises}
+          workouts={workouts}
           onSave={handleSaveWorkout}
           onCancel={handleCancelWorkout}
           existingWorkout={editingWorkout}
+          restoredSnapshot={restoredSnapshot}
           minimized={isWorkoutMinimized}
           onMinimize={() => setIsWorkoutMinimized(true)}
         />

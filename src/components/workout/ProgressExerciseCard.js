@@ -18,6 +18,7 @@ export default function ProgressExerciseCard({
   onRename,
   disabled = false,
   activeSetCol = -1,  // circuit mode: which set column is active
+  lastSession = null, // { reps: [8,8,7,6], total: 31 } from the previous session, or null
 }) {
   const sets = exercise.sets || [];
   const deadhang = isDeadhang(exercise.name);
@@ -130,6 +131,18 @@ export default function ProgressExerciseCard({
           )}
         </div>
 
+        {/* Last session summary */}
+        {lastSession && (
+          <div className="px-2.5 pl-10">
+            <span
+              className="text-[10px] uppercase truncate block"
+              style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.06em' }}
+            >
+              Last: {lastSession.reps.join(' · ')} ({deadhang ? `${lastSession.total}s` : lastSession.total})
+            </span>
+          </div>
+        )}
+
         {/* Row 2: Set pills + Add/Remove */}
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 pl-10 flex-wrap">
           {sets.map((set, i) => {
@@ -154,7 +167,11 @@ export default function ProgressExerciseCard({
                       : 'none',
                   opacity: disabled ? 0.4 : 1,
                 }}
-                placeholder={deadhang ? 's' : ''}
+                placeholder={
+                  lastSession && lastSession.reps[i] !== undefined && lastSession.reps[i] !== null
+                    ? (deadhang ? `${lastSession.reps[i]}s` : String(lastSession.reps[i]))
+                    : (deadhang ? 's' : '')
+                }
               />
             );
           })}

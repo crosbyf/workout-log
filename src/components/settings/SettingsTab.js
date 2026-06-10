@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTheme, THEMES } from '@/hooks/useTheme';
-import { Check, Palette, Database, Dumbbell, BookOpen, ChevronDown, ChevronRight, Cloud } from 'lucide-react';
+import { Check, Palette, Database, Dumbbell, BookOpen, ChevronDown, ChevronRight, Cloud, Target } from 'lucide-react';
 import PresetEditor from './PresetEditor';
 import ExerciseLibrary from './ExerciseLibrary';
 import DataManagement from './DataManagement';
@@ -71,6 +71,43 @@ function ThemeOption({ themeId, themeName, isActive, onSelect }) {
         <Check size={18} style={{ color: 'var(--color-accent)' }} />
       )}
     </button>
+  );
+}
+
+function ProteinGoalEditor({ value, onCommit }) {
+  const [draft, setDraft] = useState(value > 0 ? String(value) : '');
+
+  const commit = () => {
+    const g = Math.max(0, parseInt(draft, 10) || 0);
+    setDraft(g > 0 ? String(g) : '');
+    onCommit(g);
+  };
+
+  return (
+    <div className="flex items-center justify-between py-1">
+      <div>
+        <div className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+          Daily protein goal
+        </div>
+        <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-dim)' }}>
+          Leave empty for no goal
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <input
+          type="number"
+          inputMode="numeric"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => e.key === 'Enter' && e.target.blur()}
+          placeholder="—"
+          className="w-16 text-sm px-2 py-1.5 rounded-lg bg-transparent border text-right"
+          style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)', fontWeight: 700 }}
+        />
+        <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>g</span>
+      </div>
+    </div>
   );
 }
 
@@ -238,6 +275,14 @@ export default function SettingsTab({
             />
           ))}
         </div>
+      </SettingsSection>
+
+      {/* Goals */}
+      <SettingsSection icon={Target} title="Goals">
+        <ProteinGoalEditor
+          value={settings.proteinGoal || 0}
+          onCommit={(g) => onUpdateSetting && onUpdateSetting('proteinGoal', g)}
+        />
       </SettingsSection>
 
       {/* Workout Presets */}

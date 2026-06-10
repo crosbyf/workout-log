@@ -7,10 +7,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
  * Uses Date.now() for the real elapsed time rather than counting setInterval ticks.
  * When the screen wakes back up, the timer catches up instantly.
  */
-export function useTimer(isRunning = false) {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const startTimeRef = useRef(null);        // Date.now() when the timer started
-  const accumulatedRef = useRef(0);          // seconds accumulated before last pause
+export function useTimer(isRunning = false, initialSeconds = 0) {
+  const [elapsedSeconds, setElapsedSeconds] = useState(initialSeconds);
+  const startTimeRef = useRef(null);                  // Date.now() when the timer started
+  const accumulatedRef = useRef(initialSeconds);      // seconds accumulated before last pause
   const intervalRef = useRef(null);
 
   // Start / stop based on isRunning
