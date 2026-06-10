@@ -1,13 +1,23 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { BarChart3, ChevronRight, X, Drumstick, Scale, Dumbbell, Footprints, Plus, Check } from 'lucide-react';
+import { BarChart3, ChevronRight, X, Drumstick, Scale, Dumbbell, Footprints, HeartPulse, Plus, Check } from 'lucide-react';
 import EmptyState from '@/components/shared/EmptyState';
 import VolumeChart from './VolumeChart';
 import RunningStats from './RunningStats';
 import ProteinTracker from './ProteinTracker';
 import WeightTracker from './WeightTracker';
 import ExerciseStats from './ExerciseStats';
+import RecoveryStats from './RecoveryStats';
+import { useHealthDaily } from '@/hooks/useHealthDaily';
+
+/** Minutes → "7h 12m" for the Recovery card value. */
+function formatSleepShort(totalMin) {
+  const mins = Math.round(totalMin);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h === 0 ? `${m}m` : `${h}h ${m}m`;
+}
 
 /**
  * Summary card that shows a quick stat and opens full detail view on tap.
@@ -210,8 +220,13 @@ export default function StatsTab({
   onClearInitialView,
   proteinGoal = 0,
 }) {
-  const [detailView, setDetailView] = useState(initialDetailView); // null | 'running' | 'protein' | 'weight' | 'exercises'
+  const [detailView, setDetailView] = useState(initialDetailView); // null | 'running' | 'protein' | 'weight' | 'exercises' | 'recovery'
   const [showProteinQuickAdd, setShowProteinQuickAdd] = useState(false);
+  const health = useHealthDaily();
+
+  // Recovery card value: latest resting HR, falling back to latest sleep total
+  const latestHealthHR = health.days.find(d => d.restingHR != null);
+  const latestHealthSleep = health.days.find(d => d.sleepTotalMin != null);
 
   // Clear the initial view flag after opening so it doesn't re-trigger
   useEffect(() => {
@@ -284,6 +299,24 @@ export default function StatsTab({
         onTap={() => setDetailView('weight')}
       />
 
+      {/* Recovery summary card — only when Apple Health data exists */}
+      {health.latest && (
+        <StatCard
+          icon={HeartPulse}
+          label="Recovery"
+          value={
+            latestHealthHR
+              ? `${Math.round(latestHealthHR.restingHR)} bpm`
+              : latestHealthSleep
+                ? formatSleepShort(latestHealthSleep.sleepTotalMin)
+                : '—'
+          }
+          valueColor="var(--color-red)"
+          sublabel={latestHealthHR ? 'Resting HR' : latestHealthSleep ? 'Sleep' : 'Latest'}
+          onTap={() => setDetailView('recovery')}
+        />
+      )}
+
       {/* Exercise stats summary card */}
       <StatCard
         icon={Dumbbell}
@@ -323,6 +356,12 @@ export default function StatsTab({
             onUpdate={weightData.updateEntry}
             onDelete={weightData.deleteEntry}
           />
+        </DetailScreen>
+      )}
+
+      {detailView === 'recovery' && (
+        <DetailScreen title="Recovery" onClose={() => setDetailView(null)}>
+          <RecoveryStats days={health.days} />
         </DetailScreen>
       )}
 

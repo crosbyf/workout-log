@@ -119,6 +119,15 @@ export async function forcePushAll({ workouts, proteinEntries, weightEntries, pr
 
 // ─── Workouts ───
 
+/** Compute "m:ss" pace per mile when an imported run has distance+time but no pace. */
+function computePace(distance, timeSeconds) {
+  if (!distance || !timeSeconds) return null;
+  const secPerMile = timeSeconds / distance;
+  const m = Math.floor(secPerMile / 60);
+  const s = Math.round(secPerMile % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 export async function fetchWorkouts() {
   const { data, error } = await supabase
     .from('workouts')
@@ -143,7 +152,7 @@ export async function fetchWorkouts() {
       isRun: !!runMeta,
       runDistance: runMeta ? runMeta.distance : null,
       runTime: runMeta ? runMeta.time : null,
-      runPace: runMeta ? runMeta.pace : null,
+      runPace: runMeta ? (runMeta.pace || computePace(runMeta.distance, runMeta.time)) : null,
     };
   });
 }
@@ -362,6 +371,31 @@ export async function deleteExerciseRemote(name) {
   const { error } = await supabase.from('exercises').delete().eq('name', name);
   if (error) console.error('deleteExerciseRemote:', error);
   return !error;
+}
+
+// ─── Health (daily summaries written by the Apple Health iOS Shortcut) ───
+
+export async function fetchHealthDaily() {
+  const { data, error } = await supabase
+    .from('health_daily')
+    .select('*')
+    .order('date', { ascending: false })
+    .limit(120);
+  if (error) { console.error('fetchHealthDaily:', error); return null; }
+  return data.map(row => ({
+    date: row.date,
+    restingHR: row.resting_hr ?? null,
+    hrv: row.hrv ?? null,
+    workoutAvgHR: row.workout_avg_hr ?? null,
+    workoutMaxHR: row.workout_max_hr ?? null,
+    sleepTotalMin: row.sleep_total_min ?? null,
+    sleepCoreMin: row.sleep_core_min ?? null,
+    sleepDeepMin: row.sleep_deep_min ?? null,
+    sleepRemMin: row.sleep_rem_min ?? null,
+    sleepAwakeMin: row.sleep_awake_min ?? null,
+    bedTime: row.bed_time ?? null,
+    wakeTime: row.wake_time ?? null,
+  }));
 }
 
 // ─── Settings ───
