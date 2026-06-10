@@ -204,6 +204,38 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
     };
   }, []);
 
+  // While the keyboard is up, the rest timer bar is re-rendered in a fixed
+  // top:0 wrapper pinned to the VISUAL viewport: iOS pans the visual viewport
+  // to keep the focused input in view, so we translate the wrapper down by
+  // visualViewport.offsetTop on every vv resize/scroll event. The transform is
+  // written straight to the DOM node (no state) so tracking is re-render free.
+  // The wrapper's CSS top is env(safe-area-inset-top) (same as the sheet), so
+  // the translate is clamped to never lift the bar into the notch when
+  // offsetTop is 0 or smaller than the inset (keyboard open but little/no pan).
+  const pinnedBarRef = useRef(null);
+  const positionPinnedBar = useCallback((node) => {
+    if (!node || typeof window === 'undefined' || !window.visualViewport) return;
+    const safeTop = parseFloat(window.getComputedStyle(node).top) || 0;
+    const y = Math.max(0, window.visualViewport.offsetTop - safeTop);
+    node.style.transform = `translate3d(0, ${y}px, 0)`;
+  }, []);
+  // Callback ref: position immediately when the wrapper mounts (keyboard just opened)
+  const setPinnedBarRef = useCallback((node) => {
+    pinnedBarRef.current = node;
+    positionPinnedBar(node);
+  }, [positionPinnedBar]);
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    const reposition = () => positionPinnedBar(pinnedBarRef.current);
+    vv.addEventListener('resize', reposition);
+    vv.addEventListener('scroll', reposition);
+    return () => {
+      vv.removeEventListener('resize', reposition);
+      vv.removeEventListener('scroll', reposition);
+    };
+  }, [positionPinnedBar]);
+
   // Last-session ghosts: for each exercise in the entry, find the most recent
   // workout (not a run / day off, not the workout being edited) containing it.
   const lastSessionMap = useMemo(() => {
@@ -492,17 +524,44 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
       </div>
       </div>{/* end swipeable area */}
 
-      {/* Rest timer bar — only while a live workout is running, never in edit mode */}
+      {/* Rest timer bar — only while a live workout is running, never in edit mode.
+          When the iOS keyboard pans the visual viewport, the bar moves into a
+          fixed wrapper pinned to the visible area (condensed single-line variant);
+          when the keyboard closes it returns to its normal in-flow position. */}
       {workoutStarted && !isEditing && (
-        <RestTimerBar
-          restEndsAt={restEndsAt}
-          restTotalSec={restTotalSec}
-          elapsedSeconds={elapsedSeconds}
-          nextName={nextRestName}
-          restDuration={restDuration}
-          onSelectDuration={handleSelectRestDuration}
-          onSkip={handleRestClear}
-        />
+        keyboardOpen ? (
+          <div
+            ref={setPinnedBarRef}
+            className="fixed left-0 right-0"
+            style={{
+              top: 'env(safe-area-inset-top)',
+              zIndex: 80, // above sheet content, below the 10003 modals in this stacking context
+              backgroundColor: 'var(--color-bg)',
+              willChange: 'transform',
+            }}
+          >
+            <RestTimerBar
+              condensed
+              restEndsAt={restEndsAt}
+              restTotalSec={restTotalSec}
+              elapsedSeconds={elapsedSeconds}
+              nextName={nextRestName}
+              restDuration={restDuration}
+              onSelectDuration={handleSelectRestDuration}
+              onSkip={handleRestClear}
+            />
+          </div>
+        ) : (
+          <RestTimerBar
+            restEndsAt={restEndsAt}
+            restTotalSec={restTotalSec}
+            elapsedSeconds={elapsedSeconds}
+            nextName={nextRestName}
+            restDuration={restDuration}
+            onSelectDuration={handleSelectRestDuration}
+            onSkip={handleRestClear}
+          />
+        )
       )}
 
       {/* Structure bar */}

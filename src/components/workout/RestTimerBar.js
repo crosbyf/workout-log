@@ -26,6 +26,10 @@ function formatRest(totalSeconds) {
  *  - Resting: big orange countdown + next-exercise hint + draining bar;
  *             tapping the countdown skips the rest
  *  - GO:      green "GO" + full green bar for ~4s, then auto-clears via onSkip
+ *
+ * `condensed` renders a single-line (~36px) variant used while the iOS
+ * keyboard is up: countdown/elapsed + next-exercise hint inline, thin
+ * progress track below, no duration pills.
  */
 export default function RestTimerBar({
   restEndsAt,      // timestamp | null
@@ -35,6 +39,7 @@ export default function RestTimerBar({
   restDuration,    // currently selected duration in seconds
   onSelectDuration,
   onSkip,          // clears the countdown (tap-to-skip and GO expiry)
+  condensed = false,
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -68,6 +73,65 @@ export default function RestTimerBar({
   const progress = resting && restTotalSec > 0
     ? Math.min(100, Math.max(0, (remainingMs / (restTotalSec * 1000)) * 100))
     : go ? 100 : 0;
+
+  // Condensed single-line variant (keyboard-open mode)
+  if (condensed) {
+    return (
+      <div
+        className="px-4 shrink-0"
+        style={{ paddingTop: 6, paddingBottom: 6, borderBottom: '1px solid var(--color-border)' }}
+      >
+        {!restEndsAt ? (
+          <div className="flex items-baseline gap-2 min-w-0">
+            <span
+              className="font-mono shrink-0"
+              style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-text)', lineHeight: 1.1 }}
+            >
+              {formatDuration(elapsedSeconds)}
+            </span>
+            <span
+              className="uppercase truncate"
+              style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-dim)', letterSpacing: '0.12em' }}
+            >
+              Elapsed
+            </span>
+          </div>
+        ) : (
+          <button
+            onClick={onSkip}
+            className="flex items-baseline gap-2 min-w-0 w-full text-left"
+            aria-label="Skip rest"
+          >
+            <span
+              className="font-mono shrink-0"
+              style={{ fontSize: 16, fontWeight: 800, color: go ? 'var(--color-green)' : REST_COLOR, lineHeight: 1.1 }}
+            >
+              {go ? 'GO' : formatRest(remainingSec)}
+            </span>
+            <span
+              className="uppercase truncate"
+              style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-dim)', letterSpacing: '0.12em' }}
+            >
+              {go
+                ? (nextName ? `Next: ${nextName}` : 'Go')
+                : (nextName ? `Next: ${nextName}` : 'Rest')}
+            </span>
+          </button>
+        )}
+
+        {/* Thin progress track — transparent when idle so the height stays stable */}
+        <div
+          className="mt-1 rounded-full overflow-hidden"
+          style={{ height: 3, backgroundColor: restEndsAt ? 'var(--color-surface-hover)' : 'transparent' }}
+        >
+          <div
+            className="h-full rounded-full"
+            style={{ width: `${progress}%`, backgroundColor: go ? 'var(--color-green)' : REST_COLOR }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
