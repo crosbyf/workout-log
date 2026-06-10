@@ -3,10 +3,11 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { X, Plus, Play, Pause } from 'lucide-react';
 import { useTimer } from '@/hooks/useTimer';
-import { getTodayStr, formatDuration } from '@/utils/format';
-import { setItem, removeItem } from '@/utils/storage';
+import { getTodayStr } from '@/utils/format';
+import { getItem, setItem, removeItem } from '@/utils/storage';
 import { PRESET_COLORS } from '@/hooks/usePresets';
 import ProgressExerciseCard from './ProgressExerciseCard';
+import RestTimerBar from './RestTimerBar';
 import { getActivePairIndices, getActiveSetColumn } from '@/utils/workout-structure';
 
 const STRUCTURES = [
@@ -104,6 +105,18 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
   // the user taps resume; dead time while the PWA was evicted is not counted.
   const [paused, setPaused] = useState(() => (restoredSnapshot ? !!restoredSnapshot.workoutStarted && !isEditing : false));
   const { elapsedSeconds } = useTimer(workoutStarted && !paused && !isEditing, restoredSnapshot?.timer?.elapsed || 0);
+
+  // Rest-interval countdown. State lives here (not in RestTimerBar) so it
+  // survives minimize — this component returns null when minimized but stays mounted.
+  // Duration is remembered per preset; snapshot value wins when restoring.
+  const [restDuration, setRestDuration] = useState(() => {
+    if (restoredSnapshot?.restDuration) return restoredSnapshot.restDuration;
+    const map = getItem('rest_durations', null);
+    return (map && map[preset.name]) || 180;
+  });
+  const [restEndsAt, setRestEndsAt] = useState(null);   // deliberately NOT persisted in the snapshot
+  const [restTotalSec, setRestTotalSec] = useState(180);
+  const [restExerciseName, setRestExerciseName] = useState(null); // exercise whose set edit started the rest
 
   const [workoutExercises, setWorkoutExercises] = useState(() => {
     if (restoredSnapshot && restoredSnapshot.exercises && restoredSnapshot.exercises.length > 0) {
@@ -233,15 +246,62 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
       workoutStarted,
       timer: { elapsed: elapsedSeconds, isPaused: paused },
       editingWorkoutId: existingWorkout?.id || null,
+      restDuration,
       savedAt: Date.now(),
     });
-  }, [hasInteracted, preset.name, workoutExercises, workoutNotes, structure, structureDuration, workoutStarted, elapsedSeconds, paused, existingWorkout]);
+  }, [hasInteracted, preset.name, workoutExercises, workoutNotes, structure, structureDuration, workoutStarted, elapsedSeconds, paused, existingWorkout, restDuration]);
 
+  const handleSelectRestDuration = useCallback((seconds) => {
+    setRestDuration(seconds);
+    const map = getItem('rest_durations', {}) || {};
+    map[preset.name] = seconds;
+    setItem('rest_durations', map);
+  }, [preset.name]);
+
+  const handleRestClear = useCallback(() => {
+    setRestEndsAt(null);
+  }, []);
+
+  // Ref mirror of the exercises state — handleExerciseUpdate compares incoming
+  // updates against it to detect rep changes without touching ProgressExerciseCard.
+  const prevExercisesRef = useRef(workoutExercises);
+  useEffect(() => {
+    prevExercisesRef.current = workoutExercises;
+  }, [workoutExercises]);
+
+  // Next-exercise hint: the exercise after the one just edited that still has
+  // at least one empty set, wrapping around (the edited one itself is the last candidate).
+  const nextRestName = useMemo(() => {
+    if (!restExerciseName) return null;
+    const idx = workoutExercises.findIndex(ex => ex.name === restExerciseName);
+    if (idx === -1) return null;
+    const n = workoutExercises.length;
+    for (let off = 1; off <= n; off++) {
+      const ex = workoutExercises[(idx + off) % n];
+      if (ex.sets.some(s => s.reps === '' || s.reps === null || s.reps === 0)) return ex.name;
+    }
+    return null;
+  }, [workoutExercises, restExerciseName]);
+
+  // Central hook point for all set/note changes coming up from ProgressExerciseCard.
+  // Auto-trigger: whenever a set's reps value changes to a number > 0 while the
+  // workout is running (and not paused / not editing), (re)start the rest countdown.
   const handleExerciseUpdate = useCallback((updated) => {
+    const prevEx = prevExercisesRef.current.find(ex => ex.name === updated.name);
     setWorkoutExercises(prev =>
       prev.map(ex => ex.name === updated.name ? updated : ex)
     );
-  }, []);
+    if (!workoutStarted || isEditing || paused || !prevEx) return;
+    for (let i = 0; i < updated.sets.length; i++) {
+      const newReps = updated.sets[i].reps;
+      if (newReps !== prevEx.sets[i]?.reps && Number(newReps) > 0) {
+        setRestExerciseName(updated.name);
+        setRestTotalSec(restDuration);
+        setRestEndsAt(Date.now() + restDuration * 1000);
+        return;
+      }
+    }
+  }, [workoutStarted, isEditing, paused, restDuration]);
 
   const handleExerciseRemoveRequest = useCallback((name) => {
     setDeleteTarget(name);
@@ -402,28 +462,20 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
         </div>
         <div className="flex items-center gap-3">
           {workoutStarted && !isEditing && (
-            <>
-              {/* Pause/Resume button */}
-              <button
-                onClick={() => setPaused(p => !p)}
-                className="w-8 h-8 rounded-md flex items-center justify-center"
-                style={{
-                  backgroundColor: paused ? 'var(--color-green)' : 'var(--color-surface-hover)',
-                }}
-                aria-label={paused ? 'Resume timer' : 'Pause timer'}
-              >
-                {paused
-                  ? <Play size={13} color="#ffffff" />
-                  : <Pause size={15} style={{ color: 'var(--color-text-muted)' }} />
-                }
-              </button>
-              <span
-                className="text-sm font-mono font-bold"
-                style={{ color: paused ? 'var(--color-yellow)' : 'var(--color-accent)' }}
-              >
-                {formatDuration(elapsedSeconds)}
-              </span>
-            </>
+            /* Pause/Resume button — elapsed time now lives in the rest timer bar */
+            <button
+              onClick={() => { if (!paused) setRestEndsAt(null); setPaused(p => !p); }}
+              className="w-8 h-8 rounded-md flex items-center justify-center"
+              style={{
+                backgroundColor: paused ? 'var(--color-green)' : 'var(--color-surface-hover)',
+              }}
+              aria-label={paused ? 'Resume timer' : 'Pause timer'}
+            >
+              {paused
+                ? <Play size={13} color="#ffffff" />
+                : <Pause size={15} style={{ color: 'var(--color-text-muted)' }} />
+              }
+            </button>
           )}
           {isEditing && (
             <span
@@ -439,6 +491,19 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
         </div>
       </div>
       </div>{/* end swipeable area */}
+
+      {/* Rest timer bar — only while a live workout is running, never in edit mode */}
+      {workoutStarted && !isEditing && (
+        <RestTimerBar
+          restEndsAt={restEndsAt}
+          restTotalSec={restTotalSec}
+          elapsedSeconds={elapsedSeconds}
+          nextName={nextRestName}
+          restDuration={restDuration}
+          onSelectDuration={handleSelectRestDuration}
+          onSkip={handleRestClear}
+        />
+      )}
 
       {/* Structure bar */}
       <div
@@ -467,7 +532,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
             {INTERVALS.map(min => (
               <button
                 key={min}
-                onClick={() => setStructureDuration(min)}
+                onClick={() => { setStructureDuration(min); handleSelectRestDuration(min * 60); }}
                 className="px-2.5 py-1.5 text-[11px] rounded-full transition-colors"
                 style={{
                   backgroundColor: structureDuration === min ? 'var(--color-accent)' : 'var(--color-surface)',

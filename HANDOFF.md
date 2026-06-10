@@ -57,10 +57,17 @@ Decision: iOS Shortcuts → Supabase REST (PWAs can't read HealthKit). User foun
 - **Sleep/HR shortcut NOT built yet** — build the same way once run-import is confirmed (Find Health Samples: Resting Heart Rate, HRV SDNN, Sleep stages → POST to /rest/v1/health_daily; recipe in APPLE_HEALTH_SETUP.md Step 3). Uncertain bit: the Sleep Stage/Value filter serialization.
 - APPLE_HEALTH_SETUP.md (repo root) has the full manual recipe + troubleshooting; superseded for runs by the prebuilt file but still the reference for the health shortcut.
 
+## Google Sheet sync (v17 — working, user-confirmed)
+The user keeps a formatted Google Sheet ('Work' tab) of all workouts. The app now pushes strength workouts and day-offs (runs excluded) to it on save:
+- App side: `src/lib/sheetSync.js` — localStorage queue ('sheet_queue') + flush; wired in page.js handleSaveWorkout (new saves only, not edits) and a launch-time retry. Webhook URL lives in settings `sheetWebhookUrl` (Settings → Integrations), empty = disabled. POSTs as text/plain (simple CORS request) with body {workouts:[...]}.
+- Sheet side: `google-sheet-sync.gs` (repo root, source of truth) — Apps Script web app doPost: checks ?key= secret ('gors-x7k2-sheet'), LockService serialization, dedupes via Script Properties 'gors_imported_ids', writes blocks matching the user's manual scaffold (date merged/rotated in A, exercises in B with dropdown validation, sets C–F, =SUM in G, notes H, hidden K dates for his Dashboard, merged colored preset-name spacer row). Day-offs = single gray italic row, no K date.
+- IMPORTANT: pull-from-Supabase does NOT work in Apps Script — Google's UrlFetchApp gets a DNS error for the project subdomain specifically (verified: google.com/example.com/supabase.co resolve, the project subdomain doesn't). Push architecture is the workaround; don't retry pulling.
+- Sheet edits in app don't re-sync (sheet keeps original — accepted). Redeploying script changes requires a new web app deployment version.
+
 ## Deploy/verification state at handoff
 - Deployed + user-confirmed: through v14 (sync fixes, full redesign, moderate bugs, Tier 1 features).
 - v15 (preset reorder/archive, 3 themes, weight polish): delivered with deploy commands; deployment not explicitly confirmed.
-- v16/v16a (health plumbing + Recovery card + tolerant run parsing): NOT yet deployed — next deploy: `npm run build` → commit "v16a: Apple Health integration + tolerant run parsing" → push.
+- v16/v16a (health plumbing + Recovery card + tolerant run parsing) and v17 (sheet push sync): deployed; v17 confirmed working end-to-end by the user.
 - Shortcut signing/install/test: pending on user.
 
 ## Remaining backlog (from full product audit, in priority order)
