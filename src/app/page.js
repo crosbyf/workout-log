@@ -117,6 +117,14 @@ export default function App() {
     });
   }, [workouts, searchQuery]);
 
+  // Presets offered when starting a workout — archived ones are hidden here,
+  // but stay in the full `presets` array so past workouts keep their colors
+  const selectablePresets = useMemo(() => {
+    const archived = settings.archivedPresetIds || [];
+    if (archived.length === 0) return presets;
+    return presets.filter(p => !archived.includes(p.id));
+  }, [presets, settings.archivedPresetIds]);
+
   const handleStartWorkout = () => {
     // If a workout is minimized, restore it instead of starting a new one
     if (isWorkoutMinimized && workoutView === 'entry') {
@@ -316,7 +324,7 @@ export default function App() {
       {/* Workout flow overlays */}
       {workoutView === 'select-preset' && (
         <PresetSelector
-          presets={presets}
+          presets={selectablePresets}
           onSelect={handleSelectPreset}
           onClose={handleCancelWorkout}
         />

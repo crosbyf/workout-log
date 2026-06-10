@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, X, Check, ChevronUp, ChevronDown, GripVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, ChevronUp, ChevronDown, ChevronRight, Archive, ArchiveRestore } from 'lucide-react';
 import { PRESET_COLORS, COLOR_NAMES } from '@/hooks/usePresets';
 
 function PresetForm({ preset, exercises, onSave, onCancel }) {
@@ -177,10 +177,67 @@ function VisibilityToggle({ enabled, onToggle }) {
   );
 }
 
-export default function PresetEditor({ presets, exercises, onAdd, onUpdate, onDelete }) {
+function DeleteConfirmRow({ name, onConfirm, onCancel }) {
+  return (
+    <div className="flex items-center gap-2 px-2 py-2 mb-1 rounded-lg"
+      style={{ backgroundColor: 'var(--color-surface-hover)' }}
+    >
+      <span className="text-xs flex-1" style={{ color: 'var(--color-red)' }}>
+        Delete {name}?
+      </span>
+      <button
+        onClick={onConfirm}
+        className="text-xs px-2 py-1 rounded font-bold"
+        style={{ backgroundColor: 'var(--color-red)', color: '#ffffff' }}
+      >
+        Delete
+      </button>
+      <button
+        onClick={onCancel}
+        className="text-xs px-2 py-1 rounded"
+        style={{ color: 'var(--color-text-dim)' }}
+      >
+        Cancel
+      </button>
+    </div>
+  );
+}
+
+export default function PresetEditor({
+  presets,
+  exercises,
+  onAdd,
+  onUpdate,
+  onDelete,
+  onReorder,
+  settings = {},
+  onUpdateSetting,
+}) {
   const [editingId, setEditingId] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
+
+  const archivedIds = settings.archivedPresetIds || [];
+  const activePresets = presets.filter(p => !p.isDayOff && !archivedIds.includes(p.id));
+  const archivedPresets = presets.filter(p => !p.isDayOff && archivedIds.includes(p.id));
+
+  const handleArchive = (id) => {
+    if (onUpdateSetting) onUpdateSetting('archivedPresetIds', [...archivedIds, id]);
+  };
+
+  const handleUnarchive = (id) => {
+    if (onUpdateSetting) onUpdateSetting('archivedPresetIds', archivedIds.filter(x => x !== id));
+  };
+
+  const handleDelete = (id) => {
+    onDelete(id);
+    // Clean up the archive list if an archived preset is deleted
+    if (archivedIds.includes(id) && onUpdateSetting) {
+      onUpdateSetting('archivedPresetIds', archivedIds.filter(x => x !== id));
+    }
+    setDeleteConfirm(null);
+  };
 
   const handleSaveNew = (data) => {
     onAdd(data);
@@ -220,35 +277,62 @@ export default function PresetEditor({ presets, exercises, onAdd, onUpdate, onDe
     <div>
       {/* Preset list */}
       <div className="space-y-1 mb-3">
-        {presets.filter(p => !p.isDayOff).map(preset => (
+        {activePresets.map((preset, idx) => (
           <div key={preset.id}>
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2 py-1">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="w-3 h-3 rounded-full shrink-0"
                   style={{ backgroundColor: PRESET_COLORS[preset.color] || 'var(--color-accent)' }}
                 />
-                <span className="text-sm" style={{ color: 'var(--color-text)' }}>
+                <span className="text-sm truncate" style={{ color: 'var(--color-text)' }}>
                   {preset.name}
                 </span>
-                <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
+                <span className="text-xs shrink-0" style={{ color: 'var(--color-text-dim)' }}>
                   ({preset.exercises.length})
                 </span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 shrink-0">
+                <button
+                  onClick={() => onReorder(preset.id, 'up')}
+                  disabled={idx === 0}
+                  className="w-8 h-8 flex items-center justify-center rounded"
+                  style={{ opacity: idx === 0 ? 0.3 : 1 }}
+                  aria-label={`Move ${preset.name} up`}
+                >
+                  <ChevronUp size={14} style={{ color: 'var(--color-text-dim)' }} />
+                </button>
+                <button
+                  onClick={() => onReorder(preset.id, 'down')}
+                  disabled={idx === activePresets.length - 1}
+                  className="w-8 h-8 flex items-center justify-center rounded"
+                  style={{ opacity: idx === activePresets.length - 1 ? 0.3 : 1 }}
+                  aria-label={`Move ${preset.name} down`}
+                >
+                  <ChevronDown size={14} style={{ color: 'var(--color-text-dim)' }} />
+                </button>
                 <VisibilityToggle
                   enabled={!preset.hidden}
                   onToggle={() => onUpdate(preset.id, { hidden: !preset.hidden })}
                 />
                 <button
+                  onClick={() => handleArchive(preset.id)}
+                  className="w-8 h-8 flex items-center justify-center rounded"
+                  aria-label={`Archive ${preset.name}`}
+                >
+                  <Archive size={13} style={{ color: 'var(--color-text-dim)' }} />
+                </button>
+                <button
                   onClick={() => setEditingId(preset.id)}
-                  className="p-1.5 rounded"
+                  className="w-8 h-8 flex items-center justify-center rounded"
+                  aria-label={`Edit ${preset.name}`}
                 >
                   <Pencil size={12} style={{ color: 'var(--color-text-dim)' }} />
                 </button>
                 <button
                   onClick={() => setDeleteConfirm(preset.id)}
-                  className="p-1.5 rounded"
+                  className="w-8 h-8 flex items-center justify-center rounded"
+                  aria-label={`Delete ${preset.name}`}
                 >
                   <Trash2 size={12} style={{ color: 'var(--color-red)' }} />
                 </button>
@@ -257,27 +341,11 @@ export default function PresetEditor({ presets, exercises, onAdd, onUpdate, onDe
 
             {/* Delete confirmation inline */}
             {deleteConfirm === preset.id && (
-              <div className="flex items-center gap-2 px-2 py-2 mb-1 rounded-lg"
-                style={{ backgroundColor: 'var(--color-surface-hover)' }}
-              >
-                <span className="text-xs flex-1" style={{ color: 'var(--color-red)' }}>
-                  Delete {preset.name}?
-                </span>
-                <button
-                  onClick={() => { onDelete(preset.id); setDeleteConfirm(null); }}
-                  className="text-xs px-2 py-1 rounded font-bold"
-                  style={{ backgroundColor: 'var(--color-red)', color: '#ffffff' }}
-                >
-                  Delete
-                </button>
-                <button
-                  onClick={() => setDeleteConfirm(null)}
-                  className="text-xs px-2 py-1 rounded"
-                  style={{ color: 'var(--color-text-dim)' }}
-                >
-                  Cancel
-                </button>
-              </div>
+              <DeleteConfirmRow
+                name={preset.name}
+                onConfirm={() => handleDelete(preset.id)}
+                onCancel={() => setDeleteConfirm(null)}
+              />
             )}
           </div>
         ))}
@@ -291,6 +359,74 @@ export default function PresetEditor({ presets, exercises, onAdd, onUpdate, onDe
       >
         <Plus size={14} /> New Preset
       </button>
+
+      {/* Archived presets — collapsed by default */}
+      {archivedPresets.length > 0 && (
+        <div className="mt-4">
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className="w-full flex items-center gap-1.5 py-2"
+            aria-expanded={showArchived}
+          >
+            {showArchived
+              ? <ChevronDown size={12} style={{ color: 'var(--color-text-dim)' }} />
+              : <ChevronRight size={12} style={{ color: 'var(--color-text-dim)' }} />
+            }
+            <span
+              className="text-[10px] uppercase tracking-wider"
+              style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}
+            >
+              Archived ({archivedPresets.length})
+            </span>
+          </button>
+          {showArchived && (
+            <div className="space-y-1">
+              {archivedPresets.map(preset => (
+                <div key={preset.id}>
+                  <div className="flex items-center justify-between gap-2 py-1">
+                    <div className="flex items-center gap-2 flex-1 min-w-0" style={{ opacity: 0.6 }}>
+                      <div
+                        className="w-3 h-3 rounded-full shrink-0"
+                        style={{ backgroundColor: PRESET_COLORS[preset.color] || 'var(--color-accent)' }}
+                      />
+                      <span className="text-sm truncate" style={{ color: 'var(--color-text)' }}>
+                        {preset.name}
+                      </span>
+                      <span className="text-xs shrink-0" style={{ color: 'var(--color-text-dim)' }}>
+                        ({preset.exercises.length})
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <button
+                        onClick={() => handleUnarchive(preset.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded"
+                        aria-label={`Unarchive ${preset.name}`}
+                      >
+                        <ArchiveRestore size={13} style={{ color: 'var(--color-accent)' }} />
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(preset.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded"
+                        aria-label={`Delete ${preset.name}`}
+                      >
+                        <Trash2 size={12} style={{ color: 'var(--color-red)' }} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {deleteConfirm === preset.id && (
+                    <DeleteConfirmRow
+                      name={preset.name}
+                      onConfirm={() => handleDelete(preset.id)}
+                      onCancel={() => setDeleteConfirm(null)}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

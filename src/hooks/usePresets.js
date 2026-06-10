@@ -209,6 +209,23 @@ export function usePresets() {
     upsertPresets(updated);
   }, [presets, savePresets]);
 
+  const reorderPreset = useCallback((id, direction) => {
+    const sorted = [...presets].sort((a, b) => a.order - b.order);
+    const idx = sorted.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= sorted.length) return;
+    [sorted[idx], sorted[swapIdx]] = [sorted[swapIdx], sorted[idx]];
+    // Normalize to clean integers (0,1,2...) so legacy duplicate or
+    // missing order values don't make swapping erratic
+    const originalOrders = {};
+    for (const p of presets) { originalOrders[p.id] = p.order; }
+    const normalized = sorted.map((p, i) => ({ ...p, order: i }));
+    savePresets(normalized);
+    const changed = normalized.filter(p => originalOrders[p.id] !== p.order);
+    if (changed.length > 0) upsertPresets(changed);
+  }, [presets, savePresets]);
+
   const reorderPresets = useCallback((fromIndex, toIndex) => {
     const sorted = [...presets].sort((a, b) => a.order - b.order);
     const [moved] = sorted.splice(fromIndex, 1);
@@ -249,13 +266,15 @@ export function usePresets() {
   }, [saveExercises]);
 
   return {
-    presets: presets.sort((a, b) => a.order - b.order),
+    // Sorted COPY — sorting in place would mutate state during render
+    presets: [...presets].sort((a, b) => a.order - b.order),
     exercises,
     getPresetById,
     getPresetColor,
     addPreset,
     updatePreset,
     deletePreset,
+    reorderPreset,
     reorderPresets,
     addExercise,
     deleteExercise,

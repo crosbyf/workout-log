@@ -293,6 +293,9 @@ export default function SettingsTab({
           onAdd={presetData.addPreset}
           onUpdate={presetData.updatePreset}
           onDelete={presetData.deletePreset}
+          onReorder={presetData.reorderPreset}
+          settings={settings}
+          onUpdateSetting={onUpdateSetting}
         />
       </SettingsSection>
 

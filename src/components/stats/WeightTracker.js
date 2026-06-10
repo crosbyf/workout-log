@@ -6,135 +6,221 @@ import { formatDate, getTodayStr } from '@/utils/format';
 
 const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+const RANGE_OPTIONS = [
+  { key: '1M', months: 1 },
+  { key: '3M', months: 3 },
+  { key: '6M', months: 6 },
+  { key: 'ALL', months: null },
+];
+
 function formatShortDate(dateStr) {
   const [, month, day] = dateStr.split('-').map(Number);
   return `${MONTHS_SHORT[month - 1]} ${day}`;
 }
 
+function round1(n) {
+  // `+ 0` normalizes -0 so deltas never render as "-0.0"
+  return Math.round(n * 10) / 10 + 0;
+}
+
+/** Date string (YYYY-MM-DD) for `months` months before today. */
+function getCutoffStr(months) {
+  const d = new Date();
+  d.setMonth(d.getMonth() - months);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Catmull-Rom → cubic bezier for a gently smoothed line through all points. */
+function smoothPath(pts) {
+  if (pts.length === 0) return '';
+  if (pts.length < 3) {
+    return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  }
+  let d = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
 /**
- * SVG line chart for weight over time — with Y-axis weight labels and date axis.
+ * SVG line chart for weight over time — smoothed accent line, subtle gridlines,
+ * emphasized latest point, and a 1M/3M/6M/ALL range selector.
  */
 function WeightChart({ entries }) {
-  // Show up to last 30 entries, oldest first
-  const data = entries.slice(0, 30).reverse();
-  if (data.length < 2) return null;
+  const [range, setRange] = useState('3M');
+
+  // All entries sorted oldest → newest (duplicate dates kept in stable order)
+  const sortedAll = useMemo(() => {
+    return [...entries].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  }, [entries]);
+
+  const { data, usedFallback } = useMemo(() => {
+    const opt = RANGE_OPTIONS.find(o => o.key === range);
+    if (!opt || opt.months === null) return { data: sortedAll, usedFallback: false };
+    const cutoff = getCutoffStr(opt.months);
+    const windowed = sortedAll.filter(e => e.date >= cutoff);
+    if (windowed.length >= 2) return { data: windowed, usedFallback: false };
+    // Window too sparse — fall back to all-time so the chart never goes blank
+    return { data: sortedAll, usedFallback: true };
+  }, [sortedAll, range]);
+
+  if (sortedAll.length === 0) return null;
+
+  if (sortedAll.length < 2) {
+    return (
+      <div className="px-4 pb-4">
+        <p className="text-xs text-center py-4" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
+          Add one more entry to see the trend
+        </p>
+      </div>
+    );
+  }
 
   const weights = data.map(e => e.weight);
   const rawMin = Math.min(...weights);
   const rawMax = Math.max(...weights);
-  // Round min/max to whole numbers for clean axis labels, with padding
-  const minW = Math.floor(rawMin - 0.5);
-  const maxW = Math.ceil(rawMax + 0.5);
-  const range = maxW - minW || 1;
+  // Pad the y-domain so the line never hugs the top/bottom edges
+  const domainPad = Math.max(0.6, (rawMax - rawMin) * 0.18);
+  const minW = rawMin - domainPad;
+  const maxW = rawMax + domainPad;
+  const span = maxW - minW || 1;
 
   const chartW = 320;
-  const chartH = 140;
-  const padLeft = 36;  // space for Y-axis labels
-  const padRight = 10;
-  const padTop = 12;
-  const padBottom = 22; // space for X-axis date labels
+  const chartH = 150;
+  const padLeft = 10;
+  const padRight = 42;  // space for right-aligned gridline labels
+  const padTop = 18;
+  const padBottom = 24; // space for first/last date labels
   const innerW = chartW - padLeft - padRight;
   const innerH = chartH - padTop - padBottom;
 
   const points = data.map((entry, idx) => {
-    const x = padLeft + (idx / (data.length - 1)) * innerW;
-    const y = padTop + innerH - ((entry.weight - minW) / range) * innerH;
+    const x = padLeft + (data.length === 1 ? 0.5 : idx / (data.length - 1)) * innerW;
+    const y = padTop + innerH - ((entry.weight - minW) / span) * innerH;
     return { x, y, entry };
   });
 
-  const pathD = points
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-    .join(' ');
+  const lineD = smoothPath(points);
+  const areaD = `${lineD} L ${points[points.length - 1].x.toFixed(1)} ${(padTop + innerH).toFixed(1)} L ${points[0].x.toFixed(1)} ${(padTop + innerH).toFixed(1)} Z`;
 
-  // Area fill
-  const areaD = `${pathD} L ${points[points.length - 1].x.toFixed(1)} ${padTop + innerH} L ${points[0].x.toFixed(1)} ${padTop + innerH} Z`;
+  // 3 subtle gridlines: bottom / middle / top of the padded domain
+  const gridFracs = [0, 0.5, 1];
+  const gridLines = gridFracs.map(frac => ({
+    frac,
+    label: round1(minW + frac * span).toFixed(1),
+    y: padTop + innerH - frac * innerH,
+  }));
 
-  // Y-axis: 5 evenly spaced labels
-  const yTicks = [0, 0.25, 0.5, 0.75, 1];
-  const yLabels = yTicks.map(frac => {
-    const val = minW + frac * range;
-    return { frac, label: Math.round(val * 10) / 10, y: padTop + innerH - frac * innerH };
-  });
-
-  // X-axis: show first, middle, and last dates
-  const xDates = [];
-  if (data.length >= 3) {
-    const midIdx = Math.floor(data.length / 2);
-    xDates.push({ idx: 0, label: formatShortDate(data[0].date) });
-    xDates.push({ idx: midIdx, label: formatShortDate(data[midIdx].date) });
-    xDates.push({ idx: data.length - 1, label: formatShortDate(data[data.length - 1].date) });
-  } else {
-    xDates.push({ idx: 0, label: formatShortDate(data[0].date) });
-    xDates.push({ idx: data.length - 1, label: formatShortDate(data[data.length - 1].date) });
-  }
+  const last = points[points.length - 1];
+  const labelY = Math.max(last.y - 9, 11);
 
   return (
-    <div className="px-4 pb-3">
-      <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ height: '140px' }}>
-        {/* Grid lines + Y-axis labels */}
-        {yLabels.map(({ frac, label, y }) => (
-          <g key={frac}>
-            <line
-              x1={padLeft} y1={y} x2={chartW - padRight} y2={y}
-              stroke="var(--color-border)" strokeWidth="0.5" strokeDasharray="2,2"
-            />
-            <text
-              x={padLeft - 4} y={y + 3}
-              textAnchor="end" fontSize="8" fontWeight="700" fill="var(--color-text-dim)"
+    <div className="pb-3">
+      {/* Range pills */}
+      <div className="px-4 flex items-center justify-between mb-1">
+        <span className="text-[10px] uppercase" style={{ color: 'var(--color-text-dim)', fontWeight: 700, letterSpacing: '0.15em' }}>
+          Trend
+        </span>
+        <div className="flex gap-1">
+          {RANGE_OPTIONS.map(opt => (
+            <button
+              key={opt.key}
+              onClick={() => setRange(opt.key)}
+              className="text-[10px] px-2.5 py-1 rounded-full uppercase"
+              style={{
+                backgroundColor: range === opt.key ? 'var(--color-accent)' : 'var(--color-surface-hover)',
+                color: range === opt.key ? '#ffffff' : 'var(--color-text-dim)',
+                fontWeight: 700,
+              }}
             >
-              {label}
-            </text>
-          </g>
-        ))}
+              {opt.key}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        {/* Area fill */}
-        <path d={areaD} fill="var(--color-accent)" opacity="0.1" />
+      <div className="px-4">
+        <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full h-auto block">
+          {/* Gridlines with right-aligned weight labels */}
+          {gridLines.map(({ frac, label, y }) => (
+            <g key={frac}>
+              <line
+                x1={padLeft} y1={y} x2={chartW - padRight + 4} y2={y}
+                stroke="var(--color-border)" strokeWidth="0.75" strokeDasharray="3,3"
+              />
+              <text
+                x={chartW - 2} y={y + 3.5}
+                textAnchor="end" fontSize="10" fontWeight="700" fill="var(--color-text-dim)"
+              >
+                {label}
+              </text>
+            </g>
+          ))}
 
-        {/* Line */}
-        <path d={pathD} fill="none" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          {/* Area fill */}
+          <path d={areaD} fill="var(--color-accent)" opacity="0.08" />
 
-        {/* Data points */}
-        {points.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.x} cy={p.y} r="2.5"
-            fill="var(--color-accent)"
+          {/* Smoothed line */}
+          <path
+            d={lineD}
+            fill="none"
+            stroke="var(--color-accent)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
-        ))}
 
-        {/* Highlight latest point */}
-        {points.length > 0 && (
-          <>
-            <circle
-              cx={points[points.length - 1].x} cy={points[points.length - 1].y} r="4"
-              fill="var(--color-accent)" opacity="0.3"
-            />
-            <text
-              x={points[points.length - 1].x}
-              y={points[points.length - 1].y - 7}
-              textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-accent)"
-            >
-              {data[data.length - 1].weight}
-            </text>
-          </>
+          {/* Data points — only when sparse enough to read */}
+          {points.length <= 20 && points.slice(0, -1).map((p, i) => (
+            <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="var(--color-accent)" />
+          ))}
+
+          {/* Latest point: filled dot + subtle outer ring + value */}
+          <circle cx={last.x} cy={last.y} r="7" fill="none" stroke="var(--color-accent)" strokeWidth="1.5" opacity="0.35" />
+          <circle cx={last.x} cy={last.y} r="3.5" fill="var(--color-accent)" />
+          <text
+            x={Math.min(last.x, chartW - padRight)}
+            y={labelY}
+            textAnchor="end" fontSize="10" fontWeight="800" fill="var(--color-accent)"
+          >
+            {round1(data[data.length - 1].weight)}
+          </text>
+
+          {/* First / last date labels */}
+          <text
+            x={padLeft} y={chartH - 5}
+            textAnchor="start" fontSize="10" fontWeight="700" fill="var(--color-text-dim)"
+            style={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}
+          >
+            {formatShortDate(data[0].date)}
+          </text>
+          <text
+            x={chartW - padRight + 4} y={chartH - 5}
+            textAnchor="end" fontSize="10" fontWeight="700" fill="var(--color-text-dim)"
+            style={{ textTransform: 'uppercase', letterSpacing: '0.08em' }}
+          >
+            {formatShortDate(data[data.length - 1].date)}
+          </text>
+        </svg>
+
+        {usedFallback && (
+          <p className="text-[10px] text-center mt-1" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
+            Not enough entries in {range} — showing all time
+          </p>
         )}
-
-        {/* X-axis date labels */}
-        {xDates.map(({ idx, label }) => {
-          const x = padLeft + (idx / (data.length - 1)) * innerW;
-          const anchor = idx === 0 ? 'start' : idx === data.length - 1 ? 'end' : 'middle';
-          return (
-            <text
-              key={idx}
-              x={x} y={chartH - 4}
-              textAnchor={anchor} fontSize="8" fontWeight="700" fill="var(--color-text-dim)"
-              style={{ textTransform: 'uppercase' }}
-            >
-              {label}
-            </text>
-          );
-        })}
-      </svg>
+      </div>
     </div>
   );
 }
@@ -178,6 +264,16 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
     setEditWeight('');
     setEditDate('');
   };
+
+  // History rows: newest first, each with a delta vs the previous entry chronologically
+  const historyRows = useMemo(() => {
+    const sorted = [...entries].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+    return sorted.slice(0, 30).map((entry, idx) => {
+      const prev = sorted[idx + 1]; // older neighbor
+      const delta = prev ? round1(entry.weight - prev.weight) : null;
+      return { entry, delta };
+    });
+  }, [entries]);
 
   // Simple trend: compare latest to 7-day-old entry
   const trend = useMemo(() => {
@@ -306,8 +402,15 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
           </button>
           {showHistory && (
             <div className="px-4 pb-3">
-              {entries.slice(0, 30).map(entry => (
-                <div key={entry.id} className="flex items-center justify-between py-1.5">
+              {historyRows.map(({ entry, delta }, idx) => (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between"
+                  style={{
+                    minHeight: '40px',
+                    borderBottom: idx < historyRows.length - 1 ? '1px solid var(--color-border)' : 'none',
+                  }}
+                >
                   {editingId === entry.id ? (
                     /* Editing mode */
                     <div className="flex items-center gap-2 flex-1">
@@ -348,12 +451,28 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
                   ) : (
                     /* Display mode */
                     <>
-                      <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      <span className="text-xs" style={{ color: 'var(--color-text-dim)', fontWeight: 700 }}>
                         {formatDate(entry.date)}
                       </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium" style={{ color: 'var(--color-text)' }}>
-                          {entry.weight} {entry.unit}
+                        {delta !== null && (
+                          <span
+                            className="text-xs"
+                            style={{
+                              fontWeight: 700,
+                              // Body weight: down = green, up = red
+                              color: delta < 0
+                                ? 'var(--color-green)'
+                                : delta > 0
+                                  ? 'var(--color-red)'
+                                  : 'var(--color-text-dim)',
+                            }}
+                          >
+                            {delta > 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1)}
+                          </span>
+                        )}
+                        <span className="text-xs" style={{ color: 'var(--color-text)', fontWeight: 700 }}>
+                          {round1(entry.weight)} {entry.unit}
                         </span>
                         <button
                           onClick={() => handleStartEdit(entry)}
@@ -365,15 +484,15 @@ export default function WeightTracker({ entries = [], latest, onAdd, onUpdate, o
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => { onDelete(entry.id); setDeleteConfirmId(null); }}
-                              className="text-[9px] font-bold px-1.5 py-0.5 rounded"
+                              className="text-[10px] font-bold px-1.5 py-0.5 rounded"
                               style={{ backgroundColor: 'var(--color-red)', color: '#ffffff' }}
                             >
                               Delete
                             </button>
                             <button
                               onClick={() => setDeleteConfirmId(null)}
-                              className="text-[9px] px-1.5 py-0.5 rounded"
-                              style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text-muted)' }}
+                              className="text-[10px] px-1.5 py-0.5 rounded"
+                              style={{ backgroundColor: 'var(--color-surface-hover)', color: 'var(--color-text-dim)' }}
                             >
                               Cancel
                             </button>
