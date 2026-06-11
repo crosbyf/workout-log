@@ -186,16 +186,21 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
     };
   }, [minimized]);
 
-  // Detect virtual keyboard open via visualViewport API
+  // Detect virtual keyboard open via visualViewport API.
+  // NOTE: comparing against window.innerHeight does NOT work in standalone
+  // PWA mode — iOS shrinks innerHeight together with the visual viewport, so
+  // the difference stays ~0. Instead compare against the LARGEST viewport
+  // height seen (the keyboard-closed baseline): a 150px+ drop = keyboard.
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const vvBaselineRef = useRef(0);
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
     const check = () => {
-      // If the visual viewport height is significantly less than window height, keyboard is open
-      const heightDiff = window.innerHeight - vv.height;
-      setKeyboardOpen(heightDiff > 150);
+      vvBaselineRef.current = Math.max(vvBaselineRef.current, vv.height);
+      setKeyboardOpen(vvBaselineRef.current - vv.height > 150);
     };
+    check();
     vv.addEventListener('resize', check);
     vv.addEventListener('scroll', check);
     return () => {
