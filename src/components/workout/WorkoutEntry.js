@@ -537,9 +537,9 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
         keyboardOpen ? (
           <div
             ref={setPinnedBarRef}
-            className="fixed left-0 right-0"
+            className="fixed left-0 right-0 safe-top"
             style={{
-              top: 'env(safe-area-inset-top)',
+              top: 0, // .safe-top pads below the status bar (handles standalone mode where env() is 0)
               zIndex: 80, // above sheet content, below the 10003 modals in this stacking context
               backgroundColor: 'var(--color-bg)',
               willChange: 'transform',
