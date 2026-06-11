@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gorslog-v3';
+const CACHE_NAME = 'gorslog-v4';
 
 // App shell files to cache on install
 const APP_SHELL = [

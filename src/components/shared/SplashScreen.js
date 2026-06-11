@@ -10,9 +10,9 @@ const LETTERS = [
 ];
 
 /**
- * Splash — matches the B2 app icon: bold white letters drop in staggered,
- * then each letter's colored underline sweeps in beneath it, tagline fades,
- * exit. Slightly shorter than the old block animation (2.2s vs 2.6s).
+ * Splash — matches the B3 app icon: the white GORS wordmark drops in
+ * staggered, then the four-segment color bar sweeps in beneath the word,
+ * tagline fades, exit. Slightly shorter than the old block animation.
  */
 export default function SplashScreen({ onComplete }) {
   const [phase, setPhase] = useState('drop');
@@ -49,12 +49,14 @@ export default function SplashScreen({ onComplete }) {
         transition: 'opacity 0.4s ease-out',
       }}
     >
-      <div style={{ display: 'flex', gap: '18px', marginBottom: '28px' }}>
-        {LETTERS.map((letter, i) => (
-          <div key={letter.char} style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+        {/* Wordmark — letters drop in staggered */}
+        <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+          {LETTERS.map((letter, i) => (
             <div
+              key={letter.char}
               style={{
-                fontSize: '56px',
+                fontSize: '58px',
                 fontWeight: 800,
                 color: '#ffffff',
                 lineHeight: 1,
@@ -66,19 +68,24 @@ export default function SplashScreen({ onComplete }) {
             >
               {letter.char}
             </div>
+          ))}
+        </div>
+        {/* Four-segment color bar — sweeps in beneath the word */}
+        <div style={{ display: 'flex', gap: '5px', justifyContent: 'center', marginTop: '14px' }}>
+          {LETTERS.map((letter, i) => (
             <div
+              key={letter.char}
               style={{
-                width: '42px',
-                height: '6px',
-                borderRadius: '3px',
+                width: '38px',
+                height: '7px',
+                borderRadius: '4px',
                 backgroundColor: letter.color,
-                margin: '12px auto 0',
                 transform: linesIn ? 'scaleX(1)' : 'scaleX(0)',
                 transition: `transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${i * 0.06}s`,
               }}
             />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Tagline — fades in after the underlines land */}
