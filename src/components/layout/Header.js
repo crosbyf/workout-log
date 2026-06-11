@@ -61,19 +61,29 @@ export default function Header({ activeTab, onStartWorkout, searchQuery, onSearc
           )}
         </div>
 
-        {/* Center: Branding — GORS bold letters */}
-        <h1
-          className="flex items-center select-none"
-          style={{ fontSize: '17px', fontWeight: 900, letterSpacing: '0.2em', lineHeight: 1 }}
-        >
-          {[
-            { char: 'G', color: '#4a9eff' },
-            { char: 'O', color: '#f59e0b' },
-            { char: 'R', color: '#a855f7' },
-            { char: 'S', color: '#22c55e' },
-          ].map(({ char, color }) => (
-            <span key={char} style={{ color }}>{char}</span>
-          ))}
+        {/* Center: Branding — white wordmark over the segmented color bar
+            (mini version of the splash/icon lockup) */}
+        <h1 className="select-none text-center">
+          <span
+            className="block"
+            style={{
+              fontSize: '16px',
+              fontWeight: 800,
+              letterSpacing: '0.14em',
+              lineHeight: 1,
+              color: 'var(--color-text)',
+            }}
+          >
+            GORS
+          </span>
+          <span className="flex justify-center" style={{ gap: '2px', marginTop: '4px' }}>
+            {['#4a9eff', '#f59e0b', '#a855f7', '#22c55e'].map((color) => (
+              <span
+                key={color}
+                style={{ width: '11px', height: '3px', borderRadius: '2px', backgroundColor: color }}
+              />
+            ))}
+          </span>
         </h1>
 
         {/* Right: Search toggle (Log tab only) */}

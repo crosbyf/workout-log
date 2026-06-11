@@ -52,14 +52,10 @@ GORS LOG is a personal PWA for tracking workouts (strength + running), protein, 
 ## Bugs fixed this session
 Critical: hydrate race (stale closure) losing fresh entries; offline edits silently reverted; backup import permanently blocked by tombstones. Moderate: GtG same-day dedup data loss; protein/weight delete resurrection; protein "Today" UTC bug (evenings); service worker offline fallback (promise-truthiness) + cache bumped to gorslog-v2; tombstone write batching; settings pollution.
 
-## Apple Health integration — CURRENT STATE (pick up here)
-Decision: iOS Shortcuts → Supabase REST (PWAs can't read HealthKit). User found hand-building Shortcuts too frustrating, so the new approach is PREBUILT shortcut files he signs and installs.
-- `health_daily` table: created in Supabase ✓ (without RLS).
-- App side: fully built ✓ (Recovery card appears once first row lands).
-- `GORS-Run-Import.shortcut` (repo root): generated programmatically (plistlib, legacy WFWorkflow format). Flow: If Shortcut Input's Workout Type = Running → format dates (id `wh-yyyyMMdd-HHmm`, date) → seconds via Get Time Between Dates → JSON text (distance/time as strings; app normalizes) → POST to /rest/v1/workouts with merge-duplicates. Triggered by a "Finish Workout" automation (Run Immediately), NOT a Find Workouts action (absent on his iOS).
-- Install: `shortcuts sign --mode anyone --input ~/workout-log/GORS-Run-Import.shortcut --output ~/Desktop/GORS-Run-Import.shortcut` → AirDrop → Add → create Finish Workout automation. **UNTESTED — built blind against Apple's undocumented format.** Likely failure modes: sign rejects file, or import succeeds with empty variable slots. If broken, get exact error/screenshots and regenerate (generator approach documented by the action stack in APPLE_HEALTH_SETUP.md Step 2).
-- **Sleep/HR shortcut NOT built yet** — build the same way once run-import is confirmed (Find Health Samples: Resting Heart Rate, HRV SDNN, Sleep stages → POST to /rest/v1/health_daily; recipe in APPLE_HEALTH_SETUP.md Step 3). Uncertain bit: the Sleep Stage/Value filter serialization.
-- APPLE_HEALTH_SETUP.md (repo root) has the full manual recipe + troubleshooting; superseded for runs by the prebuilt file but still the reference for the health shortcut.
+## Apple Health integration — ABANDONED (do not resurrect without asking)
+The iOS Shortcuts approach was tried and ROLLED BACK: hand-building Shortcuts was too frustrating for the user, and the prebuilt-.shortcut-file path died because he couldn't run the `shortcuts sign` step on his machine. The shortcut file and APPLE_HEALTH_SETUP.md were deleted from the repo.
+- What REMAINS (deliberately, dormant and invisible): the `health_daily` Supabase table (empty), `fetchHealthDaily` in sync.js, `useHealthDaily` hook, RecoveryStats + the Recovery card on Stats (renders only when health data exists), and tolerant run parsing (`toNum`/`computePace` in sync.js — harmless robustness).
+- If the user ever wants Health data again: the path is the Health Auto Export iOS app (~$25, GUI-configured REST export) feeding the same `health_daily` table — likely needs a small payload-translation layer (Supabase Edge Function). The dormant app code would light up unchanged.
 
 ## Google Sheet sync (v17 — working, user-confirmed)
 The user keeps a formatted Google Sheet ('Work' tab) of all workouts. The app now pushes strength workouts and day-offs (runs excluded) to it on save:
