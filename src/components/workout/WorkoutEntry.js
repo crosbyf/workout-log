@@ -17,6 +17,19 @@ const STRUCTURES = [
 
 const INTERVALS = [3, 4, 5];
 
+// Per-structure rest durations: standard/pairs rest with `main` after every
+// set entry; circuit rests with `ex` between exercises and `round` after the
+// last exercise in the list (end of a circuit round).
+const DEFAULT_REST_DURATIONS = { main: 120, ex: 60, round: 120 };
+
+// Persisted values may be legacy plain numbers (old single-duration model) —
+// treat a number as the `main` duration and fill the rest with defaults.
+function normalizeRestDurations(value) {
+  if (typeof value === 'number') return { ...DEFAULT_REST_DURATIONS, main: value };
+  if (value && typeof value === 'object') return { ...DEFAULT_REST_DURATIONS, ...value };
+  return { ...DEFAULT_REST_DURATIONS };
+}
+
 // localStorage key (via storage.js wrapper) for the in-progress workout snapshot
 const SNAPSHOT_KEY = 'inprogress_workout';
 
@@ -108,11 +121,11 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
 
   // Rest-interval countdown. State lives here (not in RestTimerBar) so it
   // survives minimize — this component returns null when minimized but stays mounted.
-  // Duration is remembered per preset; snapshot value wins when restoring.
-  const [restDuration, setRestDuration] = useState(() => {
-    if (restoredSnapshot?.restDuration) return restoredSnapshot.restDuration;
+  // Durations are remembered per preset; snapshot value wins when restoring.
+  const [restDurations, setRestDurations] = useState(() => {
+    if (restoredSnapshot?.restDurations) return normalizeRestDurations(restoredSnapshot.restDurations);
     const map = getItem('rest_durations', null);
-    return (map && map[preset.name]) || 180;
+    return normalizeRestDurations(map ? map[preset.name] : null);
   });
   const [restEndsAt, setRestEndsAt] = useState(null);   // deliberately NOT persisted in the snapshot
   const [restTotalSec, setRestTotalSec] = useState(180);
@@ -283,17 +296,19 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
       workoutStarted,
       timer: { elapsed: elapsedSeconds, isPaused: paused },
       editingWorkoutId: existingWorkout?.id || null,
-      restDuration,
+      restDurations,
       savedAt: Date.now(),
     });
-  }, [hasInteracted, preset.name, workoutExercises, workoutNotes, structure, structureDuration, workoutStarted, elapsedSeconds, paused, existingWorkout, restDuration]);
+  }, [hasInteracted, preset.name, workoutExercises, workoutNotes, structure, structureDuration, workoutStarted, elapsedSeconds, paused, existingWorkout, restDurations]);
 
-  const handleSelectRestDuration = useCallback((seconds) => {
-    setRestDuration(seconds);
+  // key: 'main' (standard/pairs), 'ex' or 'round' (circuit)
+  const handleSelectRestDuration = useCallback((key, seconds) => {
+    const next = { ...restDurations, [key]: seconds };
+    setRestDurations(next);
     const map = getItem('rest_durations', {}) || {};
-    map[preset.name] = seconds;
+    map[preset.name] = next;
     setItem('rest_durations', map);
-  }, [preset.name]);
+  }, [restDurations, preset.name]);
 
   const handleRestClear = useCallback(() => {
     setRestEndsAt(null);
@@ -306,25 +321,52 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
     prevExercisesRef.current = workoutExercises;
   }, [workoutExercises]);
 
-  // Next-exercise hint: the exercise after the one just edited that still has
-  // at least one empty set, wrapping around (the edited one itself is the last candidate).
+  // Next-exercise hint, structure-aware. "Has room" = at least one empty set.
+  //  - pairs:    the pair partner ([0,1],[2,3],... — same grouping as
+  //              ProgressExerciseList) if it has room, else the edited exercise
+  //              itself, else the first exercise after the pair (wrapping).
+  //  - circuit:  first exercise after the edited one in list order, wrapping
+  //              (wrapping to index 0 = the new round).
+  //  - standard: the edited exercise itself if it has room, else the first
+  //              after it (wrapping).
   const nextRestName = useMemo(() => {
     if (!restExerciseName) return null;
     const idx = workoutExercises.findIndex(ex => ex.name === restExerciseName);
     if (idx === -1) return null;
     const n = workoutExercises.length;
-    for (let off = 1; off <= n; off++) {
+    const hasRoom = (ex) => ex.sets.some(s => s.reps === '' || s.reps === null || s.reps === 0);
+
+    if (structure === 'pairs') {
+      const [pairStart, pairEnd] = getActivePairIndices(n, idx);
+      const partnerIdx = idx === pairStart ? pairEnd : pairStart;
+      if (partnerIdx !== idx && hasRoom(workoutExercises[partnerIdx])) return workoutExercises[partnerIdx].name;
+      if (hasRoom(workoutExercises[idx])) return workoutExercises[idx].name;
+      for (let off = 1; off <= n; off++) {
+        const ex = workoutExercises[(pairEnd + off) % n];
+        if (hasRoom(ex)) return ex.name;
+      }
+      return null;
+    }
+
+    // circuit starts scanning after the edited exercise; standard considers it first
+    const startOff = structure === 'circuit' ? 1 : 0;
+    for (let off = startOff; off < startOff + n; off++) {
       const ex = workoutExercises[(idx + off) % n];
-      if (ex.sets.some(s => s.reps === '' || s.reps === null || s.reps === 0)) return ex.name;
+      if (hasRoom(ex)) return ex.name;
     }
     return null;
-  }, [workoutExercises, restExerciseName]);
+  }, [workoutExercises, restExerciseName, structure]);
 
   // Central hook point for all set/note changes coming up from ProgressExerciseCard.
   // Auto-trigger: whenever a set's reps value changes to a number > 0 while the
   // workout is running (and not paused / not editing), (re)start the rest countdown.
+  // Duration is picked by structure: standard/pairs use `main`; circuit uses
+  // `ex`, or `round` when the edited exercise is the LAST in the list (end of
+  // a circuit round, wrapping back to the first exercise).
   const handleExerciseUpdate = useCallback((updated) => {
-    const prevEx = prevExercisesRef.current.find(ex => ex.name === updated.name);
+    const prevList = prevExercisesRef.current;
+    const prevIdx = prevList.findIndex(ex => ex.name === updated.name);
+    const prevEx = prevIdx === -1 ? null : prevList[prevIdx];
     setWorkoutExercises(prev =>
       prev.map(ex => ex.name === updated.name ? updated : ex)
     );
@@ -332,13 +374,16 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
     for (let i = 0; i < updated.sets.length; i++) {
       const newReps = updated.sets[i].reps;
       if (newReps !== prevEx.sets[i]?.reps && Number(newReps) > 0) {
+        const duration = structure === 'circuit'
+          ? (prevIdx === prevList.length - 1 ? restDurations.round : restDurations.ex)
+          : restDurations.main;
         setRestExerciseName(updated.name);
-        setRestTotalSec(restDuration);
-        setRestEndsAt(Date.now() + restDuration * 1000);
+        setRestTotalSec(duration);
+        setRestEndsAt(Date.now() + duration * 1000);
         return;
       }
     }
-  }, [workoutStarted, isEditing, paused, restDuration]);
+  }, [workoutStarted, isEditing, paused, structure, restDurations]);
 
   const handleExerciseRemoveRequest = useCallback((name) => {
     setDeleteTarget(name);
@@ -559,8 +604,6 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
               restTotalSec={restTotalSec}
               elapsedSeconds={elapsedSeconds}
               nextName={nextRestName}
-              restDuration={restDuration}
-              onSelectDuration={handleSelectRestDuration}
               onSkip={handleRestClear}
             />
           </div>
@@ -570,7 +613,8 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
             restTotalSec={restTotalSec}
             elapsedSeconds={elapsedSeconds}
             nextName={nextRestName}
-            restDuration={restDuration}
+            structure={structure}
+            restDurations={restDurations}
             onSelectDuration={handleSelectRestDuration}
             onSkip={handleRestClear}
             structureLabel={structureLabel}
@@ -608,7 +652,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
             {INTERVALS.map(min => (
               <button
                 key={min}
-                onClick={() => { setStructureDuration(min); handleSelectRestDuration(min * 60); }}
+                onClick={() => setStructureDuration(min)}
                 className="px-2.5 py-1.5 text-[11px] rounded-full transition-colors"
                 style={{
                   backgroundColor: structureDuration === min ? 'var(--color-accent)' : 'var(--color-surface)',

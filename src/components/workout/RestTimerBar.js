@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { formatDuration } from '@/utils/format';
 
-const DURATION_OPTIONS = [60, 120, 180, 240]; // seconds — REST pill cycles through these
+const DURATION_OPTIONS = [30, 60, 90, 120, 180, 240]; // seconds — duration pills cycle through these
 const GO_HOLD_MS = 4000; // how long the GO state lingers after the countdown ends
 const REST_COLOR = '#f59e0b'; // hardcoded run/rest orange (matches run accents)
 
@@ -22,8 +22,11 @@ function formatRest(totalSeconds) {
  * after screen-off so the countdown stays correct in the background.
  *
  * States:
- *  - Idle:    big elapsed time + optional structure badge + REST duration pill
- *             (tapping the pill cycles 1:00 → 2:00 → 3:00 → 4:00 → 1:00)
+ *  - Idle:    big elapsed time + optional structure badge + cycling duration
+ *             pill(s). Standard/pairs show one "REST m:ss" pill (the `main`
+ *             duration); circuit shows two compact pills — "EX m:ss" (rest
+ *             between exercises) and "RND m:ss" (rest at the end of a round).
+ *             Tapping a pill cycles 0:30 → 1:00 → 1:30 → 2:00 → 3:00 → 4:00.
  *  - Resting: big orange countdown + next-exercise hint + draining bar;
  *             tapping the countdown skips the rest
  *  - GO:      green "GO" + full green bar for ~4s, then auto-clears via onSkip
@@ -37,8 +40,9 @@ export default function RestTimerBar({
   restTotalSec,    // total seconds of the running countdown (for progress %)
   elapsedSeconds,  // workout elapsed time from WorkoutEntry's existing timer
   nextName,        // next exercise hint (string | null)
-  restDuration,    // currently selected duration in seconds
-  onSelectDuration,
+  structure = 'standard',     // 'standard' | 'pairs' | 'circuit' — picks the idle pill layout
+  restDurations = null,       // { main, ex, round } seconds
+  onSelectDuration = null,    // (key, seconds) — key is 'main' | 'ex' | 'round'
   onSkip,          // clears the countdown (tap-to-skip and GO expiry)
   structureLabel = null, // e.g. "Pairs 4'" / "Circuit" — small read-only badge (idle state, normal variant)
   condensed = false,
@@ -72,6 +76,30 @@ export default function RestTimerBar({
   }, [restEndsAt, now, onSkip]);
 
   const remainingSec = Math.max(0, Math.ceil(remainingMs / 1000));
+
+  // Cycling duration pill (idle state). `compact` tightens padding so the two
+  // circuit pills fit alongside the badge without widening the bar.
+  const cycleDuration = (key) => {
+    if (!onSelectDuration || !restDurations) return;
+    const idx = DURATION_OPTIONS.indexOf(restDurations[key]);
+    onSelectDuration(key, DURATION_OPTIONS[(idx + 1) % DURATION_OPTIONS.length]);
+  };
+  const renderDurationPill = (key, label, compact = false) => (
+    <button
+      onClick={() => cycleDuration(key)}
+      className={`uppercase rounded-full text-[11px] transition-colors ${compact ? 'px-2' : 'px-3'}`}
+      style={{
+        minHeight: 32,
+        fontWeight: 700,
+        letterSpacing: '0.06em',
+        color: 'var(--color-text-dim)',
+        backgroundColor: 'var(--color-surface-hover)',
+      }}
+      aria-label={`${label} duration ${formatRest(restDurations?.[key] ?? 0)}, tap to change`}
+    >
+      {label} {formatRest(restDurations?.[key] ?? 0)}
+    </button>
+  );
   const progress = resting && restTotalSec > 0
     ? Math.min(100, Math.max(0, (remainingMs / (restTotalSec * 1000)) * 100))
     : go ? 100 : 0;
@@ -176,7 +204,8 @@ export default function RestTimerBar({
           </button>
         )}
 
-        {/* Right: structure badge + cycling REST pill (idle) or shrunk elapsed */}
+        {/* Right: structure badge + cycling duration pill(s) (idle) or shrunk elapsed.
+            Standard/pairs: one REST pill (main). Circuit: compact EX + RND pills. */}
         {!restEndsAt ? (
           <div className="flex items-center gap-1.5 shrink-0">
             {structureLabel && (
@@ -193,23 +222,14 @@ export default function RestTimerBar({
                 {structureLabel}
               </span>
             )}
-            <button
-              onClick={() => {
-                const idx = DURATION_OPTIONS.indexOf(restDuration);
-                onSelectDuration(DURATION_OPTIONS[(idx + 1) % DURATION_OPTIONS.length]);
-              }}
-              className="uppercase rounded-full px-3 text-[11px] transition-colors"
-              style={{
-                minHeight: 32,
-                fontWeight: 700,
-                letterSpacing: '0.06em',
-                color: 'var(--color-text-dim)',
-                backgroundColor: 'var(--color-surface-hover)',
-              }}
-              aria-label={`Rest duration ${formatRest(restDuration)}, tap to change`}
-            >
-              Rest {formatRest(restDuration)}
-            </button>
+            {structure === 'circuit' ? (
+              <>
+                {renderDurationPill('ex', 'Ex', true)}
+                {renderDurationPill('round', 'Rnd', true)}
+              </>
+            ) : (
+              renderDurationPill('main', 'Rest')
+            )}
           </div>
         ) : (
           <span
