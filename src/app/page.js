@@ -216,7 +216,7 @@ export default function App() {
     return (
       <div
         className="min-h-screen"
-        style={{ backgroundColor: '#0f0f14' }}
+        style={{ backgroundColor: '#000000' }}
       />
     );
   }
