@@ -431,6 +431,14 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
     !ex.sets.every(s => s.reps !== '' && s.reps !== 0 && s.reps !== null)
   );
 
+  // Compact structure badge shown inside the rest timer bar once the workout
+  // is running (the interactive structure row is hidden after start).
+  const structureLabel = structure === 'standard'
+    ? null
+    : structure === 'pairs'
+      ? (structureDuration ? `Pairs ${structureDuration}'` : 'Pairs')
+      : 'Circuit';
+
   // Swipe-down gesture for minimizing
   const touchStartRef = useRef(null);
   const handleSwipeStart = useCallback((e) => {
@@ -565,11 +573,15 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
             restDuration={restDuration}
             onSelectDuration={handleSelectRestDuration}
             onSkip={handleRestClear}
+            structureLabel={structureLabel}
           />
         )
       )}
 
-      {/* Structure bar */}
+      {/* Structure bar — pre-start (and edit mode) only. Once the workout is
+          running it collapses into a read-only badge inside the rest timer bar,
+          so structure can no longer be changed mid-workout (accepted). */}
+      {!(workoutStarted && !isEditing) && (
       <div
         className="flex items-center gap-2 px-4 py-2 shrink-0"
         style={{ borderBottom: '1px solid var(--color-border)' }}
@@ -610,6 +622,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
           </div>
         )}
       </div>
+      )}
 
       {/* Progress bar — visible when workout is active */}
       {workoutStarted && (

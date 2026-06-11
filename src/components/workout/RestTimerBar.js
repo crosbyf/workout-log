@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { formatDuration } from '@/utils/format';
 
-const DURATION_OPTIONS = [60, 120, 180, 240]; // seconds
+const DURATION_OPTIONS = [60, 120, 180, 240]; // seconds — REST pill cycles through these
 const GO_HOLD_MS = 4000; // how long the GO state lingers after the countdown ends
 const REST_COLOR = '#f59e0b'; // hardcoded run/rest orange (matches run accents)
 
@@ -22,7 +22,8 @@ function formatRest(totalSeconds) {
  * after screen-off so the countdown stays correct in the background.
  *
  * States:
- *  - Idle:    big elapsed time + duration pills
+ *  - Idle:    big elapsed time + optional structure badge + REST duration pill
+ *             (tapping the pill cycles 1:00 → 2:00 → 3:00 → 4:00 → 1:00)
  *  - Resting: big orange countdown + next-exercise hint + draining bar;
  *             tapping the countdown skips the rest
  *  - GO:      green "GO" + full green bar for ~4s, then auto-clears via onSkip
@@ -39,6 +40,7 @@ export default function RestTimerBar({
   restDuration,    // currently selected duration in seconds
   onSelectDuration,
   onSkip,          // clears the countdown (tap-to-skip and GO expiry)
+  structureLabel = null, // e.g. "Pairs 4'" / "Circuit" — small read-only badge (idle state, normal variant)
   condensed = false,
 }) {
   const [now, setNow] = useState(() => Date.now());
@@ -174,23 +176,40 @@ export default function RestTimerBar({
           </button>
         )}
 
-        {/* Right: duration pills (idle) or shrunk elapsed */}
+        {/* Right: structure badge + cycling REST pill (idle) or shrunk elapsed */}
         {!restEndsAt ? (
-          <div className="flex gap-1 shrink-0">
-            {DURATION_OPTIONS.map(sec => (
-              <button
-                key={sec}
-                onClick={() => onSelectDuration(sec)}
-                className="px-2 py-1 text-[11px] rounded-full transition-colors"
+          <div className="flex items-center gap-1.5 shrink-0">
+            {structureLabel && (
+              <span
+                className="uppercase rounded-full px-2.5 py-1"
                 style={{
-                  backgroundColor: restDuration === sec ? 'var(--color-accent)' : 'var(--color-surface-hover)',
-                  color: restDuration === sec ? '#ffffff' : 'var(--color-text-dim)',
+                  fontSize: 10,
                   fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  color: 'var(--color-text-dim)',
+                  backgroundColor: 'var(--color-surface-hover)',
                 }}
               >
-                {formatRest(sec)}
-              </button>
-            ))}
+                {structureLabel}
+              </span>
+            )}
+            <button
+              onClick={() => {
+                const idx = DURATION_OPTIONS.indexOf(restDuration);
+                onSelectDuration(DURATION_OPTIONS[(idx + 1) % DURATION_OPTIONS.length]);
+              }}
+              className="uppercase rounded-full px-3 text-[11px] transition-colors"
+              style={{
+                minHeight: 32,
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                color: 'var(--color-text-dim)',
+                backgroundColor: 'var(--color-surface-hover)',
+              }}
+              aria-label={`Rest duration ${formatRest(restDuration)}, tap to change`}
+            >
+              Rest {formatRest(restDuration)}
+            </button>
           </div>
         ) : (
           <span
