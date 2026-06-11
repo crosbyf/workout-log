@@ -17,10 +17,11 @@ const STRUCTURES = [
 
 const INTERVALS = [3, 4, 5];
 
-// Per-structure rest durations: standard/pairs rest with `main` after every
-// set entry; circuit rests with `ex` between exercises and `round` after the
-// last exercise in the list (end of a circuit round).
-const DEFAULT_REST_DURATIONS = { main: 120, ex: 60, round: 120 };
+// Per-structure rest durations: standard rests with `main` after every set
+// entry; pairs use `main` within a pair and the longer `pair` once the whole
+// pair group is complete; circuit rests with `ex` between exercises and
+// `round` after the last exercise in the list (end of a circuit round).
+const DEFAULT_REST_DURATIONS = { main: 120, ex: 60, round: 120, pair: 180 };
 
 // Persisted values may be legacy plain numbers (old single-duration model) —
 // treat a number as the `main` duration and fill the rest with defaults.
@@ -301,7 +302,7 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
     });
   }, [hasInteracted, preset.name, workoutExercises, workoutNotes, structure, structureDuration, workoutStarted, elapsedSeconds, paused, existingWorkout, restDurations]);
 
-  // key: 'main' (standard/pairs), 'ex' or 'round' (circuit)
+  // key: 'main' (standard/pairs), 'pair' (pairs), 'ex' or 'round' (circuit)
   const handleSelectRestDuration = useCallback((key, seconds) => {
     const next = { ...restDurations, [key]: seconds };
     setRestDurations(next);
@@ -360,9 +361,12 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
   // Central hook point for all set/note changes coming up from ProgressExerciseCard.
   // Auto-trigger: whenever a set's reps value changes to a number > 0 while the
   // workout is running (and not paused / not editing), (re)start the rest countdown.
-  // Duration is picked by structure: standard/pairs use `main`; circuit uses
-  // `ex`, or `round` when the edited exercise is the LAST in the list (end of
-  // a circuit round, wrapping back to the first exercise).
+  // Duration is picked by structure: standard uses `main`; pairs use `main`
+  // within a pair, or the longer `pair` once every set across the edited
+  // exercise's pair group ([0,1],[2,3],... — odd finisher stands alone) is
+  // filled in the UPDATED list; circuit uses `ex`, or `round` when the edited
+  // exercise is the LAST in the list (end of a circuit round, wrapping back
+  // to the first exercise).
   const handleExerciseUpdate = useCallback((updated) => {
     const prevList = prevExercisesRef.current;
     const prevIdx = prevList.findIndex(ex => ex.name === updated.name);
@@ -374,9 +378,19 @@ export default function WorkoutEntry({ preset, exercises: exerciseLibrary, worko
     for (let i = 0; i < updated.sets.length; i++) {
       const newReps = updated.sets[i].reps;
       if (newReps !== prevEx.sets[i]?.reps && Number(newReps) > 0) {
-        const duration = structure === 'circuit'
-          ? (prevIdx === prevList.length - 1 ? restDurations.round : restDurations.ex)
-          : restDurations.main;
+        let duration;
+        if (structure === 'circuit') {
+          duration = prevIdx === prevList.length - 1 ? restDurations.round : restDurations.ex;
+        } else if (structure === 'pairs') {
+          const updatedList = prevList.map(ex => ex.name === updated.name ? updated : ex);
+          const [pairStart, pairEnd] = getActivePairIndices(updatedList.length, prevIdx);
+          const pairDone = updatedList
+            .slice(pairStart, pairEnd + 1)
+            .every(ex => ex.sets.every(s => s.reps !== '' && s.reps !== 0 && s.reps !== null));
+          duration = pairDone ? restDurations.pair : restDurations.main;
+        } else {
+          duration = restDurations.main;
+        }
         setRestExerciseName(updated.name);
         setRestTotalSec(duration);
         setRestEndsAt(Date.now() + duration * 1000);

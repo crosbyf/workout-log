@@ -23,9 +23,11 @@ function formatRest(totalSeconds) {
  *
  * States:
  *  - Idle:    big elapsed time + optional structure badge + cycling duration
- *             pill(s). Standard/pairs show one "REST m:ss" pill (the `main`
- *             duration); circuit shows two compact pills — "EX m:ss" (rest
- *             between exercises) and "RND m:ss" (rest at the end of a round).
+ *             pill(s). Standard shows one "REST m:ss" pill (the `main`
+ *             duration); pairs show two compact pills — "REST m:ss" (within a
+ *             pair) and "PAIR m:ss" (after a completed pair); circuit shows
+ *             two compact pills — "EX m:ss" (rest between exercises) and
+ *             "RND m:ss" (rest at the end of a round).
  *             Tapping a pill cycles 0:30 → 1:00 → 1:30 → 2:00 → 3:00 → 4:00.
  *  - Resting: big orange countdown + next-exercise hint + draining bar;
  *             tapping the countdown skips the rest
@@ -41,8 +43,8 @@ export default function RestTimerBar({
   elapsedSeconds,  // workout elapsed time from WorkoutEntry's existing timer
   nextName,        // next exercise hint (string | null)
   structure = 'standard',     // 'standard' | 'pairs' | 'circuit' — picks the idle pill layout
-  restDurations = null,       // { main, ex, round } seconds
-  onSelectDuration = null,    // (key, seconds) — key is 'main' | 'ex' | 'round'
+  restDurations = null,       // { main, ex, round, pair } seconds
+  onSelectDuration = null,    // (key, seconds) — key is 'main' | 'ex' | 'round' | 'pair'
   onSkip,          // clears the countdown (tap-to-skip and GO expiry)
   structureLabel = null, // e.g. "Pairs 4'" / "Circuit" — small read-only badge (idle state, normal variant)
   condensed = false,
@@ -205,7 +207,8 @@ export default function RestTimerBar({
         )}
 
         {/* Right: structure badge + cycling duration pill(s) (idle) or shrunk elapsed.
-            Standard/pairs: one REST pill (main). Circuit: compact EX + RND pills. */}
+            Standard: one REST pill (main). Pairs: compact REST + PAIR pills.
+            Circuit: compact EX + RND pills. */}
         {!restEndsAt ? (
           <div className="flex items-center gap-1.5 shrink-0">
             {structureLabel && (
@@ -226,6 +229,11 @@ export default function RestTimerBar({
               <>
                 {renderDurationPill('ex', 'Ex', true)}
                 {renderDurationPill('round', 'Rnd', true)}
+              </>
+            ) : structure === 'pairs' ? (
+              <>
+                {renderDurationPill('main', 'Rest', true)}
+                {renderDurationPill('pair', 'Pair', true)}
               </>
             ) : (
               renderDurationPill('main', 'Rest')
