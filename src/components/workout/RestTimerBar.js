@@ -29,9 +29,13 @@ function formatRest(totalSeconds) {
  *             two compact pills — "EX m:ss" (rest between exercises) and
  *             "RND m:ss" (rest at the end of a round).
  *             Tapping a pill cycles 0:30 → 1:00 → 1:30 → 2:00 → 3:00 → 4:00.
- *  - Resting: big orange countdown + next-exercise hint + draining bar;
- *             tapping the countdown skips the rest
+ *  - Resting: big orange countdown + next-exercise hint + draining bar.
+ *             Tapping either timer TOGGLES which one is featured (rest big /
+ *             elapsed small ↔ elapsed big / rest small) — the countdown keeps
+ *             running underneath. Skipping is the explicit SKIP pill only.
+ *             Each new rest starts rest-featured.
  *  - GO:      green "GO" + full green bar for ~4s, then auto-clears via onSkip
+ *             (tapping GO dismisses early)
  *
  * `condensed` renders a single-line (~36px) variant used while the iOS
  * keyboard is up: countdown/elapsed + next-exercise hint inline, thin
@@ -50,6 +54,14 @@ export default function RestTimerBar({
   condensed = false,
 }) {
   const [now, setNow] = useState(() => Date.now());
+
+  // Which timer is featured (big) while resting. Keyed to the current
+  // countdown's restEndsAt so every NEW rest starts rest-featured without
+  // needing a reset effect.
+  const [featuredState, setFeaturedState] = useState({ key: null, value: 'rest' });
+  const featured = featuredState.key === restEndsAt ? featuredState.value : 'rest';
+  const toggleFeatured = () =>
+    setFeaturedState({ key: restEndsAt, value: featured === 'rest' ? 'elapsed' : 'rest' });
 
   // Tick while a countdown (or its GO hold) is active
   useEffect(() => {
@@ -130,15 +142,24 @@ export default function RestTimerBar({
           </div>
         ) : (
           <button
-            onClick={onSkip}
+            onClick={go ? onSkip : toggleFeatured}
             className="flex items-baseline gap-2 min-w-0 w-full text-left"
-            aria-label="Skip rest"
+            aria-label={go ? 'Dismiss' : 'Swap featured timer'}
           >
             <span
               className="font-mono shrink-0"
-              style={{ fontSize: 16, fontWeight: 800, color: go ? 'var(--color-green)' : REST_COLOR, lineHeight: 1.1 }}
+              style={{
+                fontSize: 16,
+                fontWeight: 800,
+                color: go
+                  ? 'var(--color-green)'
+                  : featured === 'rest' ? REST_COLOR : 'var(--color-text)',
+                lineHeight: 1.1,
+              }}
             >
-              {go ? 'GO' : formatRest(remainingSec)}
+              {go
+                ? 'GO'
+                : featured === 'rest' ? formatRest(remainingSec) : formatDuration(elapsedSeconds)}
             </span>
             <span
               className="uppercase truncate"
@@ -146,7 +167,9 @@ export default function RestTimerBar({
             >
               {go
                 ? (nextName ? `Next: ${nextName}` : 'Go')
-                : (nextName ? `Next: ${nextName}` : 'Rest')}
+                : featured === 'rest'
+                  ? (nextName ? `Next: ${nextName}` : 'Rest')
+                  : `Elapsed · rest ${formatRest(remainingSec)}`}
             </span>
           </button>
         )}
@@ -187,22 +210,54 @@ export default function RestTimerBar({
               Elapsed
             </div>
           </div>
-        ) : (
-          <button onClick={onSkip} className="text-left min-w-0" aria-label="Skip rest">
+        ) : go ? (
+          <button onClick={onSkip} className="text-left min-w-0" aria-label="Dismiss">
             <div
               className="font-mono"
-              style={{ fontSize: 24, fontWeight: 800, color: go ? 'var(--color-green)' : REST_COLOR, lineHeight: 1.05 }}
+              style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-green)', lineHeight: 1.05 }}
             >
-              {go ? 'GO' : formatRest(remainingSec)}
+              GO
             </div>
             <div
               className="uppercase truncate"
               style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-dim)', letterSpacing: '0.12em' }}
             >
-              {go
-                ? (nextName ? `Next: ${nextName}` : 'Go')
-                : (nextName ? `Rest · Next: ${nextName}` : 'Rest')}
+              {nextName ? `Next: ${nextName}` : 'Go'}
             </div>
+          </button>
+        ) : (
+          <button onClick={toggleFeatured} className="text-left min-w-0" aria-label="Swap featured timer">
+            {featured === 'rest' ? (
+              <>
+                <div
+                  className="font-mono"
+                  style={{ fontSize: 24, fontWeight: 800, color: REST_COLOR, lineHeight: 1.05 }}
+                >
+                  {formatRest(remainingSec)}
+                </div>
+                <div
+                  className="uppercase truncate"
+                  style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-dim)', letterSpacing: '0.12em' }}
+                >
+                  {nextName ? `Rest · Next: ${nextName}` : 'Rest'}
+                </div>
+              </>
+            ) : (
+              <>
+                <div
+                  className="font-mono"
+                  style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text)', lineHeight: 1.05 }}
+                >
+                  {formatDuration(elapsedSeconds)}
+                </div>
+                <div
+                  className="uppercase truncate"
+                  style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-dim)', letterSpacing: '0.12em' }}
+                >
+                  Elapsed
+                </div>
+              </>
+            )}
           </button>
         )}
 
@@ -240,12 +295,49 @@ export default function RestTimerBar({
             )}
           </div>
         ) : (
-          <span
-            className="font-mono shrink-0"
-            style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-dim)' }}
-          >
-            {formatDuration(elapsedSeconds)}
-          </span>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Shrunk counterpart timer — tap swaps which one is featured */}
+            {!go && (
+              <button
+                onClick={toggleFeatured}
+                className="font-mono"
+                style={{
+                  fontSize: 15,
+                  fontWeight: 800,
+                  color: featured === 'rest' ? 'var(--color-text-dim)' : REST_COLOR,
+                  minHeight: 32,
+                }}
+                aria-label="Swap featured timer"
+              >
+                {featured === 'rest' ? formatDuration(elapsedSeconds) : formatRest(remainingSec)}
+              </button>
+            )}
+            {go && (
+              <span
+                className="font-mono"
+                style={{ fontSize: 15, fontWeight: 800, color: 'var(--color-text-dim)' }}
+              >
+                {formatDuration(elapsedSeconds)}
+              </span>
+            )}
+            {!go && (
+              <button
+                onClick={onSkip}
+                className="uppercase rounded-full px-2.5"
+                style={{
+                  minHeight: 32,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  color: 'var(--color-text-dim)',
+                  backgroundColor: 'var(--color-surface-hover)',
+                }}
+                aria-label="Skip rest"
+              >
+                Skip
+              </button>
+            )}
+          </div>
         )}
       </div>
 
